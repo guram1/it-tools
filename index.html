@@ -150,7 +150,6 @@
             </div>
         </nav>
         <div class="tool-container">
-            <!-- Password Generator -->
             <section class="tool-section active" id="password">
                 <div class="tool-header">
                     <h1 class="tool-title">Password Generator</h1>
@@ -197,7 +196,6 @@
                 </div>
             </section>
 
-            <!-- Subnet Calculator -->
             <section class="tool-section" id="subnet">
                 <div class="tool-header">
                     <h1 class="tool-title">Subnet Calculator</h1>
@@ -233,7 +231,6 @@
                 </div>
             </section>
 
-            <!-- Hash Generator -->
             <section class="tool-section" id="hash">
                 <div class="tool-header">
                     <h1 class="tool-title">Hash Generator</h1>
@@ -251,7 +248,6 @@
                 </div>
             </section>
 
-            <!-- MAC Formatter -->
             <section class="tool-section" id="mac">
                 <div class="tool-header">
                     <h1 class="tool-title">MAC Address Formatter</h1>
@@ -272,7 +268,6 @@
                 </div>
             </section>
 
-            <!-- Bulk MAC Formatter -->
             <section class="tool-section" id="bulkmac">
                 <div class="tool-header">
                     <h1 class="tool-title">Bulk MAC Address Formatter</h1>
@@ -309,7 +304,6 @@ aabb.ccdd.eeff"></textarea>
                 </div>
             </section>
 
-            <!-- MAC Vendor Lookup -->
             <section class="tool-section" id="macvendor">
                 <div class="tool-header">
                     <h1 class="tool-title">MAC Vendor Lookup</h1>
@@ -335,7 +329,6 @@ aabb.ccdd.eeff"></textarea>
                 </div>
             </section>
 
-            <!-- Base64 Encoder -->
             <section class="tool-section" id="base64">
                 <div class="tool-header">
                     <h1 class="tool-title">Base64 Encoder/Decoder</h1>
@@ -360,7 +353,6 @@ aabb.ccdd.eeff"></textarea>
                 </div>
             </section>
 
-            <!-- JSON Formatter -->
             <section class="tool-section" id="json">
                 <div class="tool-header">
                     <h1 class="tool-title">JSON Formatter & Validator</h1>
@@ -386,7 +378,6 @@ aabb.ccdd.eeff"></textarea>
                 </div>
             </section>
 
-            <!-- UUID Generator -->
             <section class="tool-section" id="uuid">
                 <div class="tool-header">
                     <h1 class="tool-title">UUID Generator</h1>
@@ -588,82 +579,86 @@ aabb.ccdd.eeff"></textarea>
             document.getElementById('bulkMacStats').textContent = 'Total: ' + lines.length + ' | Valid: ' + valid + ' | Invalid: ' + invalid;
         }
 
-        // MAC Vendor Database
-        const ouiDB = {
-            '00000C':'Cisco','000010':'Hughes','00001A':'AMD','00001B':'Novell','00001D':'Cabletron','000048':'Epson','00004C':'NEC','000074':'Ricoh','000085':'Canon','000087':'Hitachi','000088':'Brocade','000095':'Sony','0000C0':'Western Digital','0000C6':'HP','0000CD':'Allied Telesis','0000F0':'Samsung','0000F8':'DEC',
-            '000393':'Apple','000502':'Apple','000A27':'Apple','000A95':'Apple','000D93':'Apple','0010FA':'Apple','00125A':'Microsoft','0014BF':'Cisco-Linksys','001517':'Intel','0016CB':'Apple','0017F2':'Apple','0018DE':'Intel','0019B9':'Dell','001A92':'ASUS','001B21':'Intel','001B63':'Apple','001BFC':'ASUS','001C10':'Cisco-Linksys','001CC0':'Intel','001D09':'Dell','001D4F':'Apple','001D60':'ASUS','001DBA':'Sony','001E4F':'Dell','001E58':'D-Link','001EC2':'Apple','001EC9':'Dell',
-            '001F3A':'Hon Hai','001F5B':'Apple','001FF3':'Apple','002170':'Dell','0021E9':'Apple','002241':'Apple','002265':'HP','002312':'Apple','00236C':'Apple','002436':'Apple','002500':'Apple','002504':'Apple','002507':'Dell','00254B':'Apple','002608':'Apple','00264A':'Apple','0026B0':'Apple','0026BB':'Apple','003065':'Apple','0030BD':'Belkin','0050F2':'Microsoft','005056':'VMware','0050BA':'D-Link','00B0D0':'Dell','00C0F0':'Kingston',
-            '00E014':'Cisco','00E04C':'Realtek','00E04F':'Cisco','00E06F':'Cisco','00E08F':'Cisco','00E0B0':'Cisco','00E0F9':'Cisco','000C29':'VMware','080027':'VirtualBox',
-            '040CCE':'Apple','041552':'Apple','044BED':'Apple','04D3CF':'Apple','04E536':'Apple','04F7E4':'Apple','080007':'Apple','086698':'Apple','088FC3':'Samsung','08EBED':'Samsung','08F4AB':'Apple',
-            '0C4DE9':'Apple','0C771A':'Apple','0CD746':'Apple','0CDFA4':'Samsung','0CF4D5':'Samsung','105172':'Samsung','107B44':'ASUS','10417F':'Apple','109266':'Samsung','10C37B':'ASUS','10DDB1':'Apple','10F1F2':'Samsung',
-            '1417F4':'Apple','147DDA':'Apple','14109F':'Apple','148FC6':'Apple','149182':'Belkin','14B484':'Samsung','18810E':'Apple','188796':'HTC','18AF8F':'Apple','18E7F4':'Apple','18EE69':'Apple','18F643':'Apple',
-            '1C1AC0':'Apple','1C36BB':'Apple','1C5CF2':'Apple','1C99E8':'Samsung','1CB094':'Apple','1CBDB9':'Samsung','20768F':'Apple','203CAE':'Apple','20A2E4':'Apple','20C9D0':'Apple','24240E':'Apple','244B03':'Samsung','245BA7':'Apple','2468B0':'Samsung','24A074':'Apple','24A2E1':'Apple','24AB81':'Apple','24E314':'Apple','24F094':'Apple',
-            '280B5C':'Apple','283737':'Apple','286AB8':'Apple','28987B':'Samsung','28A02B':'Apple','28CFDA':'Apple','28E14C':'Apple','28E31F':'Xiaomi','28E7CF':'Apple','28F076':'Apple','2C0BE9':'Apple','2C200B':'Apple','2C3361':'Apple','2C5491':'Microsoft','2CB43A':'Apple','2CF0A2':'Apple',
-            '303A64':'Intel','30636B':'Apple','3090AB':'Apple','309C23':'Apple','30F7C5':'Apple','34159E':'Apple','343111':'Apple','3451C9':'Apple','34A395':'Apple','34AA8B':'Apple','34AB37':'Apple','34C059':'Apple','34E2FD':'Apple',
-            '380F4A':'Apple','3871DE':'Apple','38484C':'Apple','3866F0':'Apple','38B54D':'Apple','38C986':'Apple','38F9D3':'Apple','3C0754':'Apple','3C15C2':'Apple','3C2EFF':'Apple','3C5A37':'Samsung','3C5AB4':'Google','3CA308':'Apple','3CD0F8':'Apple','3CE072':'Apple',
-            '403004':'Apple','40331A':'Apple','403CFC':'Apple','40A6D9':'Apple','40B395':'Apple','40BC60':'Apple','40C3C6':'Apple','40D32D':'Apple','40D3AE':'Apple','44619C':'Apple','446D6C':'Apple','448A5B':'Apple','44D884':'Apple','44FB42':'Apple',
-            '482CA0':'Apple','484BAA':'Apple','4860BC':'Apple','4866F8':'Microsoft','48746E':'Apple','48A195':'Apple','48BF6B':'Apple','48C796':'Apple','48D705':'Apple','48E9F1':'Apple','48F17F':'Apple','4C3275':'Apple','4C7C5F':'Apple','4C8D79':'Apple','4CAEAE':'Samsung','4CB199':'Apple','4CF5DA':'Apple',
-            '500291':'Apple','502693':'HP','503237':'Apple','505527':'Apple','5082D5':'Apple','50A4C8':'Samsung','50B7C3':'Samsung','50BC96':'Apple','50EA59':'Apple','50EAD6':'Apple','5430EE':'Samsung','5440AD':'Samsung','544E45':'Apple','549963':'Apple','54724F':'Apple','549F13':'Apple','54AE27':'Apple','54E43A':'Apple',
-            '587F57':'Apple','58A2B5':'Apple','58B035':'Apple','5C2E59':'Samsung','5C50D9':'Samsung','5C5188':'Samsung','5C59DA':'Apple','5C8D4E':'Apple','5C969D':'Apple','5CADCF':'Apple','5CF938':'Apple',
-            '6003E6':'Samsung','6092F5':'Apple','60C547':'Apple','60D9C7':'Apple','60F445':'Apple','60F81D':'Apple','641CAE':'Apple','6476BA':'Apple','649ABE':'Apple','64A3CB':'Apple','64B0A6':'Apple','64B9E8':'Apple','64E682':'Apple',
-            '682737':'Samsung','6854FD':'Amazon','68644B':'Apple','6896BF':'Apple','68967B':'Apple','68AB1E':'Apple','68AE20':'Apple','68D93C':'Apple','68DBCA':'Apple','68ED43':'Microsoft','68FB7E':'Apple','6C19C0':'Apple','6C3E6D':'Apple','6C4008':'Apple','6C70D1':'Apple','6C72E7':'Apple','6C8DC1':'Apple','6C94F8':'Apple','6CAB31':'Apple','6CC26B':'Apple','6CC4A8':'Apple',
-            '700538':'Apple','700588':'Samsung','702F35':'Apple','703EAC':'Apple','708114':'Apple','70A2B3':'Apple','70CD60':'Apple','70DEE2':'Apple','70E72C':'Apple','70EC5E':'Apple','70F087':'Apple','741BB2':'Apple','742344':'Apple','744D28':'Apple','7483C2':'Apple','748114':'Apple','748D08':'Apple','749EAF':'Apple','74E1B6':'Apple','74E2F5':'Apple',
-            '78009E':'Samsung','782327':'Apple','784F43':'Apple','786C1C':'Apple','787B8A':'Apple','788C54':'Samsung','78A3E4':'Apple','78ABBB':'Apple','78BD7C':'Samsung','78CA39':'Apple','78D75F':'Apple','78FD94':'Apple','7C0191':'Apple','7C0507':'Apple','7C11BE':'Apple','7C5049':'Apple','7C6DF8':'Apple','7C787E':'Samsung','7CD1C3':'Apple','7CE91A':'Apple','7CF05F':'Apple',
-            '804971':'Apple','8060FB':'Samsung','809569':'Apple','80929F':'Apple','80BE05':'Apple','80D605':'Apple','80E650':'Apple','80EA96':'Apple','80ED2C':'Apple','844167':'Apple','8455A5':'Samsung','8486F3':'Apple','848506':'Apple','848E0C':'Apple','8490F0':'Samsung','848A8D':'Samsung','849866':'Samsung','84B153':'Apple','84FCAC':'Apple','84FCFE':'Apple',
-            '881FA1':'Apple','8825A6':'Samsung','8832AE':'Samsung','8863DF':'Apple','8866A5':'Apple','88AED0':'Samsung','88C663':'Apple','88CB87':'Apple','88D50C':'Apple','88E87F':'Apple','8C006D':'Samsung','8C2DAA':'Apple','8C5405':'Samsung','8C5877':'Apple','8C7B9D':'Apple','8C7C92':'Apple','8C7712':'Samsung','8C85C1':'Samsung','8C8590':'Apple','8CC121':'Samsung',
-            '903C92':'Apple','9060F1':'Apple','907240':'Apple','9099FA':'Apple','90B0ED':'Apple','90B931':'Apple','90B21F':'Apple','90C1C6':'Apple','90FD61':'Apple','940006':'Samsung','94350A':'Samsung','944452':'Belkin','949426':'Apple','94B10A':'Apple','94E96A':'Apple','94F6A3':'Apple',
-            '9801A7':'Apple','9803D8':'Apple','98398E':'Samsung','983B16':'Apple','984FEE':'Apple','9852B1':'Samsung','9890FA':'Apple','98B8E3':'Apple','98CA33':'Apple','98D293':'Google','98D6BB':'Apple','98E0D9':'Apple','98F0AB':'Apple','98FE94':'Apple','9C04EB':'Apple','9C207B':'Apple','9C29E4':'Samsung','9C2EA1':'Xiaomi','9C30C9':'Samsung','9C35EB':'Apple','9C4FDA':'Apple','9C5C8E':'Apple','9C6C15':'Apple','9C84BF':'Apple','9C8BA0':'Apple',
-            'A0EDCD':'Apple','A0D385':'Apple','A0999B':'Apple','A45E60':'Apple','A46706':'Apple','A4B805':'Apple','A4B197':'Apple','A4D18C':'Apple','A4D1D2':'Apple','A4E975':'Apple','A4F1E8':'Apple','A82066':'Apple','A85B78':'Apple','A860B6':'Apple','A86BAD':'Apple','A88808':'Apple','A88E24':'Apple','A896A4':'Samsung','A8968A':'Apple','A8BBCF':'Apple','A8FAD8':'Apple',
-            'AC293A':'Apple','AC3C0B':'Apple','AC61EA':'Apple','AC7A42':'Apple','AC87A3':'Apple','AC9E17':'ASUS','ACBC32':'Apple','ACCF5C':'Apple','ACE4B5':'Apple','ACFDEC':'Apple','B03495':'Apple','B065BD':'Apple','B0702D':'Apple','B09FBA':'Apple','B0CA68':'Apple','B0DF3A':'Samsung',
-            'B418D1':'Apple','B4698E':'Samsung','B47443':'Samsung','B48B19':'Apple','B4AE2B':'Apple','B4BFF6':'Apple','B4F0AB':'Apple','B4F1DA':'Apple','B8098A':'Apple','B817C2':'Apple','B820E7':'Apple','B82A72':'Dell','B844D9':'Apple','B8782E':'Apple','B8C75D':'Apple','B8E856':'Apple','B8F6B1':'Apple','B8FF61':'Apple',
-            'BC3BAF':'Apple','BC4CC4':'Apple','BC5436':'Apple','BC6778':'Apple','BC7670':'Samsung','BC9FEF':'Apple','BCB1F3':'Samsung','BCE143':'Apple','BCEC5D':'Apple','C01ADA':'Apple','C06394':'Apple','C0847A':'Apple','C0A53E':'Apple','C0B658':'Samsung','C0BDD1':'Samsung','C0CECD':'Apple','C0D012':'Apple','C0F2FB':'Apple',
-            'C42C03':'Apple','C4618B':'Apple','C47DFE':'Samsung','C488E5':'Samsung','C48466':'Apple','C4B301':'Apple','C8334B':'Apple','C869CD':'Apple','C86F1D':'Apple','C87E75':'Samsung','C88550':'Apple','C8B5B7':'Apple','C8BC8B':'Samsung','C8BCC8':'Apple','C8D083':'Apple','C8E0EB':'Apple',
-            'CC088D':'Apple','CC0DEC':'Apple','CC20E8':'Apple','CC25EF':'Apple','CC29F5':'Apple','CC3A61':'Samsung','CC4463':'Apple','CC785F':'Apple','CCB11A':'Samsung','CCB691':'Samsung','CCFB65':'Apple',
-            'D003DF':'Samsung','D02B20':'Apple','D023DB':'Apple','D03311':'Apple','D0176A':'Samsung','D04F7E':'Apple','D081C7':'Amazon','D0B52F':'Samsung','D0C5F3':'Apple','D0D2B0':'Apple','D0E140':'Apple','D4619D':'Apple','D463FE':'Apple','D49A20':'Apple','D4A33D':'Apple','D4AE05':'Samsung','D4DC09':'Apple','D4DCCD':'Apple','D4F46F':'Apple',
-            'D8004D':'Apple','D800CC':'Huawei','D80831':'Samsung','D81C79':'Apple','D82152':'Apple','D89695':'Apple','D89E3F':'Apple','D8A25E':'Apple','D8CF9C':'Apple','D8D1CB':'Apple','D8F0F2':'Intel',
-            'DC0B34':'LG','DC2B2A':'Apple','DC2B61':'Apple','DC3714':'Apple','DC415F':'Apple','DC56E7':'Apple','DC86D8':'Apple','DC9B9C':'Apple','DCA4CA':'Apple','DCA904':'Apple','DCBFE9':'Apple','DCD3A2':'Apple','DCE5D3':'Samsung',
-            'E05F45':'Apple','E06678':'Apple','E06E7E':'Samsung','E07C13':'Apple','E0ACCB':'Apple','E0B52D':'Apple','E0B9BA':'Apple','E0C767':'Apple','E0C97A':'Apple','E0DB10':'Apple','E0DB55':'Apple','E0F5C6':'Apple','E0F847':'Apple',
-            'E425E7':'Apple','E45D75':'Samsung','E47723':'Samsung','E49ADC':'Apple','E4B293':'Apple','E4C63D':'Apple','E4CE8F':'Apple','E4E0C5':'Apple','E4E4AB':'Apple','E80688':'Apple','E8040B':'Apple','E80684':'Apple','E80F09':'Samsung','E82877':'Apple','E850E2':'Samsung','E88D28':'Apple','E8B2AC':'Apple','E8BBA8':'Apple','E8E5D6':'Samsung','E8FDE1':'Samsung',
-            'EC3586':'Apple','EC85A6':'Samsung','ECC40D':'Apple','ECADB8':'Apple','F023B9':'Apple','F04F7C':'Apple','F05B7B':'Samsung','F07960':'Apple','F08A28':'Samsung','F09FC2':'Ubiquiti','F0B479':'Apple','F0C1F1':'Apple','F0CB82':'Samsung','F0D1A9':'Apple','F0D1B8':'Apple','F0DBE2':'Apple','F0DBF8':'Apple','F0F61C':'Apple',
-            'F41BA1':'Apple','F431C3':'Apple','F45C89':'Apple','F4599D':'Cisco','F45F56':'Samsung','F486A1':'Apple','F49F54':'Samsung','F4BD7C':'Apple','F4F15A':'Apple','F4F954':'Apple','F80377':'Apple','F8166C':'Samsung','F81654':'Apple','F82793':'Apple','F827ED':'Apple','F82D7C':'Apple','F83F51':'Samsung','F8A9D0':'LG','F8E94E':'Apple','F8FF5F':'Samsung',
-            'FC253F':'Apple','FCA13E':'Samsung','FCB6D8':'Apple','FCC233':'Apple','FCCE55':'Apple','FCDC4A':'Samsung','FCFC48':'Apple',
-            '00096B':'Fortinet','00090F':'Fortinet','085B0E':'Fortinet','000E8E':'Fortinet','001418':'Fortinet','001C9D':'Fortinet','00230B':'Fortinet','002603':'Fortinet','043D98':'Fortinet','087E64':'Fortinet','109E3A':'Fortinet','28B448':'Fortinet','50891B':'Fortinet','60986E':'Fortinet','6CB749':'Fortinet','7C396B':'Fortinet','84C1C1':'Fortinet','8C9109':'Fortinet','90FA3C':'Fortinet','9C79A5':'Fortinet','A09D91':'Fortinet','A4F5E8':'Fortinet','B0F2E3':'Fortinet','C09D8D':'Fortinet','C4A71E':'Fortinet','CC527A':'Fortinet','E4620C':'Fortinet','E81CBA':'Fortinet','EC1CF5':'Fortinet','F0F002':'Fortinet',
-            '000904':'Palo Alto','00867C':'Palo Alto','08E7C1':'Palo Alto','1CB9C4':'Palo Alto','581F28':'Palo Alto','7C8920':'Palo Alto','9CC66A':'Palo Alto','B4CD27':'Palo Alto','DCDE3B':'Palo Alto','E8F724':'Palo Alto',
-            '000FE2':'H3C','002389':'H3C','1C1D67':'H3C','70F96D':'H3C','3822D6':'H3C',
-            '000B86':'Aruba','001A1E':'Aruba','001878':'Aruba','002118':'Aruba','24010E':'Aruba','40E3D6':'Aruba','4016FA':'Aruba','6073BC':'Aruba','6817E1':'Aruba','6CF37F':'Aruba','70B3D5':'Aruba','8400D2':'Aruba','94B40F':'Aruba','9C1C12':'Aruba','AC1F6B':'Aruba','B4498F':'Aruba','C4649B':'Aruba','D8C7C8':'Aruba','F0E8D3':'Aruba','F87B8C':'Aruba','FC7F24':'Aruba',
-            '009069':'Juniper','00221A':'Juniper','24B657':'Juniper','2C6BF5':'Juniper','3025A3':'Juniper','4013F7':'Juniper','442C05':'Juniper','50578F':'Juniper','6C817B':'Juniper','ACFD93':'Juniper','C463FD':'Juniper','C464B7':'Juniper','C896D5':'Juniper','D0C2C2':'Juniper','F44D30':'Juniper','FCDFF5':'Juniper',
-            '242F6A':'MikroTik','002127':'TP-LINK','00214F':'TP-LINK','0023C4':'TP-LINK','00264F':'TP-LINK','002719':'TP-LINK','A42BB0':'TP-LINK','C04A00':'TP-LINK','D070AC':'TP-LINK',
-            '44ADDB':'Ubiquiti','44D9E7':'Ubiquiti','0015E8':'Ubiquiti','E83A12':'Ubiquiti','844BF5':'Ubiquiti',
-            '8C83E1':'Hikvision','C0567C':'Hikvision','2C5731':'Hikvision','E0B9E5':'Hikvision','4C11BF':'Hikvision','CC7998':'Hikvision','E091F5':'Hikvision','28573C':'Hikvision',
-            '00E070':'Dahua','3C3987':'Dahua','E0509A':'Dahua','A0BD1D':'Dahua','0CD2B5':'Dahua','4CECEF':'Dahua','3CEF8C':'Dahua','44A56E':'Dahua','90028A':'Dahua',
-            '000E6D':'Axis','ACCC8E':'Axis','B8A44F':'Axis','00408C':'Axis',
-            'FC5564':'Hanwha','3859F9':'Hanwha','B47D98':'Hanwha','00094E':'Bosch','E84057':'Bosch',
-            '00060D':'Polycom','0004F2':'Polycom','64167F':'Polycom','000413':'Snom','0007BD':'Mitel','00247C':'Yealink','8058F8':'Yealink','805E0C':'Yealink','80BDAC':'Yealink','805EC0':'Yealink','001E75':'Panasonic','FC2F40':'Fanvil','0C383E':'Fanvil'
-        };
+        // --- MAC VENDOR LOOKUP (OPTIMIZED SHARDING) ---
+        // Global variables for caching and export
+        const loadedShards = {};
+        let vendorResults = []; 
 
-        let vendorResults = [];
-
-        function lookupMacVendors() {
-            const lines = document.getElementById('macVendorInput').value.trim().split('\n').filter(l => l.trim());
+        async function lookupMacVendors() {
+            const inputField = document.getElementById('macVendorInput');
+            const resultBox = document.getElementById('macVendorResult');
+            const statsBox = document.getElementById('macVendorStats');
+            
+            const lines = inputField.value.trim().split('\n').filter(l => l.trim());
             if (!lines.length) { alert('Enter MAC addresses'); return; }
+
+            // Show loading state
+            resultBox.textContent = "Scanning database shards... please wait...";
+            
             const results = [];
-            vendorResults = [];
+            vendorResults = []; // Reset global results
             let valid = 0, invalid = 0;
             const vendorCount = {};
+
+            // Process line by line
             for (const line of lines) {
+                // Clean input (Hex only)
                 const cleaned = line.replace(/[^a-fA-F0-9]/g, '').toUpperCase();
-                if (cleaned.length < 6) { results.push('INVALID: ' + line); invalid++; continue; }
+
+                if (cleaned.length < 6) { 
+                    results.push('INVALID: ' + line); 
+                    invalid++; 
+                    continue; 
+                }
+
                 valid++;
-                const oui = cleaned.substring(0, 6);
-                const vendor = ouiDB[oui] || 'Unknown';
-                const mac = cleaned.length >= 12 ? cleaned.substring(0, 12).match(/.{2}/g).join(':') : cleaned.match(/.{2}/g).join(':');
-                results.push(mac.padEnd(18) + ' → ' + vendor);
-                vendorResults.push({ mac, oui, vendor });
-                vendorCount[vendor] = (vendorCount[vendor] || 0) + 1;
+                const oui = cleaned.substring(0, 6);       // "001A2B"
+                const shardKey = cleaned.substring(0, 2);  // "00"
+
+                // 1. Check if shard is in memory, if not, Fetch it
+                if (!loadedShards[shardKey]) {
+                    try {
+                        const response = await fetch(`mac_db/${shardKey}.json`);
+                        if (response.ok) {
+                            loadedShards[shardKey] = await response.json();
+                        } else {
+                            loadedShards[shardKey] = {}; // Create empty if 404
+                        }
+                    } catch (err) {
+                        console.error(`Error loading shard ${shardKey}:`, err);
+                        loadedShards[shardKey] = {};
+                    }
+                }
+
+                // 2. Perform Lookup
+                const vendor = loadedShards[shardKey][oui] || 'Unknown Vendor';
+
+                // Format Output
+                const macFormatted = cleaned.length >= 12 
+                    ? cleaned.substring(0, 12).match(/.{2}/g).join(':') 
+                    : cleaned.match(/.{2}/g).join(':');
+
+                results.push(`${macFormatted.padEnd(18)} → ${vendor}`);
+                
+                // Store for CSV Export
+                vendorResults.push({ mac: macFormatted, oui, vendor });
+                
+                // Stats Logic
+                if (vendor !== 'Unknown Vendor') {
+                    vendorCount[vendor] = (vendorCount[vendor] || 0) + 1;
+                }
             }
-            document.getElementById('macVendorResult').textContent = results.join('\n');
-            const top = Object.entries(vendorCount).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([v, c]) => v + ': ' + c).join(' | ');
-            document.getElementById('macVendorStats').textContent = 'Total: ' + lines.length + ' | Valid: ' + valid + ' | Invalid: ' + invalid + '\nTop: ' + top;
+
+            // 3. Update UI
+            resultBox.textContent = results.join('\n');
+            
+            const topVendors = Object.entries(vendorCount)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5)
+                .map(([v, c]) => `${v}: ${c}`)
+                .join(' | ');
+
+            statsBox.textContent = `Total: ${lines.length} | Valid: ${valid} | Invalid: ${invalid}\nTop: ${topVendors || 'None'}`;
         }
 
         function exportVendorCSV() {
