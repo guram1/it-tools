@@ -643,6 +643,16 @@
                 </svg>
                 MAC Formatter
             </div>
+            <div class="nav-item" data-tool="bulkmac">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                    <line x1="8" y1="21" x2="16" y2="21"/>
+                    <line x1="12" y1="17" x2="12" y2="21"/>
+                    <line x1="6" y1="8" x2="18" y2="8"/>
+                    <line x1="6" y1="12" x2="18" y2="12"/>
+                </svg>
+                Bulk MAC Formatter
+            </div>
             <div class="nav-item" data-tool="base64">
                 <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <polyline points="16 18 22 12 16 6"/>
@@ -864,6 +874,57 @@
                             </svg>
                             Format
                         </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Bulk MAC Formatter -->
+            <section class="tool-section" id="bulkmac">
+                <div class="tool-header">
+                    <h1 class="tool-title">Bulk MAC Address Formatter</h1>
+                    <p class="tool-description">Convert multiple MAC addresses at once — paste one per line</p>
+                </div>
+                <div class="tool-content">
+                    <div class="form-group">
+                        <label class="form-label">MAC Addresses (one per line)</label>
+                        <textarea class="form-textarea" id="bulkMacInput" placeholder="AA:BB:CC:DD:EE:FF
+00-11-22-33-44-55
+aabb.ccdd.eeff
+001122334455"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Output Format</label>
+                        <select class="form-select" id="bulkMacFormat">
+                            <option value="colon-upper">Colon Uppercase (AA:BB:CC:DD:EE:FF)</option>
+                            <option value="colon-lower">Colon Lowercase (aa:bb:cc:dd:ee:ff)</option>
+                            <option value="hyphen-upper">Hyphen Uppercase (AA-BB-CC-DD-EE-FF)</option>
+                            <option value="hyphen-lower">Hyphen Lowercase (aa-bb-cc-dd-ee-ff)</option>
+                            <option value="cisco">Cisco (aabb.ccdd.eeff)</option>
+                            <option value="none-upper">No Separator Uppercase (AABBCCDDEEFF)</option>
+                            <option value="none-lower">No Separator Lowercase (aabbccddeeff)</option>
+                        </select>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="formatBulkMAC()">
+                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
+                            </svg>
+                            Format All
+                        </button>
+                        <button class="btn btn-secondary" onclick="copyToClipboard('bulkMacResult')">
+                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                            </svg>
+                            Copy All
+                        </button>
+                    </div>
+                    <div class="bulk-output">
+                        <pre id="bulkMacResult">Formatted MAC addresses will appear here...</pre>
+                    </div>
+                    <div class="output-box" style="margin-top: 1rem;">
+                        <div class="output-label">Statistics</div>
+                        <div class="output-value text-white" id="bulkMacStats">—</div>
                     </div>
                 </div>
             </section>
@@ -1361,6 +1422,64 @@
                 };
                 container.appendChild(btn);
             }
+        }
+
+        // Bulk MAC Formatter
+        function formatBulkMAC() {
+            const input = document.getElementById('bulkMacInput').value.trim();
+            const format = document.getElementById('bulkMacFormat').value;
+            
+            if (!input) {
+                alert('Please enter MAC addresses');
+                return;
+            }
+
+            const lines = input.split('\n').map(line => line.trim()).filter(line => line);
+            const results = [];
+            let validCount = 0;
+            let invalidCount = 0;
+
+            for (const line of lines) {
+                const cleaned = line.replace(/[^a-fA-F0-9]/g, '');
+                
+                if (cleaned.length !== 12) {
+                    results.push(`INVALID: ${line}`);
+                    invalidCount++;
+                    continue;
+                }
+
+                validCount++;
+                let formatted;
+                
+                switch (format) {
+                    case 'colon-upper':
+                        formatted = cleaned.match(/.{2}/g).join(':').toUpperCase();
+                        break;
+                    case 'colon-lower':
+                        formatted = cleaned.match(/.{2}/g).join(':').toLowerCase();
+                        break;
+                    case 'hyphen-upper':
+                        formatted = cleaned.match(/.{2}/g).join('-').toUpperCase();
+                        break;
+                    case 'hyphen-lower':
+                        formatted = cleaned.match(/.{2}/g).join('-').toLowerCase();
+                        break;
+                    case 'cisco':
+                        formatted = cleaned.match(/.{4}/g).join('.').toLowerCase();
+                        break;
+                    case 'none-upper':
+                        formatted = cleaned.toUpperCase();
+                        break;
+                    case 'none-lower':
+                        formatted = cleaned.toLowerCase();
+                        break;
+                }
+                
+                results.push(formatted);
+            }
+
+            document.getElementById('bulkMacResult').textContent = results.join('\n');
+            document.getElementById('bulkMacStats').textContent = `Total: ${lines.length} | Valid: ${validCount} | Invalid: ${invalidCount}`;
         }
 
         // Base64 Encoder/Decoder
