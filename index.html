@@ -26,575 +26,78 @@
             --warning: #f59e0b;
             --info: #3b82f6;
         }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Outfit', -apple-system, sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            min-height: 100vh;
-            line-height: 1.6;
-        }
-
-        /* Header */
-        header {
-            border-bottom: 1px solid var(--border);
-            padding: 1rem 2rem;
-            position: sticky;
-            top: 0;
-            background: rgba(10, 10, 11, 0.9);
-            backdrop-filter: blur(12px);
-            z-index: 100;
-        }
-
-        .header-content {
-            max-width: 1400px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            text-decoration: none;
-            color: var(--text-primary);
-        }
-
-        .logo-icon {
-            width: 36px;
-            height: 36px;
-            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dim) 100%);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 1.1rem;
-        }
-
-        .logo-text {
-            font-size: 1.25rem;
-            font-weight: 600;
-            letter-spacing: -0.02em;
-        }
-
-        .logo-text span {
-            color: var(--accent);
-        }
-
-        .tagline {
-            color: var(--text-muted);
-            font-size: 0.85rem;
-            display: none;
-        }
-
-        @media (min-width: 768px) {
-            .tagline { display: block; }
-        }
-
-        /* Main Layout */
-        main {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 2rem;
-            display: grid;
-            grid-template-columns: 240px 1fr;
-            gap: 2rem;
-        }
-
-        @media (max-width: 900px) {
-            main {
-                grid-template-columns: 1fr;
-                padding: 1rem;
-            }
-        }
-
-        /* Sidebar Navigation */
-        .sidebar {
-            position: sticky;
-            top: 80px;
-            height: fit-content;
-        }
-
-        @media (max-width: 900px) {
-            .sidebar {
-                position: static;
-                display: flex;
-                gap: 0.5rem;
-                overflow-x: auto;
-                padding-bottom: 0.5rem;
-            }
-        }
-
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.75rem 1rem;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            color: var(--text-secondary);
-            border: 1px solid transparent;
-            margin-bottom: 0.25rem;
-            white-space: nowrap;
-        }
-
-        .nav-item:hover {
-            background: var(--bg-card);
-            color: var(--text-primary);
-        }
-
-        .nav-item.active {
-            background: var(--accent-glow);
-            color: var(--accent);
-            border-color: rgba(34, 197, 94, 0.3);
-        }
-
-        .nav-icon {
-            width: 20px;
-            height: 20px;
-            opacity: 0.7;
-        }
-
-        .nav-item.active .nav-icon {
-            opacity: 1;
-        }
-
-        /* Tool Container */
-        .tool-container {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            overflow: hidden;
-        }
-
-        .tool-header {
-            padding: 1.5rem 2rem;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .tool-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            letter-spacing: -0.02em;
-            margin-bottom: 0.25rem;
-        }
-
-        .tool-description {
-            color: var(--text-muted);
-            font-size: 0.95rem;
-        }
-
-        .tool-content {
-            padding: 2rem;
-        }
-
-        .tool-section {
-            display: none;
-        }
-
-        .tool-section.active {
-            display: block;
-            animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Form Elements */
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-label {
-            display: block;
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: var(--text-secondary);
-            margin-bottom: 0.5rem;
-        }
-
-        .form-input, .form-textarea, .form-select {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            color: var(--text-primary);
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.9rem;
-            transition: all 0.2s ease;
-        }
-
-        .form-input:focus, .form-textarea:focus, .form-select:focus {
-            outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px var(--accent-glow);
-        }
-
-        .form-textarea {
-            min-height: 150px;
-            resize: vertical;
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 1rem;
-        }
-
-        /* Checkbox & Range */
-        .checkbox-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-
-        .checkbox-label {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            cursor: pointer;
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-        }
-
-        .checkbox-label input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            accent-color: var(--accent);
-            cursor: pointer;
-        }
-
-        .range-container {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .range-input {
-            flex: 1;
-            height: 6px;
-            appearance: none;
-            background: var(--border);
-            border-radius: 3px;
-            cursor: pointer;
-        }
-
-        .range-input::-webkit-slider-thumb {
-            appearance: none;
-            width: 18px;
-            height: 18px;
-            background: var(--accent);
-            border-radius: 50%;
-            cursor: pointer;
-            transition: transform 0.2s ease;
-        }
-
-        .range-input::-webkit-slider-thumb:hover {
-            transform: scale(1.15);
-        }
-
-        .range-value {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.9rem;
-            color: var(--accent);
-            min-width: 3ch;
-            text-align: center;
-        }
-
-        /* Output Box */
-        .output-box {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 1rem;
-            margin-top: 1rem;
-            position: relative;
-        }
-
-        .output-label {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--text-muted);
-            margin-bottom: 0.5rem;
-        }
-
-        .output-value {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 1.1rem;
-            word-break: break-all;
-            color: var(--accent);
-            line-height: 1.8;
-            white-space: pre-wrap;
-        }
-
-        .output-value.text-white {
-            color: var(--text-primary);
-        }
-
-        /* Buttons */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            font-family: 'Outfit', sans-serif;
-            font-size: 0.95rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            border: none;
-        }
-
-        .btn-primary {
-            background: var(--accent);
-            color: #000;
-        }
-
-        .btn-primary:hover {
-            background: var(--accent-dim);
-            transform: translateY(-1px);
-        }
-
-        .btn-secondary {
-            background: var(--bg-secondary);
-            color: var(--text-primary);
-            border: 1px solid var(--border);
-        }
-
-        .btn-secondary:hover {
-            background: var(--bg-card-hover);
-            border-color: var(--border-hover);
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 0.75rem;
-            margin-top: 1.5rem;
-            flex-wrap: wrap;
-        }
-
-        .btn-icon {
-            width: 18px;
-            height: 18px;
-        }
-
-        /* Password Strength */
-        .strength-bar {
-            height: 4px;
-            background: var(--border);
-            border-radius: 2px;
-            margin-top: 0.75rem;
-            overflow: hidden;
-        }
-
-        .strength-fill {
-            height: 100%;
-            border-radius: 2px;
-            transition: all 0.3s ease;
-        }
-
-        .strength-text {
-            font-size: 0.8rem;
-            margin-top: 0.5rem;
-            color: var(--text-muted);
-        }
-
-        /* Subnet Results */
-        .subnet-results {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-top: 1.5rem;
-        }
-
-        .subnet-card {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 1rem;
-        }
-
-        .subnet-card-label {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--text-muted);
-            margin-bottom: 0.25rem;
-        }
-
-        .subnet-card-value {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.95rem;
-            color: var(--text-primary);
-        }
-
-        /* Hash Results */
-        .hash-results {
-            margin-top: 1.5rem;
-        }
-
-        .hash-item {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 1rem;
-            margin-bottom: 0.75rem;
-        }
-
-        .hash-type {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--accent);
-            margin-bottom: 0.25rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .hash-value {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.85rem;
-            color: var(--text-primary);
-            word-break: break-all;
-        }
-
-        .copy-btn {
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            cursor: pointer;
-            padding: 0.25rem;
-            border-radius: 4px;
-            transition: all 0.2s ease;
-        }
-
-        .copy-btn:hover {
-            color: var(--accent);
-            background: var(--accent-glow);
-        }
-
-        /* Toast Notification */
-        .toast {
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            background: var(--bg-card);
-            border: 1px solid var(--accent);
-            color: var(--text-primary);
-            padding: 1rem 1.5rem;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            opacity: 0;
-            transform: translateY(20px);
-            transition: all 0.3s ease;
-            z-index: 1000;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-        }
-
-        .toast.show {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        /* Footer */
-        footer {
-            border-top: 1px solid var(--border);
-            padding: 2rem;
-            text-align: center;
-            color: var(--text-muted);
-            font-size: 0.85rem;
-            margin-top: 4rem;
-        }
-
-        footer a {
-            color: var(--accent);
-            text-decoration: none;
-        }
-
-        footer a:hover {
-            text-decoration: underline;
-        }
-
-        /* Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: var(--bg-secondary);
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--border);
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--border-hover);
-        }
-
-        /* MAC Formatter specific */
-        .format-options {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 0.5rem;
-            margin-top: 1rem;
-        }
-
-        .format-btn {
-            padding: 0.5rem 0.75rem;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            color: var(--text-secondary);
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.8rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .format-btn:hover, .format-btn.active {
-            background: var(--accent-glow);
-            border-color: var(--accent);
-            color: var(--accent);
-        }
-
-        /* Bulk output */
-        .bulk-output {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 1rem;
-            margin-top: 1rem;
-            max-height: 300px;
-            overflow-y: auto;
-        }
-
-        .bulk-output pre {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.85rem;
-            color: var(--text-primary);
-            white-space: pre-wrap;
-            word-break: break-all;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Outfit', -apple-system, sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; line-height: 1.6; }
+        header { border-bottom: 1px solid var(--border); padding: 1rem 2rem; position: sticky; top: 0; background: rgba(10, 10, 11, 0.9); backdrop-filter: blur(12px); z-index: 100; }
+        .header-content { max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+        .logo { display: flex; align-items: center; gap: 0.75rem; text-decoration: none; color: var(--text-primary); }
+        .logo-icon { width: 36px; height: 36px; background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dim) 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.1rem; }
+        .logo-text { font-size: 1.25rem; font-weight: 600; letter-spacing: -0.02em; }
+        .logo-text span { color: var(--accent); }
+        .tagline { color: var(--text-muted); font-size: 0.85rem; display: none; }
+        @media (min-width: 768px) { .tagline { display: block; } }
+        main { max-width: 1400px; margin: 0 auto; padding: 2rem; display: grid; grid-template-columns: 240px 1fr; gap: 2rem; }
+        @media (max-width: 900px) { main { grid-template-columns: 1fr; padding: 1rem; } }
+        .sidebar { position: sticky; top: 80px; height: fit-content; }
+        @media (max-width: 900px) { .sidebar { position: static; display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.5rem; } }
+        .nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; color: var(--text-secondary); border: 1px solid transparent; margin-bottom: 0.25rem; white-space: nowrap; }
+        .nav-item:hover { background: var(--bg-card); color: var(--text-primary); }
+        .nav-item.active { background: var(--accent-glow); color: var(--accent); border-color: rgba(34, 197, 94, 0.3); }
+        .nav-icon { width: 20px; height: 20px; opacity: 0.7; }
+        .nav-item.active .nav-icon { opacity: 1; }
+        .tool-container { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+        .tool-header { padding: 1.5rem 2rem; border-bottom: 1px solid var(--border); }
+        .tool-title { font-size: 1.5rem; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 0.25rem; }
+        .tool-description { color: var(--text-muted); font-size: 0.95rem; }
+        .tool-content { padding: 2rem; }
+        .tool-section { display: none; }
+        .tool-section.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .form-group { margin-bottom: 1.5rem; }
+        .form-label { display: block; font-size: 0.875rem; font-weight: 500; color: var(--text-secondary); margin-bottom: 0.5rem; }
+        .form-input, .form-textarea, .form-select { width: 100%; padding: 0.75rem 1rem; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary); font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; transition: all 0.2s ease; }
+        .form-input:focus, .form-textarea:focus, .form-select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+        .form-textarea { min-height: 150px; resize: vertical; }
+        .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; }
+        .checkbox-group { display: flex; flex-wrap: wrap; gap: 1rem; }
+        .checkbox-label { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: var(--text-secondary); font-size: 0.9rem; }
+        .checkbox-label input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer; }
+        .range-container { display: flex; align-items: center; gap: 1rem; }
+        .range-input { flex: 1; height: 6px; appearance: none; background: var(--border); border-radius: 3px; cursor: pointer; }
+        .range-input::-webkit-slider-thumb { appearance: none; width: 18px; height: 18px; background: var(--accent); border-radius: 50%; cursor: pointer; }
+        .range-value { font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; color: var(--accent); min-width: 3ch; text-align: center; }
+        .output-box { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; margin-top: 1rem; }
+        .output-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 0.5rem; }
+        .output-value { font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; word-break: break-all; color: var(--accent); line-height: 1.8; white-space: pre-wrap; }
+        .output-value.text-white { color: var(--text-primary); }
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem 1.5rem; border-radius: 8px; font-family: 'Outfit', sans-serif; font-size: 0.95rem; font-weight: 500; cursor: pointer; transition: all 0.2s ease; border: none; }
+        .btn-primary { background: var(--accent); color: #000; }
+        .btn-primary:hover { background: var(--accent-dim); }
+        .btn-secondary { background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border); }
+        .btn-secondary:hover { background: var(--bg-card-hover); }
+        .btn-group { display: flex; gap: 0.75rem; margin-top: 1.5rem; flex-wrap: wrap; }
+        .btn-icon { width: 18px; height: 18px; }
+        .strength-bar { height: 4px; background: var(--border); border-radius: 2px; margin-top: 0.75rem; overflow: hidden; }
+        .strength-fill { height: 100%; border-radius: 2px; transition: all 0.3s ease; }
+        .strength-text { font-size: 0.8rem; margin-top: 0.5rem; color: var(--text-muted); }
+        .subnet-results { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1.5rem; }
+        .subnet-card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; }
+        .subnet-card-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 0.25rem; }
+        .subnet-card-value { font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; color: var(--text-primary); }
+        .hash-results { margin-top: 1.5rem; }
+        .hash-item { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem; }
+        .hash-type { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); margin-bottom: 0.25rem; display: flex; justify-content: space-between; align-items: center; }
+        .hash-value { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--text-primary); word-break: break-all; }
+        .copy-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0.25rem; border-radius: 4px; transition: all 0.2s ease; }
+        .copy-btn:hover { color: var(--accent); background: var(--accent-glow); }
+        .toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--bg-card); border: 1px solid var(--accent); color: var(--text-primary); padding: 1rem 1.5rem; border-radius: 8px; font-size: 0.9rem; opacity: 0; transform: translateY(20px); transition: all 0.3s ease; z-index: 1000; }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        footer { border-top: 1px solid var(--border); padding: 2rem; text-align: center; color: var(--text-muted); font-size: 0.85rem; margin-top: 4rem; }
+        .format-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.5rem; margin-top: 1rem; }
+        .format-btn { padding: 0.5rem 0.75rem; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 6px; color: var(--text-secondary); font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; cursor: pointer; transition: all 0.2s ease; }
+        .format-btn:hover { background: var(--accent-glow); border-color: var(--accent); color: var(--accent); }
+        .bulk-output { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; margin-top: 1rem; max-height: 300px; overflow-y: auto; }
+        .bulk-output pre { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--text-primary); white-space: pre-wrap; word-break: break-all; }
     </style>
 </head>
 <body>
@@ -607,79 +110,45 @@
             <div class="tagline">Free IT utilities — 100% client-side, your data stays private</div>
         </div>
     </header>
-
     <main>
         <nav class="sidebar">
             <div class="nav-item active" data-tool="password">
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                    <circle cx="12" cy="16" r="1"/>
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                </svg>
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><circle cx="12" cy="16" r="1"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                 Password Generator
             </div>
             <div class="nav-item" data-tool="subnet">
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="10"/>
-                    <line x1="2" y1="12" x2="22" y2="12"/>
-                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-                </svg>
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
                 Subnet Calculator
             </div>
             <div class="nav-item" data-tool="hash">
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="4" y1="9" x2="20" y2="9"/>
-                    <line x1="4" y1="15" x2="20" y2="15"/>
-                    <line x1="10" y1="3" x2="8" y2="21"/>
-                    <line x1="16" y1="3" x2="14" y2="21"/>
-                </svg>
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>
                 Hash Generator
             </div>
             <div class="nav-item" data-tool="mac">
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
-                    <line x1="8" y1="21" x2="16" y2="21"/>
-                    <line x1="12" y1="17" x2="12" y2="21"/>
-                </svg>
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
                 MAC Formatter
             </div>
             <div class="nav-item" data-tool="bulkmac">
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
-                    <line x1="8" y1="21" x2="16" y2="21"/>
-                    <line x1="12" y1="17" x2="12" y2="21"/>
-                    <line x1="6" y1="8" x2="18" y2="8"/>
-                    <line x1="6" y1="12" x2="18" y2="12"/>
-                </svg>
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="6" y1="8" x2="18" y2="8"/><line x1="6" y1="12" x2="18" y2="12"/></svg>
                 Bulk MAC Formatter
             </div>
+            <div class="nav-item" data-tool="macvendor">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                MAC Vendor Lookup
+            </div>
             <div class="nav-item" data-tool="base64">
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="16 18 22 12 16 6"/>
-                    <polyline points="8 6 2 12 8 18"/>
-                </svg>
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
                 Base64 Encoder
             </div>
             <div class="nav-item" data-tool="json">
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                    <line x1="16" y1="13" x2="8" y2="13"/>
-                    <line x1="16" y1="17" x2="8" y2="17"/>
-                </svg>
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                 JSON Formatter
             </div>
             <div class="nav-item" data-tool="uuid">
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="3" y="3" width="7" height="7"/>
-                    <rect x="14" y="3" width="7" height="7"/>
-                    <rect x="14" y="14" width="7" height="7"/>
-                    <rect x="3" y="14" width="7" height="7"/>
-                </svg>
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
                 UUID Generator
             </div>
         </nav>
-
         <div class="tool-container">
             <!-- Password Generator -->
             <section class="tool-section active" id="password">
@@ -698,18 +167,10 @@
                     <div class="form-group">
                         <label class="form-label">Character Options</label>
                         <div class="checkbox-group">
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="pwdUpper" checked> Uppercase (A-Z)
-                            </label>
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="pwdLower" checked> Lowercase (a-z)
-                            </label>
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="pwdNumbers" checked> Numbers (0-9)
-                            </label>
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="pwdSymbols" checked> Symbols (!@#$...)
-                            </label>
+                            <label class="checkbox-label"><input type="checkbox" id="pwdUpper" checked> Uppercase (A-Z)</label>
+                            <label class="checkbox-label"><input type="checkbox" id="pwdLower" checked> Lowercase (a-z)</label>
+                            <label class="checkbox-label"><input type="checkbox" id="pwdNumbers" checked> Numbers (0-9)</label>
+                            <label class="checkbox-label"><input type="checkbox" id="pwdSymbols" checked> Symbols (!@#$...)</label>
                         </div>
                     </div>
                     <div class="form-group">
@@ -723,26 +184,15 @@
                             <span class="range-value" id="pwdCountValue">1</span>
                         </div>
                     </div>
-                    <div class="output-box" id="pwdOutput">
+                    <div class="output-box">
                         <div class="output-label">Generated Password</div>
                         <div class="output-value" id="pwdResult">Click generate to create password</div>
                         <div class="strength-bar"><div class="strength-fill" id="pwdStrength"></div></div>
                         <div class="strength-text" id="pwdStrengthText"></div>
                     </div>
                     <div class="btn-group">
-                        <button class="btn btn-primary" onclick="generatePassword()">
-                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
-                            </svg>
-                            Generate
-                        </button>
-                        <button class="btn btn-secondary" onclick="copyToClipboard('pwdResult')">
-                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                            </svg>
-                            Copy
-                        </button>
+                        <button class="btn btn-primary" onclick="generatePassword()">Generate</button>
+                        <button class="btn btn-secondary" onclick="copyToClipboard('pwdResult')">Copy</button>
                     </div>
                 </div>
             </section>
@@ -765,63 +215,20 @@
                         </div>
                     </div>
                     <div class="btn-group">
-                        <button class="btn btn-primary" onclick="calculateSubnet()">
-                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="12" cy="12" r="10"/>
-                                <path d="M12 6v6l4 2"/>
-                            </svg>
-                            Calculate
-                        </button>
+                        <button class="btn btn-primary" onclick="calculateSubnet()">Calculate</button>
                     </div>
                     <div class="subnet-results" id="subnetResults" style="display: none;">
-                        <div class="subnet-card">
-                            <div class="subnet-card-label">Network Address</div>
-                            <div class="subnet-card-value" id="netAddress">—</div>
-                        </div>
-                        <div class="subnet-card">
-                            <div class="subnet-card-label">Broadcast Address</div>
-                            <div class="subnet-card-value" id="broadcastAddress">—</div>
-                        </div>
-                        <div class="subnet-card">
-                            <div class="subnet-card-label">First Host</div>
-                            <div class="subnet-card-value" id="firstHost">—</div>
-                        </div>
-                        <div class="subnet-card">
-                            <div class="subnet-card-label">Last Host</div>
-                            <div class="subnet-card-value" id="lastHost">—</div>
-                        </div>
-                        <div class="subnet-card">
-                            <div class="subnet-card-label">Total Hosts</div>
-                            <div class="subnet-card-value" id="totalHosts">—</div>
-                        </div>
-                        <div class="subnet-card">
-                            <div class="subnet-card-label">Usable Hosts</div>
-                            <div class="subnet-card-value" id="usableHosts">—</div>
-                        </div>
-                        <div class="subnet-card">
-                            <div class="subnet-card-label">Subnet Mask</div>
-                            <div class="subnet-card-value" id="subnetMaskResult">—</div>
-                        </div>
-                        <div class="subnet-card">
-                            <div class="subnet-card-label">Wildcard Mask</div>
-                            <div class="subnet-card-value" id="wildcardMask">—</div>
-                        </div>
-                        <div class="subnet-card">
-                            <div class="subnet-card-label">IP Class</div>
-                            <div class="subnet-card-value" id="ipClass">—</div>
-                        </div>
-                        <div class="subnet-card">
-                            <div class="subnet-card-label">CIDR Notation</div>
-                            <div class="subnet-card-value" id="cidrNotation">—</div>
-                        </div>
-                        <div class="subnet-card">
-                            <div class="subnet-card-label">Binary Mask</div>
-                            <div class="subnet-card-value" id="binaryMask" style="font-size: 0.75rem;">—</div>
-                        </div>
-                        <div class="subnet-card">
-                            <div class="subnet-card-label">IP Type</div>
-                            <div class="subnet-card-value" id="ipType">—</div>
-                        </div>
+                        <div class="subnet-card"><div class="subnet-card-label">Network Address</div><div class="subnet-card-value" id="netAddress">—</div></div>
+                        <div class="subnet-card"><div class="subnet-card-label">Broadcast Address</div><div class="subnet-card-value" id="broadcastAddress">—</div></div>
+                        <div class="subnet-card"><div class="subnet-card-label">First Host</div><div class="subnet-card-value" id="firstHost">—</div></div>
+                        <div class="subnet-card"><div class="subnet-card-label">Last Host</div><div class="subnet-card-value" id="lastHost">—</div></div>
+                        <div class="subnet-card"><div class="subnet-card-label">Total Hosts</div><div class="subnet-card-value" id="totalHosts">—</div></div>
+                        <div class="subnet-card"><div class="subnet-card-label">Usable Hosts</div><div class="subnet-card-value" id="usableHosts">—</div></div>
+                        <div class="subnet-card"><div class="subnet-card-label">Subnet Mask</div><div class="subnet-card-value" id="subnetMaskResult">—</div></div>
+                        <div class="subnet-card"><div class="subnet-card-label">Wildcard Mask</div><div class="subnet-card-value" id="wildcardMask">—</div></div>
+                        <div class="subnet-card"><div class="subnet-card-label">IP Class</div><div class="subnet-card-value" id="ipClass">—</div></div>
+                        <div class="subnet-card"><div class="subnet-card-label">CIDR Notation</div><div class="subnet-card-value" id="cidrNotation">—</div></div>
+                        <div class="subnet-card"><div class="subnet-card-label">IP Type</div><div class="subnet-card-value" id="ipType">—</div></div>
                     </div>
                 </div>
             </section>
@@ -838,15 +245,7 @@
                         <textarea class="form-textarea" id="hashInput" placeholder="Enter text to hash..."></textarea>
                     </div>
                     <div class="btn-group">
-                        <button class="btn btn-primary" onclick="generateHashes()">
-                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <line x1="4" y1="9" x2="20" y2="9"/>
-                                <line x1="4" y1="15" x2="20" y2="15"/>
-                                <line x1="10" y1="3" x2="8" y2="21"/>
-                                <line x1="16" y1="3" x2="14" y2="21"/>
-                            </svg>
-                            Generate Hashes
-                        </button>
+                        <button class="btn btn-primary" onclick="generateHashes()">Generate Hashes</button>
                     </div>
                     <div class="hash-results" id="hashResults"></div>
                 </div>
@@ -868,12 +267,7 @@
                         <div class="format-options" id="macFormats"></div>
                     </div>
                     <div class="btn-group">
-                        <button class="btn btn-primary" onclick="formatMAC()">
-                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
-                            </svg>
-                            Format
-                        </button>
+                        <button class="btn btn-primary" onclick="formatMAC()">Format</button>
                     </div>
                 </div>
             </section>
@@ -889,8 +283,7 @@
                         <label class="form-label">MAC Addresses (one per line)</label>
                         <textarea class="form-textarea" id="bulkMacInput" placeholder="AA:BB:CC:DD:EE:FF
 00-11-22-33-44-55
-aabb.ccdd.eeff
-001122334455"></textarea>
+aabb.ccdd.eeff"></textarea>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Output Format</label>
@@ -905,26 +298,39 @@ aabb.ccdd.eeff
                         </select>
                     </div>
                     <div class="btn-group">
-                        <button class="btn btn-primary" onclick="formatBulkMAC()">
-                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
-                            </svg>
-                            Format All
-                        </button>
-                        <button class="btn btn-secondary" onclick="copyToClipboard('bulkMacResult')">
-                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                            </svg>
-                            Copy All
-                        </button>
+                        <button class="btn btn-primary" onclick="formatBulkMAC()">Format All</button>
+                        <button class="btn btn-secondary" onclick="copyToClipboard('bulkMacResult')">Copy All</button>
                     </div>
-                    <div class="bulk-output">
-                        <pre id="bulkMacResult">Formatted MAC addresses will appear here...</pre>
-                    </div>
-                    <div class="output-box" style="margin-top: 1rem;">
+                    <div class="bulk-output"><pre id="bulkMacResult">Formatted MAC addresses will appear here...</pre></div>
+                    <div class="output-box">
                         <div class="output-label">Statistics</div>
                         <div class="output-value text-white" id="bulkMacStats">—</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- MAC Vendor Lookup -->
+            <section class="tool-section" id="macvendor">
+                <div class="tool-header">
+                    <h1 class="tool-title">MAC Vendor Lookup</h1>
+                    <p class="tool-description">Identify device manufacturers from MAC addresses — supports bulk lookup</p>
+                </div>
+                <div class="tool-content">
+                    <div class="form-group">
+                        <label class="form-label">MAC Addresses (one per line)</label>
+                        <textarea class="form-textarea" id="macVendorInput" placeholder="AA:BB:CC:DD:EE:FF
+00-11-22-33-44-55
+aabb.ccdd.eeff"></textarea>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="lookupMacVendors()">Lookup Vendors</button>
+                        <button class="btn btn-secondary" onclick="copyToClipboard('macVendorResult')">Copy Results</button>
+                        <button class="btn btn-secondary" onclick="exportVendorCSV()">Export CSV</button>
+                    </div>
+                    <div class="bulk-output" style="max-height: 400px;"><pre id="macVendorResult">Vendor information will appear here...</pre></div>
+                    <div class="output-box">
+                        <div class="output-label">Summary</div>
+                        <div class="output-value text-white" id="macVendorStats">—</div>
                     </div>
                 </div>
             </section>
@@ -941,33 +347,15 @@ aabb.ccdd.eeff
                         <textarea class="form-textarea" id="base64Input" placeholder="Enter text to encode or decode..."></textarea>
                     </div>
                     <div class="btn-group">
-                        <button class="btn btn-primary" onclick="base64Encode()">
-                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="16 18 22 12 16 6"/>
-                                <polyline points="8 6 2 12 8 18"/>
-                            </svg>
-                            Encode
-                        </button>
-                        <button class="btn btn-secondary" onclick="base64Decode()">
-                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="8 18 2 12 8 6"/>
-                                <polyline points="16 6 22 12 16 18"/>
-                            </svg>
-                            Decode
-                        </button>
+                        <button class="btn btn-primary" onclick="base64Encode()">Encode</button>
+                        <button class="btn btn-secondary" onclick="base64Decode()">Decode</button>
                     </div>
                     <div class="output-box">
                         <div class="output-label">Result</div>
                         <div class="output-value text-white" id="base64Result">—</div>
                     </div>
                     <div class="btn-group">
-                        <button class="btn btn-secondary" onclick="copyToClipboard('base64Result')">
-                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                            </svg>
-                            Copy Result
-                        </button>
+                        <button class="btn btn-secondary" onclick="copyToClipboard('base64Result')">Copy Result</button>
                     </div>
                 </div>
             </section>
@@ -984,13 +372,7 @@ aabb.ccdd.eeff
                         <textarea class="form-textarea" id="jsonInput" placeholder='{"key": "value"}'></textarea>
                     </div>
                     <div class="btn-group">
-                        <button class="btn btn-primary" onclick="formatJSON()">
-                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                                <polyline points="14 2 14 8 20 8"/>
-                            </svg>
-                            Format
-                        </button>
+                        <button class="btn btn-primary" onclick="formatJSON()">Format</button>
                         <button class="btn btn-secondary" onclick="minifyJSON()">Minify</button>
                         <button class="btn btn-secondary" onclick="validateJSON()">Validate</button>
                     </div>
@@ -999,13 +381,7 @@ aabb.ccdd.eeff
                         <pre class="output-value text-white" id="jsonResult" style="white-space: pre-wrap;">—</pre>
                     </div>
                     <div class="btn-group">
-                        <button class="btn btn-secondary" onclick="copyToClipboard('jsonResult')">
-                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                            </svg>
-                            Copy Result
-                        </button>
+                        <button class="btn btn-secondary" onclick="copyToClipboard('jsonResult')">Copy Result</button>
                     </div>
                 </div>
             </section>
@@ -1027,50 +403,25 @@ aabb.ccdd.eeff
                     <div class="form-group">
                         <label class="form-label">Format</label>
                         <div class="checkbox-group">
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="uuidUppercase"> Uppercase
-                            </label>
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="uuidNoDashes"> No dashes
-                            </label>
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="uuidBraces"> With braces
-                            </label>
+                            <label class="checkbox-label"><input type="checkbox" id="uuidUppercase"> Uppercase</label>
+                            <label class="checkbox-label"><input type="checkbox" id="uuidNoDashes"> No dashes</label>
+                            <label class="checkbox-label"><input type="checkbox" id="uuidBraces"> With braces</label>
                         </div>
                     </div>
                     <div class="btn-group">
-                        <button class="btn btn-primary" onclick="generateUUIDs()">
-                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <rect x="3" y="3" width="7" height="7"/>
-                                <rect x="14" y="3" width="7" height="7"/>
-                                <rect x="14" y="14" width="7" height="7"/>
-                                <rect x="3" y="14" width="7" height="7"/>
-                            </svg>
-                            Generate
-                        </button>
-                        <button class="btn btn-secondary" onclick="copyToClipboard('uuidResult')">
-                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                            </svg>
-                            Copy
-                        </button>
+                        <button class="btn btn-primary" onclick="generateUUIDs()">Generate</button>
+                        <button class="btn btn-secondary" onclick="copyToClipboard('uuidResult')">Copy</button>
                     </div>
-                    <div class="bulk-output">
-                        <pre id="uuidResult">Click generate to create UUIDs</pre>
-                    </div>
+                    <div class="bulk-output"><pre id="uuidResult">Click generate to create UUIDs</pre></div>
                 </div>
             </section>
         </div>
     </main>
-
     <footer>
         <p>OPS-BOX.net — Free IT utilities for professionals</p>
         <p style="margin-top: 0.5rem;">All tools run 100% client-side. Your data never leaves your browser.</p>
     </footer>
-
     <div class="toast" id="toast">Copied to clipboard!</div>
-
     <script>
         // Navigation
         document.querySelectorAll('.nav-item').forEach(item => {
@@ -1083,143 +434,79 @@ aabb.ccdd.eeff
         });
 
         // Range sliders
-        document.getElementById('pwdLength').addEventListener('input', function() {
-            document.getElementById('pwdLengthValue').textContent = this.value;
-        });
-        document.getElementById('pwdCount').addEventListener('input', function() {
-            document.getElementById('pwdCountValue').textContent = this.value;
-        });
-        document.getElementById('uuidCount').addEventListener('input', function() {
-            document.getElementById('uuidCountValue').textContent = this.value;
-        });
+        document.getElementById('pwdLength').addEventListener('input', function() { document.getElementById('pwdLengthValue').textContent = this.value; });
+        document.getElementById('pwdCount').addEventListener('input', function() { document.getElementById('pwdCountValue').textContent = this.value; });
+        document.getElementById('uuidCount').addEventListener('input', function() { document.getElementById('uuidCountValue').textContent = this.value; });
 
-        // Toast notification
-        function showToast(message = 'Copied to clipboard!') {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 2000);
+        // Toast
+        function showToast(msg = 'Copied to clipboard!') {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2000);
         }
 
-        // Copy to clipboard
-        function copyToClipboard(elementId) {
-            const el = document.getElementById(elementId);
-            const text = el.innerText || el.textContent;
-            navigator.clipboard.writeText(text).then(() => showToast());
+        function copyToClipboard(id) {
+            navigator.clipboard.writeText(document.getElementById(id).textContent).then(() => showToast());
         }
 
         // Password Generator
         function generatePassword() {
             const length = parseInt(document.getElementById('pwdLength').value);
             const count = parseInt(document.getElementById('pwdCount').value);
-            const useUpper = document.getElementById('pwdUpper').checked;
-            const useLower = document.getElementById('pwdLower').checked;
-            const useNumbers = document.getElementById('pwdNumbers').checked;
-            const useSymbols = document.getElementById('pwdSymbols').checked;
-            const exclude = document.getElementById('pwdExclude').value;
-
             let chars = '';
-            if (useUpper) chars += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-            if (useLower) chars += 'abcdefghijklmnopqrstuvwxyz';
-            if (useNumbers) chars += '0123456789';
-            if (useSymbols) chars += '!@#$%^&*()_+-=[]{}|;:,.<>?';
-
-            // Remove excluded characters
-            for (const c of exclude) {
-                chars = chars.replace(new RegExp(c.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), '');
-            }
-
-            if (!chars) {
-                document.getElementById('pwdResult').textContent = 'Please select at least one character type';
-                return;
-            }
-
+            if (document.getElementById('pwdUpper').checked) chars += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            if (document.getElementById('pwdLower').checked) chars += 'abcdefghijklmnopqrstuvwxyz';
+            if (document.getElementById('pwdNumbers').checked) chars += '0123456789';
+            if (document.getElementById('pwdSymbols').checked) chars += '!@#$%^&*()_+-=[]{}|;:,.<>?';
+            const exclude = document.getElementById('pwdExclude').value;
+            for (const c of exclude) chars = chars.replace(new RegExp(c.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), '');
+            if (!chars) { document.getElementById('pwdResult').textContent = 'Select at least one character type'; return; }
+            const arr = new Uint32Array(length * count);
+            crypto.getRandomValues(arr);
             const passwords = [];
-            const array = new Uint32Array(length * count);
-            crypto.getRandomValues(array);
-
             for (let i = 0; i < count; i++) {
                 let pwd = '';
-                for (let j = 0; j < length; j++) {
-                    pwd += chars[array[i * length + j] % chars.length];
-                }
+                for (let j = 0; j < length; j++) pwd += chars[arr[i * length + j] % chars.length];
                 passwords.push(pwd);
             }
-
-            const result = passwords.join('\n');
-            document.getElementById('pwdResult').textContent = result;
-
-            // Calculate strength for first password
+            document.getElementById('pwdResult').textContent = passwords.join('\n');
             const pwd = passwords[0];
-            let strength = 0;
-            if (pwd.length >= 8) strength += 25;
-            if (pwd.length >= 16) strength += 15;
-            if (pwd.length >= 24) strength += 10;
-            if (/[a-z]/.test(pwd)) strength += 10;
-            if (/[A-Z]/.test(pwd)) strength += 10;
-            if (/[0-9]/.test(pwd)) strength += 10;
-            if (/[^a-zA-Z0-9]/.test(pwd)) strength += 20;
-
-            const strengthFill = document.getElementById('pwdStrength');
-            const strengthText = document.getElementById('pwdStrengthText');
-            strengthFill.style.width = Math.min(strength, 100) + '%';
-
-            if (strength < 40) {
-                strengthFill.style.background = 'var(--danger)';
-                strengthText.textContent = 'Weak password';
-            } else if (strength < 70) {
-                strengthFill.style.background = 'var(--warning)';
-                strengthText.textContent = 'Moderate password';
-            } else {
-                strengthFill.style.background = 'var(--accent)';
-                strengthText.textContent = 'Strong password';
-            }
+            let str = 0;
+            if (pwd.length >= 8) str += 25;
+            if (pwd.length >= 16) str += 15;
+            if (pwd.length >= 24) str += 10;
+            if (/[a-z]/.test(pwd)) str += 10;
+            if (/[A-Z]/.test(pwd)) str += 10;
+            if (/[0-9]/.test(pwd)) str += 10;
+            if (/[^a-zA-Z0-9]/.test(pwd)) str += 20;
+            const fill = document.getElementById('pwdStrength');
+            fill.style.width = Math.min(str, 100) + '%';
+            fill.style.background = str < 40 ? 'var(--danger)' : str < 70 ? 'var(--warning)' : 'var(--accent)';
+            document.getElementById('pwdStrengthText').textContent = str < 40 ? 'Weak' : str < 70 ? 'Moderate' : 'Strong';
         }
 
         // Subnet Calculator
         function calculateSubnet() {
             const ipInput = document.getElementById('subnetIP').value.trim();
             let maskInput = document.getElementById('subnetMask').value.trim();
-
-            if (!ipInput) {
-                alert('Please enter an IP address');
-                return;
-            }
-
+            if (!ipInput) { alert('Enter an IP address'); return; }
             const ipParts = ipInput.split('.').map(Number);
-            if (ipParts.length !== 4 || ipParts.some(p => isNaN(p) || p < 0 || p > 255)) {
-                alert('Invalid IP address');
-                return;
-            }
-
+            if (ipParts.length !== 4 || ipParts.some(p => isNaN(p) || p < 0 || p > 255)) { alert('Invalid IP'); return; }
             let cidr;
-            if (maskInput.startsWith('/')) {
-                cidr = parseInt(maskInput.substring(1));
-            } else if (maskInput.includes('.')) {
+            if (maskInput.startsWith('/')) cidr = parseInt(maskInput.substring(1));
+            else if (maskInput.includes('.')) {
                 const maskParts = maskInput.split('.').map(Number);
-                const maskBinary = maskParts.map(p => p.toString(2).padStart(8, '0')).join('');
-                cidr = (maskBinary.match(/1/g) || []).length;
-            } else {
-                cidr = parseInt(maskInput) || 24;
-            }
-
-            if (cidr < 0 || cidr > 32) {
-                alert('Invalid CIDR (must be 0-32)');
-                return;
-            }
-
+                cidr = maskParts.map(p => p.toString(2).padStart(8, '0')).join('').split('1').length - 1;
+            } else cidr = parseInt(maskInput) || 24;
+            if (cidr < 0 || cidr > 32) { alert('Invalid CIDR'); return; }
             const ip = (ipParts[0] << 24) + (ipParts[1] << 16) + (ipParts[2] << 8) + ipParts[3];
             const mask = cidr === 0 ? 0 : (~0 << (32 - cidr)) >>> 0;
             const network = (ip & mask) >>> 0;
             const broadcast = (network | (~mask >>> 0)) >>> 0;
-
             const toIP = n => [(n >>> 24) & 255, (n >>> 16) & 255, (n >>> 8) & 255, n & 255].join('.');
-            const toBinary = n => [(n >>> 24) & 255, (n >>> 16) & 255, (n >>> 8) & 255, n & 255]
-                .map(p => p.toString(2).padStart(8, '0')).join('.');
-
             const totalHosts = Math.pow(2, 32 - cidr);
             const usableHosts = cidr >= 31 ? totalHosts : totalHosts - 2;
-
             document.getElementById('netAddress').textContent = toIP(network);
             document.getElementById('broadcastAddress').textContent = toIP(broadcast);
             document.getElementById('firstHost').textContent = cidr >= 31 ? toIP(network) : toIP(network + 1);
@@ -1229,331 +516,208 @@ aabb.ccdd.eeff
             document.getElementById('subnetMaskResult').textContent = toIP(mask);
             document.getElementById('wildcardMask').textContent = toIP((~mask >>> 0));
             document.getElementById('cidrNotation').textContent = '/' + cidr;
-            document.getElementById('binaryMask').textContent = toBinary(mask);
-
-            const firstOctet = ipParts[0];
-            let ipClass = 'E';
-            if (firstOctet < 128) ipClass = 'A';
-            else if (firstOctet < 192) ipClass = 'B';
-            else if (firstOctet < 224) ipClass = 'C';
-            else if (firstOctet < 240) ipClass = 'D (Multicast)';
+            let ipClass = ipParts[0] < 128 ? 'A' : ipParts[0] < 192 ? 'B' : ipParts[0] < 224 ? 'C' : ipParts[0] < 240 ? 'D' : 'E';
             document.getElementById('ipClass').textContent = 'Class ' + ipClass;
-
             let ipType = 'Public';
-            if ((ipParts[0] === 10) ||
-                (ipParts[0] === 172 && ipParts[1] >= 16 && ipParts[1] <= 31) ||
-                (ipParts[0] === 192 && ipParts[1] === 168)) {
-                ipType = 'Private (RFC 1918)';
-            } else if (ipParts[0] === 127) {
-                ipType = 'Loopback';
-            } else if (ipParts[0] === 169 && ipParts[1] === 254) {
-                ipType = 'Link-Local (APIPA)';
-            }
+            if (ipParts[0] === 10 || (ipParts[0] === 172 && ipParts[1] >= 16 && ipParts[1] <= 31) || (ipParts[0] === 192 && ipParts[1] === 168)) ipType = 'Private (RFC 1918)';
+            else if (ipParts[0] === 127) ipType = 'Loopback';
+            else if (ipParts[0] === 169 && ipParts[1] === 254) ipType = 'Link-Local';
             document.getElementById('ipType').textContent = ipType;
-
             document.getElementById('subnetResults').style.display = 'grid';
         }
 
         // Hash Generator
         async function generateHashes() {
             const input = document.getElementById('hashInput').value;
-            if (!input) {
-                alert('Please enter text to hash');
-                return;
-            }
-
-            const encoder = new TextEncoder();
-            const data = encoder.encode(input);
-
-            const algorithms = ['MD5', 'SHA-1', 'SHA-256', 'SHA-512'];
+            if (!input) { alert('Enter text to hash'); return; }
+            const data = new TextEncoder().encode(input);
             const results = document.getElementById('hashResults');
             results.innerHTML = '';
-
-            for (const algo of algorithms) {
-                let hash;
-                if (algo === 'MD5') {
-                    hash = md5(input);
-                } else {
-                    const hashBuffer = await crypto.subtle.digest(algo, data);
-                    const hashArray = Array.from(new Uint8Array(hashBuffer));
-                    hash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-                }
-
-                const item = document.createElement('div');
-                item.className = 'hash-item';
-                item.innerHTML = `
-                    <div class="hash-type">
-                        <span>${algo}</span>
-                        <button class="copy-btn" onclick="navigator.clipboard.writeText('${hash}').then(() => showToast())">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                            </svg>
-                        </button>
-                    </div>
-                    <div class="hash-value">${hash}</div>
-                `;
-                results.appendChild(item);
+            for (const algo of ['SHA-1', 'SHA-256', 'SHA-512']) {
+                const buf = await crypto.subtle.digest(algo, data);
+                const hash = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+                results.innerHTML += '<div class="hash-item"><div class="hash-type"><span>' + algo + '</span><button class="copy-btn" onclick="navigator.clipboard.writeText(\'' + hash + '\').then(()=>showToast())">Copy</button></div><div class="hash-value">' + hash + '</div></div>';
             }
-        }
-
-        // MD5 implementation (for browser compatibility)
-        function md5(string) {
-            function rotateLeft(x, n) { return (x << n) | (x >>> (32 - n)); }
-            function addUnsigned(x, y) {
-                const x4 = (x & 0x40000000), y4 = (y & 0x40000000);
-                const x8 = (x & 0x80000000), y8 = (y & 0x80000000);
-                const result = (x & 0x3FFFFFFF) + (y & 0x3FFFFFFF);
-                if (x4 & y4) return (result ^ 0x80000000 ^ x8 ^ y8);
-                if (x4 | y4) {
-                    if (result & 0x40000000) return (result ^ 0xC0000000 ^ x8 ^ y8);
-                    else return (result ^ 0x40000000 ^ x8 ^ y8);
-                } else return (result ^ x8 ^ y8);
-            }
-            function F(x, y, z) { return (x & y) | ((~x) & z); }
-            function G(x, y, z) { return (x & z) | (y & (~z)); }
-            function H(x, y, z) { return (x ^ y ^ z); }
-            function I(x, y, z) { return (y ^ (x | (~z))); }
-            function FF(a, b, c, d, x, s, ac) { a = addUnsigned(a, addUnsigned(addUnsigned(F(b, c, d), x), ac)); return addUnsigned(rotateLeft(a, s), b); }
-            function GG(a, b, c, d, x, s, ac) { a = addUnsigned(a, addUnsigned(addUnsigned(G(b, c, d), x), ac)); return addUnsigned(rotateLeft(a, s), b); }
-            function HH(a, b, c, d, x, s, ac) { a = addUnsigned(a, addUnsigned(addUnsigned(H(b, c, d), x), ac)); return addUnsigned(rotateLeft(a, s), b); }
-            function II(a, b, c, d, x, s, ac) { a = addUnsigned(a, addUnsigned(addUnsigned(I(b, c, d), x), ac)); return addUnsigned(rotateLeft(a, s), b); }
-            function convertToWordArray(str) {
-                let lWordCount, lMessageLength = str.length;
-                let lNumberOfWords_temp1 = lMessageLength + 8;
-                let lNumberOfWords_temp2 = (lNumberOfWords_temp1 - (lNumberOfWords_temp1 % 64)) / 64;
-                let lNumberOfWords = (lNumberOfWords_temp2 + 1) * 16;
-                let lWordArray = Array(lNumberOfWords - 1);
-                let lBytePosition = 0, lByteCount = 0;
-                while (lByteCount < lMessageLength) {
-                    lWordCount = (lByteCount - (lByteCount % 4)) / 4;
-                    lBytePosition = (lByteCount % 4) * 8;
-                    lWordArray[lWordCount] = (lWordArray[lWordCount] | (str.charCodeAt(lByteCount) << lBytePosition));
-                    lByteCount++;
-                }
-                lWordCount = (lByteCount - (lByteCount % 4)) / 4;
-                lBytePosition = (lByteCount % 4) * 8;
-                lWordArray[lWordCount] = lWordArray[lWordCount] | (0x80 << lBytePosition);
-                lWordArray[lNumberOfWords - 2] = lMessageLength << 3;
-                lWordArray[lNumberOfWords - 1] = lMessageLength >>> 29;
-                return lWordArray;
-            }
-            function wordToHex(lValue) {
-                let WordToHexValue = "", WordToHexValue_temp = "", lByte, lCount;
-                for (lCount = 0; lCount <= 3; lCount++) {
-                    lByte = (lValue >>> (lCount * 8)) & 255;
-                    WordToHexValue_temp = "0" + lByte.toString(16);
-                    WordToHexValue = WordToHexValue + WordToHexValue_temp.substr(WordToHexValue_temp.length - 2, 2);
-                }
-                return WordToHexValue;
-            }
-            let x = convertToWordArray(string);
-            let a = 0x67452301, b = 0xEFCDAB89, c = 0x98BADCFE, d = 0x10325476;
-            const S11=7, S12=12, S13=17, S14=22, S21=5, S22=9, S23=14, S24=20;
-            const S31=4, S32=11, S33=16, S34=23, S41=6, S42=10, S43=15, S44=21;
-            for (let k = 0; k < x.length; k += 16) {
-                let AA = a, BB = b, CC = c, DD = d;
-                a = FF(a, b, c, d, x[k+0], S11, 0xD76AA478); d = FF(d, a, b, c, x[k+1], S12, 0xE8C7B756);
-                c = FF(c, d, a, b, x[k+2], S13, 0x242070DB); b = FF(b, c, d, a, x[k+3], S14, 0xC1BDCEEE);
-                a = FF(a, b, c, d, x[k+4], S11, 0xF57C0FAF); d = FF(d, a, b, c, x[k+5], S12, 0x4787C62A);
-                c = FF(c, d, a, b, x[k+6], S13, 0xA8304613); b = FF(b, c, d, a, x[k+7], S14, 0xFD469501);
-                a = FF(a, b, c, d, x[k+8], S11, 0x698098D8); d = FF(d, a, b, c, x[k+9], S12, 0x8B44F7AF);
-                c = FF(c, d, a, b, x[k+10], S13, 0xFFFF5BB1); b = FF(b, c, d, a, x[k+11], S14, 0x895CD7BE);
-                a = FF(a, b, c, d, x[k+12], S11, 0x6B901122); d = FF(d, a, b, c, x[k+13], S12, 0xFD987193);
-                c = FF(c, d, a, b, x[k+14], S13, 0xA679438E); b = FF(b, c, d, a, x[k+15], S14, 0x49B40821);
-                a = GG(a, b, c, d, x[k+1], S21, 0xF61E2562); d = GG(d, a, b, c, x[k+6], S22, 0xC040B340);
-                c = GG(c, d, a, b, x[k+11], S23, 0x265E5A51); b = GG(b, c, d, a, x[k+0], S24, 0xE9B6C7AA);
-                a = GG(a, b, c, d, x[k+5], S21, 0xD62F105D); d = GG(d, a, b, c, x[k+10], S22, 0x2441453);
-                c = GG(c, d, a, b, x[k+15], S23, 0xD8A1E681); b = GG(b, c, d, a, x[k+4], S24, 0xE7D3FBC8);
-                a = GG(a, b, c, d, x[k+9], S21, 0x21E1CDE6); d = GG(d, a, b, c, x[k+14], S22, 0xC33707D6);
-                c = GG(c, d, a, b, x[k+3], S23, 0xF4D50D87); b = GG(b, c, d, a, x[k+8], S24, 0x455A14ED);
-                a = GG(a, b, c, d, x[k+13], S21, 0xA9E3E905); d = GG(d, a, b, c, x[k+2], S22, 0xFCEFA3F8);
-                c = GG(c, d, a, b, x[k+7], S23, 0x676F02D9); b = GG(b, c, d, a, x[k+12], S24, 0x8D2A4C8A);
-                a = HH(a, b, c, d, x[k+5], S31, 0xFFFA3942); d = HH(d, a, b, c, x[k+8], S32, 0x8771F681);
-                c = HH(c, d, a, b, x[k+11], S33, 0x6D9D6122); b = HH(b, c, d, a, x[k+14], S34, 0xFDE5380C);
-                a = HH(a, b, c, d, x[k+1], S31, 0xA4BEEA44); d = HH(d, a, b, c, x[k+4], S32, 0x4BDECFA9);
-                c = HH(c, d, a, b, x[k+7], S33, 0xF6BB4B60); b = HH(b, c, d, a, x[k+10], S34, 0xBEBFBC70);
-                a = HH(a, b, c, d, x[k+13], S31, 0x289B7EC6); d = HH(d, a, b, c, x[k+0], S32, 0xEAA127FA);
-                c = HH(c, d, a, b, x[k+3], S33, 0xD4EF3085); b = HH(b, c, d, a, x[k+6], S34, 0x4881D05);
-                a = HH(a, b, c, d, x[k+9], S31, 0xD9D4D039); d = HH(d, a, b, c, x[k+12], S32, 0xE6DB99E5);
-                c = HH(c, d, a, b, x[k+15], S33, 0x1FA27CF8); b = HH(b, c, d, a, x[k+2], S34, 0xC4AC5665);
-                a = II(a, b, c, d, x[k+0], S41, 0xF4292244); d = II(d, a, b, c, x[k+7], S42, 0x432AFF97);
-                c = II(c, d, a, b, x[k+14], S43, 0xAB9423A7); b = II(b, c, d, a, x[k+5], S44, 0xFC93A039);
-                a = II(a, b, c, d, x[k+12], S41, 0x655B59C3); d = II(d, a, b, c, x[k+3], S42, 0x8F0CCC92);
-                c = II(c, d, a, b, x[k+10], S43, 0xFFEFF47D); b = II(b, c, d, a, x[k+1], S44, 0x85845DD1);
-                a = II(a, b, c, d, x[k+8], S41, 0x6FA87E4F); d = II(d, a, b, c, x[k+15], S42, 0xFE2CE6E0);
-                c = II(c, d, a, b, x[k+6], S43, 0xA3014314); b = II(b, c, d, a, x[k+13], S44, 0x4E0811A1);
-                a = II(a, b, c, d, x[k+4], S41, 0xF7537E82); d = II(d, a, b, c, x[k+11], S42, 0xBD3AF235);
-                c = II(c, d, a, b, x[k+2], S43, 0x2AD7D2BB); b = II(b, c, d, a, x[k+9], S44, 0xEB86D391);
-                a = addUnsigned(a, AA); b = addUnsigned(b, BB); c = addUnsigned(c, CC); d = addUnsigned(d, DD);
-            }
-            return (wordToHex(a) + wordToHex(b) + wordToHex(c) + wordToHex(d)).toLowerCase();
         }
 
         // MAC Formatter
         function formatMAC() {
-            const input = document.getElementById('macInput').value.trim();
-            const cleaned = input.replace(/[^a-fA-F0-9]/g, '');
-
-            if (cleaned.length !== 12) {
-                alert('Invalid MAC address. Please enter 12 hex characters.');
-                return;
-            }
-
+            const cleaned = document.getElementById('macInput').value.replace(/[^a-fA-F0-9]/g, '');
+            if (cleaned.length !== 12) { alert('Invalid MAC'); return; }
             const formats = {
-                'Colon (Unix)': cleaned.match(/.{2}/g).join(':').toUpperCase(),
-                'Colon (lower)': cleaned.match(/.{2}/g).join(':').toLowerCase(),
-                'Hyphen (Windows)': cleaned.match(/.{2}/g).join('-').toUpperCase(),
+                'Colon Upper': cleaned.match(/.{2}/g).join(':').toUpperCase(),
+                'Colon Lower': cleaned.match(/.{2}/g).join(':').toLowerCase(),
+                'Hyphen': cleaned.match(/.{2}/g).join('-').toUpperCase(),
                 'Cisco': cleaned.match(/.{4}/g).join('.').toLowerCase(),
-                'No separator': cleaned.toUpperCase(),
-                'No sep (lower)': cleaned.toLowerCase()
+                'Raw': cleaned.toUpperCase()
             };
-
             const container = document.getElementById('macFormats');
             container.innerHTML = '';
-
             for (const [label, value] of Object.entries(formats)) {
                 const btn = document.createElement('button');
                 btn.className = 'format-btn';
                 btn.textContent = value;
-                btn.title = label;
-                btn.onclick = () => {
-                    navigator.clipboard.writeText(value).then(() => showToast(`Copied: ${value}`));
-                };
+                btn.onclick = () => navigator.clipboard.writeText(value).then(() => showToast('Copied: ' + value));
                 container.appendChild(btn);
             }
         }
 
         // Bulk MAC Formatter
         function formatBulkMAC() {
-            const input = document.getElementById('bulkMacInput').value.trim();
+            const lines = document.getElementById('bulkMacInput').value.trim().split('\n').filter(l => l.trim());
             const format = document.getElementById('bulkMacFormat').value;
-            
-            if (!input) {
-                alert('Please enter MAC addresses');
-                return;
-            }
-
-            const lines = input.split('\n').map(line => line.trim()).filter(line => line);
             const results = [];
-            let validCount = 0;
-            let invalidCount = 0;
-
+            let valid = 0, invalid = 0;
             for (const line of lines) {
                 const cleaned = line.replace(/[^a-fA-F0-9]/g, '');
-                
-                if (cleaned.length !== 12) {
-                    results.push(`INVALID: ${line}`);
-                    invalidCount++;
-                    continue;
-                }
-
-                validCount++;
+                if (cleaned.length !== 12) { results.push('INVALID: ' + line); invalid++; continue; }
+                valid++;
                 let formatted;
-                
                 switch (format) {
-                    case 'colon-upper':
-                        formatted = cleaned.match(/.{2}/g).join(':').toUpperCase();
-                        break;
-                    case 'colon-lower':
-                        formatted = cleaned.match(/.{2}/g).join(':').toLowerCase();
-                        break;
-                    case 'hyphen-upper':
-                        formatted = cleaned.match(/.{2}/g).join('-').toUpperCase();
-                        break;
-                    case 'hyphen-lower':
-                        formatted = cleaned.match(/.{2}/g).join('-').toLowerCase();
-                        break;
-                    case 'cisco':
-                        formatted = cleaned.match(/.{4}/g).join('.').toLowerCase();
-                        break;
-                    case 'none-upper':
-                        formatted = cleaned.toUpperCase();
-                        break;
-                    case 'none-lower':
-                        formatted = cleaned.toLowerCase();
-                        break;
+                    case 'colon-upper': formatted = cleaned.match(/.{2}/g).join(':').toUpperCase(); break;
+                    case 'colon-lower': formatted = cleaned.match(/.{2}/g).join(':').toLowerCase(); break;
+                    case 'hyphen-upper': formatted = cleaned.match(/.{2}/g).join('-').toUpperCase(); break;
+                    case 'hyphen-lower': formatted = cleaned.match(/.{2}/g).join('-').toLowerCase(); break;
+                    case 'cisco': formatted = cleaned.match(/.{4}/g).join('.').toLowerCase(); break;
+                    case 'none-upper': formatted = cleaned.toUpperCase(); break;
+                    case 'none-lower': formatted = cleaned.toLowerCase(); break;
                 }
-                
                 results.push(formatted);
             }
-
             document.getElementById('bulkMacResult').textContent = results.join('\n');
-            document.getElementById('bulkMacStats').textContent = `Total: ${lines.length} | Valid: ${validCount} | Invalid: ${invalidCount}`;
+            document.getElementById('bulkMacStats').textContent = 'Total: ' + lines.length + ' | Valid: ' + valid + ' | Invalid: ' + invalid;
         }
 
-        // Base64 Encoder/Decoder
+        // MAC Vendor Database
+        const ouiDB = {
+            '00000C':'Cisco','000010':'Hughes','00001A':'AMD','00001B':'Novell','00001D':'Cabletron','000048':'Epson','00004C':'NEC','000074':'Ricoh','000085':'Canon','000087':'Hitachi','000088':'Brocade','000095':'Sony','0000C0':'Western Digital','0000C6':'HP','0000CD':'Allied Telesis','0000F0':'Samsung','0000F8':'DEC',
+            '000393':'Apple','000502':'Apple','000A27':'Apple','000A95':'Apple','000D93':'Apple','0010FA':'Apple','00125A':'Microsoft','0014BF':'Cisco-Linksys','001517':'Intel','0016CB':'Apple','0017F2':'Apple','0018DE':'Intel','0019B9':'Dell','001A92':'ASUS','001B21':'Intel','001B63':'Apple','001BFC':'ASUS','001C10':'Cisco-Linksys','001CC0':'Intel','001D09':'Dell','001D4F':'Apple','001D60':'ASUS','001DBA':'Sony','001E4F':'Dell','001E58':'D-Link','001EC2':'Apple','001EC9':'Dell',
+            '001F3A':'Hon Hai','001F5B':'Apple','001FF3':'Apple','002170':'Dell','0021E9':'Apple','002241':'Apple','002265':'HP','002312':'Apple','00236C':'Apple','002436':'Apple','002500':'Apple','002504':'Apple','002507':'Dell','00254B':'Apple','002608':'Apple','00264A':'Apple','0026B0':'Apple','0026BB':'Apple','003065':'Apple','0030BD':'Belkin','0050F2':'Microsoft','005056':'VMware','0050BA':'D-Link','00B0D0':'Dell','00C0F0':'Kingston',
+            '00E014':'Cisco','00E04C':'Realtek','00E04F':'Cisco','00E06F':'Cisco','00E08F':'Cisco','00E0B0':'Cisco','00E0F9':'Cisco','000C29':'VMware','080027':'VirtualBox',
+            '040CCE':'Apple','041552':'Apple','044BED':'Apple','04D3CF':'Apple','04E536':'Apple','04F7E4':'Apple','080007':'Apple','086698':'Apple','088FC3':'Samsung','08EBED':'Samsung','08F4AB':'Apple',
+            '0C4DE9':'Apple','0C771A':'Apple','0CD746':'Apple','0CDFA4':'Samsung','0CF4D5':'Samsung','105172':'Samsung','107B44':'ASUS','10417F':'Apple','109266':'Samsung','10C37B':'ASUS','10DDB1':'Apple','10F1F2':'Samsung',
+            '1417F4':'Apple','147DDA':'Apple','14109F':'Apple','148FC6':'Apple','149182':'Belkin','14B484':'Samsung','18810E':'Apple','188796':'HTC','18AF8F':'Apple','18E7F4':'Apple','18EE69':'Apple','18F643':'Apple',
+            '1C1AC0':'Apple','1C36BB':'Apple','1C5CF2':'Apple','1C99E8':'Samsung','1CB094':'Apple','1CBDB9':'Samsung','20768F':'Apple','203CAE':'Apple','20A2E4':'Apple','20C9D0':'Apple','24240E':'Apple','244B03':'Samsung','245BA7':'Apple','2468B0':'Samsung','24A074':'Apple','24A2E1':'Apple','24AB81':'Apple','24E314':'Apple','24F094':'Apple',
+            '280B5C':'Apple','283737':'Apple','286AB8':'Apple','28987B':'Samsung','28A02B':'Apple','28CFDA':'Apple','28E14C':'Apple','28E31F':'Xiaomi','28E7CF':'Apple','28F076':'Apple','2C0BE9':'Apple','2C200B':'Apple','2C3361':'Apple','2C5491':'Microsoft','2CB43A':'Apple','2CF0A2':'Apple',
+            '303A64':'Intel','30636B':'Apple','3090AB':'Apple','309C23':'Apple','30F7C5':'Apple','34159E':'Apple','343111':'Apple','3451C9':'Apple','34A395':'Apple','34AA8B':'Apple','34AB37':'Apple','34C059':'Apple','34E2FD':'Apple',
+            '380F4A':'Apple','3871DE':'Apple','38484C':'Apple','3866F0':'Apple','38B54D':'Apple','38C986':'Apple','38F9D3':'Apple','3C0754':'Apple','3C15C2':'Apple','3C2EFF':'Apple','3C5A37':'Samsung','3C5AB4':'Google','3CA308':'Apple','3CD0F8':'Apple','3CE072':'Apple',
+            '403004':'Apple','40331A':'Apple','403CFC':'Apple','40A6D9':'Apple','40B395':'Apple','40BC60':'Apple','40C3C6':'Apple','40D32D':'Apple','40D3AE':'Apple','44619C':'Apple','446D6C':'Apple','448A5B':'Apple','44D884':'Apple','44FB42':'Apple',
+            '482CA0':'Apple','484BAA':'Apple','4860BC':'Apple','4866F8':'Microsoft','48746E':'Apple','48A195':'Apple','48BF6B':'Apple','48C796':'Apple','48D705':'Apple','48E9F1':'Apple','48F17F':'Apple','4C3275':'Apple','4C7C5F':'Apple','4C8D79':'Apple','4CAEAE':'Samsung','4CB199':'Apple','4CF5DA':'Apple',
+            '500291':'Apple','502693':'HP','503237':'Apple','505527':'Apple','5082D5':'Apple','50A4C8':'Samsung','50B7C3':'Samsung','50BC96':'Apple','50EA59':'Apple','50EAD6':'Apple','5430EE':'Samsung','5440AD':'Samsung','544E45':'Apple','549963':'Apple','54724F':'Apple','549F13':'Apple','54AE27':'Apple','54E43A':'Apple',
+            '587F57':'Apple','58A2B5':'Apple','58B035':'Apple','5C2E59':'Samsung','5C50D9':'Samsung','5C5188':'Samsung','5C59DA':'Apple','5C8D4E':'Apple','5C969D':'Apple','5CADCF':'Apple','5CF938':'Apple',
+            '6003E6':'Samsung','6092F5':'Apple','60C547':'Apple','60D9C7':'Apple','60F445':'Apple','60F81D':'Apple','641CAE':'Apple','6476BA':'Apple','649ABE':'Apple','64A3CB':'Apple','64B0A6':'Apple','64B9E8':'Apple','64E682':'Apple',
+            '682737':'Samsung','6854FD':'Amazon','68644B':'Apple','6896BF':'Apple','68967B':'Apple','68AB1E':'Apple','68AE20':'Apple','68D93C':'Apple','68DBCA':'Apple','68ED43':'Microsoft','68FB7E':'Apple','6C19C0':'Apple','6C3E6D':'Apple','6C4008':'Apple','6C70D1':'Apple','6C72E7':'Apple','6C8DC1':'Apple','6C94F8':'Apple','6CAB31':'Apple','6CC26B':'Apple','6CC4A8':'Apple',
+            '700538':'Apple','700588':'Samsung','702F35':'Apple','703EAC':'Apple','708114':'Apple','70A2B3':'Apple','70CD60':'Apple','70DEE2':'Apple','70E72C':'Apple','70EC5E':'Apple','70F087':'Apple','741BB2':'Apple','742344':'Apple','744D28':'Apple','7483C2':'Apple','748114':'Apple','748D08':'Apple','749EAF':'Apple','74E1B6':'Apple','74E2F5':'Apple',
+            '78009E':'Samsung','782327':'Apple','784F43':'Apple','786C1C':'Apple','787B8A':'Apple','788C54':'Samsung','78A3E4':'Apple','78ABBB':'Apple','78BD7C':'Samsung','78CA39':'Apple','78D75F':'Apple','78FD94':'Apple','7C0191':'Apple','7C0507':'Apple','7C11BE':'Apple','7C5049':'Apple','7C6DF8':'Apple','7C787E':'Samsung','7CD1C3':'Apple','7CE91A':'Apple','7CF05F':'Apple',
+            '804971':'Apple','8060FB':'Samsung','809569':'Apple','80929F':'Apple','80BE05':'Apple','80D605':'Apple','80E650':'Apple','80EA96':'Apple','80ED2C':'Apple','844167':'Apple','8455A5':'Samsung','8486F3':'Apple','848506':'Apple','848E0C':'Apple','8490F0':'Samsung','848A8D':'Samsung','849866':'Samsung','84B153':'Apple','84FCAC':'Apple','84FCFE':'Apple',
+            '881FA1':'Apple','8825A6':'Samsung','8832AE':'Samsung','8863DF':'Apple','8866A5':'Apple','88AED0':'Samsung','88C663':'Apple','88CB87':'Apple','88D50C':'Apple','88E87F':'Apple','8C006D':'Samsung','8C2DAA':'Apple','8C5405':'Samsung','8C5877':'Apple','8C7B9D':'Apple','8C7C92':'Apple','8C7712':'Samsung','8C85C1':'Samsung','8C8590':'Apple','8CC121':'Samsung',
+            '903C92':'Apple','9060F1':'Apple','907240':'Apple','9099FA':'Apple','90B0ED':'Apple','90B931':'Apple','90B21F':'Apple','90C1C6':'Apple','90FD61':'Apple','940006':'Samsung','94350A':'Samsung','944452':'Belkin','949426':'Apple','94B10A':'Apple','94E96A':'Apple','94F6A3':'Apple',
+            '9801A7':'Apple','9803D8':'Apple','98398E':'Samsung','983B16':'Apple','984FEE':'Apple','9852B1':'Samsung','9890FA':'Apple','98B8E3':'Apple','98CA33':'Apple','98D293':'Google','98D6BB':'Apple','98E0D9':'Apple','98F0AB':'Apple','98FE94':'Apple','9C04EB':'Apple','9C207B':'Apple','9C29E4':'Samsung','9C2EA1':'Xiaomi','9C30C9':'Samsung','9C35EB':'Apple','9C4FDA':'Apple','9C5C8E':'Apple','9C6C15':'Apple','9C84BF':'Apple','9C8BA0':'Apple',
+            'A0EDCD':'Apple','A0D385':'Apple','A0999B':'Apple','A45E60':'Apple','A46706':'Apple','A4B805':'Apple','A4B197':'Apple','A4D18C':'Apple','A4D1D2':'Apple','A4E975':'Apple','A4F1E8':'Apple','A82066':'Apple','A85B78':'Apple','A860B6':'Apple','A86BAD':'Apple','A88808':'Apple','A88E24':'Apple','A896A4':'Samsung','A8968A':'Apple','A8BBCF':'Apple','A8FAD8':'Apple',
+            'AC293A':'Apple','AC3C0B':'Apple','AC61EA':'Apple','AC7A42':'Apple','AC87A3':'Apple','AC9E17':'ASUS','ACBC32':'Apple','ACCF5C':'Apple','ACE4B5':'Apple','ACFDEC':'Apple','B03495':'Apple','B065BD':'Apple','B0702D':'Apple','B09FBA':'Apple','B0CA68':'Apple','B0DF3A':'Samsung',
+            'B418D1':'Apple','B4698E':'Samsung','B47443':'Samsung','B48B19':'Apple','B4AE2B':'Apple','B4BFF6':'Apple','B4F0AB':'Apple','B4F1DA':'Apple','B8098A':'Apple','B817C2':'Apple','B820E7':'Apple','B82A72':'Dell','B844D9':'Apple','B8782E':'Apple','B8C75D':'Apple','B8E856':'Apple','B8F6B1':'Apple','B8FF61':'Apple',
+            'BC3BAF':'Apple','BC4CC4':'Apple','BC5436':'Apple','BC6778':'Apple','BC7670':'Samsung','BC9FEF':'Apple','BCB1F3':'Samsung','BCE143':'Apple','BCEC5D':'Apple','C01ADA':'Apple','C06394':'Apple','C0847A':'Apple','C0A53E':'Apple','C0B658':'Samsung','C0BDD1':'Samsung','C0CECD':'Apple','C0D012':'Apple','C0F2FB':'Apple',
+            'C42C03':'Apple','C4618B':'Apple','C47DFE':'Samsung','C488E5':'Samsung','C48466':'Apple','C4B301':'Apple','C8334B':'Apple','C869CD':'Apple','C86F1D':'Apple','C87E75':'Samsung','C88550':'Apple','C8B5B7':'Apple','C8BC8B':'Samsung','C8BCC8':'Apple','C8D083':'Apple','C8E0EB':'Apple',
+            'CC088D':'Apple','CC0DEC':'Apple','CC20E8':'Apple','CC25EF':'Apple','CC29F5':'Apple','CC3A61':'Samsung','CC4463':'Apple','CC785F':'Apple','CCB11A':'Samsung','CCB691':'Samsung','CCFB65':'Apple',
+            'D003DF':'Samsung','D02B20':'Apple','D023DB':'Apple','D03311':'Apple','D0176A':'Samsung','D04F7E':'Apple','D081C7':'Amazon','D0B52F':'Samsung','D0C5F3':'Apple','D0D2B0':'Apple','D0E140':'Apple','D4619D':'Apple','D463FE':'Apple','D49A20':'Apple','D4A33D':'Apple','D4AE05':'Samsung','D4DC09':'Apple','D4DCCD':'Apple','D4F46F':'Apple',
+            'D8004D':'Apple','D800CC':'Huawei','D80831':'Samsung','D81C79':'Apple','D82152':'Apple','D89695':'Apple','D89E3F':'Apple','D8A25E':'Apple','D8CF9C':'Apple','D8D1CB':'Apple','D8F0F2':'Intel',
+            'DC0B34':'LG','DC2B2A':'Apple','DC2B61':'Apple','DC3714':'Apple','DC415F':'Apple','DC56E7':'Apple','DC86D8':'Apple','DC9B9C':'Apple','DCA4CA':'Apple','DCA904':'Apple','DCBFE9':'Apple','DCD3A2':'Apple','DCE5D3':'Samsung',
+            'E05F45':'Apple','E06678':'Apple','E06E7E':'Samsung','E07C13':'Apple','E0ACCB':'Apple','E0B52D':'Apple','E0B9BA':'Apple','E0C767':'Apple','E0C97A':'Apple','E0DB10':'Apple','E0DB55':'Apple','E0F5C6':'Apple','E0F847':'Apple',
+            'E425E7':'Apple','E45D75':'Samsung','E47723':'Samsung','E49ADC':'Apple','E4B293':'Apple','E4C63D':'Apple','E4CE8F':'Apple','E4E0C5':'Apple','E4E4AB':'Apple','E80688':'Apple','E8040B':'Apple','E80684':'Apple','E80F09':'Samsung','E82877':'Apple','E850E2':'Samsung','E88D28':'Apple','E8B2AC':'Apple','E8BBA8':'Apple','E8E5D6':'Samsung','E8FDE1':'Samsung',
+            'EC3586':'Apple','EC85A6':'Samsung','ECC40D':'Apple','ECADB8':'Apple','F023B9':'Apple','F04F7C':'Apple','F05B7B':'Samsung','F07960':'Apple','F08A28':'Samsung','F09FC2':'Ubiquiti','F0B479':'Apple','F0C1F1':'Apple','F0CB82':'Samsung','F0D1A9':'Apple','F0D1B8':'Apple','F0DBE2':'Apple','F0DBF8':'Apple','F0F61C':'Apple',
+            'F41BA1':'Apple','F431C3':'Apple','F45C89':'Apple','F4599D':'Cisco','F45F56':'Samsung','F486A1':'Apple','F49F54':'Samsung','F4BD7C':'Apple','F4F15A':'Apple','F4F954':'Apple','F80377':'Apple','F8166C':'Samsung','F81654':'Apple','F82793':'Apple','F827ED':'Apple','F82D7C':'Apple','F83F51':'Samsung','F8A9D0':'LG','F8E94E':'Apple','F8FF5F':'Samsung',
+            'FC253F':'Apple','FCA13E':'Samsung','FCB6D8':'Apple','FCC233':'Apple','FCCE55':'Apple','FCDC4A':'Samsung','FCFC48':'Apple',
+            '00096B':'Fortinet','00090F':'Fortinet','085B0E':'Fortinet','000E8E':'Fortinet','001418':'Fortinet','001C9D':'Fortinet','00230B':'Fortinet','002603':'Fortinet','043D98':'Fortinet','087E64':'Fortinet','109E3A':'Fortinet','28B448':'Fortinet','50891B':'Fortinet','60986E':'Fortinet','6CB749':'Fortinet','7C396B':'Fortinet','84C1C1':'Fortinet','8C9109':'Fortinet','90FA3C':'Fortinet','9C79A5':'Fortinet','A09D91':'Fortinet','A4F5E8':'Fortinet','B0F2E3':'Fortinet','C09D8D':'Fortinet','C4A71E':'Fortinet','CC527A':'Fortinet','E4620C':'Fortinet','E81CBA':'Fortinet','EC1CF5':'Fortinet','F0F002':'Fortinet',
+            '000904':'Palo Alto','00867C':'Palo Alto','08E7C1':'Palo Alto','1CB9C4':'Palo Alto','581F28':'Palo Alto','7C8920':'Palo Alto','9CC66A':'Palo Alto','B4CD27':'Palo Alto','DCDE3B':'Palo Alto','E8F724':'Palo Alto',
+            '000FE2':'H3C','002389':'H3C','1C1D67':'H3C','70F96D':'H3C','3822D6':'H3C',
+            '000B86':'Aruba','001A1E':'Aruba','001878':'Aruba','002118':'Aruba','24010E':'Aruba','40E3D6':'Aruba','4016FA':'Aruba','6073BC':'Aruba','6817E1':'Aruba','6CF37F':'Aruba','70B3D5':'Aruba','8400D2':'Aruba','94B40F':'Aruba','9C1C12':'Aruba','AC1F6B':'Aruba','B4498F':'Aruba','C4649B':'Aruba','D8C7C8':'Aruba','F0E8D3':'Aruba','F87B8C':'Aruba','FC7F24':'Aruba',
+            '009069':'Juniper','00221A':'Juniper','24B657':'Juniper','2C6BF5':'Juniper','3025A3':'Juniper','4013F7':'Juniper','442C05':'Juniper','50578F':'Juniper','6C817B':'Juniper','ACFD93':'Juniper','C463FD':'Juniper','C464B7':'Juniper','C896D5':'Juniper','D0C2C2':'Juniper','F44D30':'Juniper','FCDFF5':'Juniper',
+            '242F6A':'MikroTik','002127':'TP-LINK','00214F':'TP-LINK','0023C4':'TP-LINK','00264F':'TP-LINK','002719':'TP-LINK','A42BB0':'TP-LINK','C04A00':'TP-LINK','D070AC':'TP-LINK',
+            '44ADDB':'Ubiquiti','44D9E7':'Ubiquiti','0015E8':'Ubiquiti','E83A12':'Ubiquiti','844BF5':'Ubiquiti',
+            '8C83E1':'Hikvision','C0567C':'Hikvision','2C5731':'Hikvision','E0B9E5':'Hikvision','4C11BF':'Hikvision','CC7998':'Hikvision','E091F5':'Hikvision','28573C':'Hikvision',
+            '00E070':'Dahua','3C3987':'Dahua','E0509A':'Dahua','A0BD1D':'Dahua','0CD2B5':'Dahua','4CECEF':'Dahua','3CEF8C':'Dahua','44A56E':'Dahua','90028A':'Dahua',
+            '000E6D':'Axis','ACCC8E':'Axis','B8A44F':'Axis','00408C':'Axis',
+            'FC5564':'Hanwha','3859F9':'Hanwha','B47D98':'Hanwha','00094E':'Bosch','E84057':'Bosch',
+            '00060D':'Polycom','0004F2':'Polycom','64167F':'Polycom','000413':'Snom','0007BD':'Mitel','00247C':'Yealink','8058F8':'Yealink','805E0C':'Yealink','80BDAC':'Yealink','805EC0':'Yealink','001E75':'Panasonic','FC2F40':'Fanvil','0C383E':'Fanvil'
+        };
+
+        let vendorResults = [];
+
+        function lookupMacVendors() {
+            const lines = document.getElementById('macVendorInput').value.trim().split('\n').filter(l => l.trim());
+            if (!lines.length) { alert('Enter MAC addresses'); return; }
+            const results = [];
+            vendorResults = [];
+            let valid = 0, invalid = 0;
+            const vendorCount = {};
+            for (const line of lines) {
+                const cleaned = line.replace(/[^a-fA-F0-9]/g, '').toUpperCase();
+                if (cleaned.length < 6) { results.push('INVALID: ' + line); invalid++; continue; }
+                valid++;
+                const oui = cleaned.substring(0, 6);
+                const vendor = ouiDB[oui] || 'Unknown';
+                const mac = cleaned.length >= 12 ? cleaned.substring(0, 12).match(/.{2}/g).join(':') : cleaned.match(/.{2}/g).join(':');
+                results.push(mac.padEnd(18) + ' → ' + vendor);
+                vendorResults.push({ mac, oui, vendor });
+                vendorCount[vendor] = (vendorCount[vendor] || 0) + 1;
+            }
+            document.getElementById('macVendorResult').textContent = results.join('\n');
+            const top = Object.entries(vendorCount).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([v, c]) => v + ': ' + c).join(' | ');
+            document.getElementById('macVendorStats').textContent = 'Total: ' + lines.length + ' | Valid: ' + valid + ' | Invalid: ' + invalid + '\nTop: ' + top;
+        }
+
+        function exportVendorCSV() {
+            if (!vendorResults.length) { alert('Run lookup first'); return; }
+            let csv = 'MAC Address,OUI,Vendor\n';
+            vendorResults.forEach(r => csv += '"' + r.mac + '","' + r.oui + '","' + r.vendor + '"\n');
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+            a.download = 'mac_vendor_lookup.csv';
+            a.click();
+            showToast('CSV exported!');
+        }
+
+        // Base64
         function base64Encode() {
-            const input = document.getElementById('base64Input').value;
-            try {
-                const result = btoa(unescape(encodeURIComponent(input)));
-                document.getElementById('base64Result').textContent = result;
-            } catch (e) {
-                document.getElementById('base64Result').textContent = 'Error encoding input';
-            }
+            try { document.getElementById('base64Result').textContent = btoa(unescape(encodeURIComponent(document.getElementById('base64Input').value))); }
+            catch(e) { document.getElementById('base64Result').textContent = 'Error encoding'; }
         }
-
         function base64Decode() {
-            const input = document.getElementById('base64Input').value;
-            try {
-                const result = decodeURIComponent(escape(atob(input)));
-                document.getElementById('base64Result').textContent = result;
-            } catch (e) {
-                document.getElementById('base64Result').textContent = 'Error: Invalid Base64 string';
-            }
+            try { document.getElementById('base64Result').textContent = decodeURIComponent(escape(atob(document.getElementById('base64Input').value))); }
+            catch(e) { document.getElementById('base64Result').textContent = 'Invalid Base64'; }
         }
 
-        // JSON Formatter
+        // JSON
         function formatJSON() {
-            const input = document.getElementById('jsonInput').value;
-            try {
-                const obj = JSON.parse(input);
-                document.getElementById('jsonResult').textContent = JSON.stringify(obj, null, 2);
-            } catch (e) {
-                document.getElementById('jsonResult').textContent = 'Error: ' + e.message;
-            }
+            try { document.getElementById('jsonResult').textContent = JSON.stringify(JSON.parse(document.getElementById('jsonInput').value), null, 2); }
+            catch(e) { document.getElementById('jsonResult').textContent = 'Error: ' + e.message; }
         }
-
         function minifyJSON() {
-            const input = document.getElementById('jsonInput').value;
-            try {
-                const obj = JSON.parse(input);
-                document.getElementById('jsonResult').textContent = JSON.stringify(obj);
-            } catch (e) {
-                document.getElementById('jsonResult').textContent = 'Error: ' + e.message;
-            }
+            try { document.getElementById('jsonResult').textContent = JSON.stringify(JSON.parse(document.getElementById('jsonInput').value)); }
+            catch(e) { document.getElementById('jsonResult').textContent = 'Error: ' + e.message; }
         }
-
         function validateJSON() {
-            const input = document.getElementById('jsonInput').value;
-            try {
-                JSON.parse(input);
-                document.getElementById('jsonResult').textContent = '✓ Valid JSON';
-            } catch (e) {
-                document.getElementById('jsonResult').textContent = '✗ Invalid JSON: ' + e.message;
-            }
+            try { JSON.parse(document.getElementById('jsonInput').value); document.getElementById('jsonResult').textContent = '✓ Valid JSON'; }
+            catch(e) { document.getElementById('jsonResult').textContent = '✗ Invalid: ' + e.message; }
         }
 
-        // UUID Generator
+        // UUID
         function generateUUIDs() {
             const count = parseInt(document.getElementById('uuidCount').value);
-            const uppercase = document.getElementById('uuidUppercase').checked;
-            const noDashes = document.getElementById('uuidNoDashes').checked;
+            const upper = document.getElementById('uuidUppercase').checked;
+            const noDash = document.getElementById('uuidNoDashes').checked;
             const braces = document.getElementById('uuidBraces').checked;
-
             const uuids = [];
             for (let i = 0; i < count; i++) {
-                let uuid = crypto.randomUUID();
-                if (uppercase) uuid = uuid.toUpperCase();
-                if (noDashes) uuid = uuid.replace(/-/g, '');
-                if (braces) uuid = '{' + uuid + '}';
-                uuids.push(uuid);
+                let u = crypto.randomUUID();
+                if (upper) u = u.toUpperCase();
+                if (noDash) u = u.replace(/-/g, '');
+                if (braces) u = '{' + u + '}';
+                uuids.push(u);
             }
-
             document.getElementById('uuidResult').textContent = uuids.join('\n');
         }
 
-        // Generate initial password on load
         generatePassword();
     </script>
 </body>
