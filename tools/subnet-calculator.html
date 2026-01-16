@@ -1217,7 +1217,7 @@
         // CIDR Reference Table
         function generateCIDRTable() {
             const tbody = document.getElementById('cidrTableBody');
-            if (tbody.innerHTML) return; // Already generated
+            if (tbody.children.length > 0) return; // Already generated
             
             let html = '';
             for (let cidr = 32; cidr >= 0; cidr--) {
@@ -1254,6 +1254,11 @@
         // Enter key support
         document.getElementById('subnetIP').addEventListener('keypress', e => { if (e.key === 'Enter') calculateSubnet(); });
         document.getElementById('subnetMask').addEventListener('keypress', e => { if (e.key === 'Enter') calculateSubnet(); });
+        
+        // Pre-generate CIDR table on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            generateCIDRTable();
+        });
     </script>
 </body>
 </html>
