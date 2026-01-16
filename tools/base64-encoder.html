@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Base64 Encoder & Decoder — Encode and Decode Base64 Online | OPS-BOX</title>
+    <meta name="description" content="Free online Base64 encoder and decoder. Convert text to Base64 and decode Base64 strings instantly. UTF-8 safe, perfect for API authentication and data encoding.">
+    <meta name="keywords" content="base64 encoder, base64 decoder, base64 online, encode base64, decode base64, base64 converter, base64 tool">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://ops-box.net/tools/base64-encoder.html">
+    
+    <meta property="og:title" content="Base64 Encoder & Decoder Online">
+    <meta property="og:description" content="Encode and decode Base64 strings instantly. UTF-8 safe, 100% client-side.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ops-box.net/tools/base64-encoder.html">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Base64 Encoder/Decoder",
+        "url": "https://ops-box.net/tools/base64-encoder.html",
+        "description": "Encode and decode Base64 strings online",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Any",
+        "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}
+    }
+    </script>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <a href="/" class="logo">
+                <div class="logo-icon">⚡</div>
+                <div class="logo-text">OPS<span>-BOX</span></div>
+            </a>
+            <nav class="header-nav">
+                <a href="/tools/password-generator.html">Password</a>
+                <a href="/tools/subnet-calculator.html">Subnet</a>
+                <a href="/tools/mac-vendor-lookup.html">MAC Lookup</a>
+                <a href="/tools/hash-generator.html">Hash</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <nav class="breadcrumb">
+            <a href="/">Home</a><span>›</span><span class="breadcrumb-current">Base64 Encoder</span>
+        </nav>
+
+        <div class="tool-container">
+            <div class="tool-header">
+                <h1 class="tool-title">Base64 Encoder/Decoder</h1>
+                <p class="tool-description">Encode text to Base64 or decode Base64 strings. UTF-8 safe, perfect for API authentication and data encoding.</p>
+            </div>
+            <div class="tool-content">
+                <div class="form-group">
+                    <label class="form-label">Input</label>
+                    <textarea class="form-textarea" id="base64Input" placeholder="Enter text to encode or Base64 string to decode..."></textarea>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="base64Encode()">Encode</button>
+                    <button class="btn btn-secondary" onclick="base64Decode()">Decode</button>
+                </div>
+                <div class="output-box">
+                    <div class="output-label">Result</div>
+                    <div class="output-value text-white" id="base64Result">—</div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="copyToClipboard('base64Result')">Copy Result</button>
+                </div>
+            </div>
+        </div>
+
+        <section class="seo-content">
+            <h2>What is Base64 Encoding?</h2>
+            <p>Base64 is a binary-to-text encoding scheme that converts binary data into ASCII characters. It uses 64 characters (A-Z, a-z, 0-9, +, /) to represent data, making it safe to transmit through text-based protocols.</p>
+            
+            <h3>Common Use Cases</h3>
+            <ul>
+                <li><strong>HTTP Basic Authentication</strong> — Encoding username:password credentials</li>
+                <li><strong>Data URLs</strong> — Embedding images in HTML/CSS</li>
+                <li><strong>Email Attachments</strong> — MIME encoding for email</li>
+                <li><strong>API Payloads</strong> — Sending binary data in JSON</li>
+                <li><strong>JWT Tokens</strong> — JSON Web Tokens use Base64URL encoding</li>
+            </ul>
+            
+            <h3>Base64 vs Base64URL</h3>
+            <p>Standard Base64 uses + and / characters which are not URL-safe. Base64URL replaces + with - and / with _ for use in URLs and filenames.</p>
+        </section>
+
+        <section class="related-tools">
+            <h2>Related Tools</h2>
+            <div class="related-grid">
+                <a href="/tools/hash-generator.html" class="related-card">
+                    <h3>Hash Generator</h3>
+                    <p>Generate SHA-256 hashes for data integrity verification.</p>
+                </a>
+                <a href="/tools/json-formatter.html" class="related-card">
+                    <h3>JSON Formatter</h3>
+                    <p>Format and validate JSON before Base64 encoding.</p>
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Network Tools</h3>
+                <a href="/tools/subnet-calculator.html">Subnet Calculator</a>
+                <a href="/tools/mac-vendor-lookup.html">MAC Vendor Lookup</a>
+                <a href="/tools/mac-address-formatter.html">MAC Formatter</a>
+            </div>
+            <div class="footer-section">
+                <h3>Security Tools</h3>
+                <a href="/tools/password-generator.html">Password Generator</a>
+                <a href="/tools/hash-generator.html">Hash Generator</a>
+                <a href="/tools/uuid-generator.html">UUID Generator</a>
+            </div>
+            <div class="footer-section">
+                <h3>Developer Tools</h3>
+                <a href="/tools/json-formatter.html">JSON Formatter</a>
+                <a href="/tools/base64-encoder.html">Base64 Encoder</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals.</p>
+        </div>
+    </footer>
+
+    <div class="toast" id="toast">Copied to clipboard!</div>
+
+    <script src="../js/common.js"></script>
+    <script>
+        function base64Encode() {
+            try { 
+                document.getElementById('base64Result').textContent = btoa(unescape(encodeURIComponent(document.getElementById('base64Input').value))); 
+            } catch(e) { 
+                document.getElementById('base64Result').textContent = 'Error encoding'; 
+            }
+        }
+        function base64Decode() {
+            try { 
+                document.getElementById('base64Result').textContent = decodeURIComponent(escape(atob(document.getElementById('base64Input').value))); 
+            } catch(e) { 
+                document.getElementById('base64Result').textContent = 'Invalid Base64 string'; 
+            }
+        }
+    </script>
+</body>
+</html>

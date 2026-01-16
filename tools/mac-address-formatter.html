@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAC Address Formatter — Convert MAC Address Formats Online | OPS-BOX</title>
+    <meta name="description" content="Free online MAC address formatter. Convert MAC addresses between colon, hyphen, Cisco dot notation, and raw formats. Supports single and bulk conversion.">
+    <meta name="keywords" content="MAC address formatter, MAC address converter, convert MAC address, MAC format, Cisco MAC format, colon MAC, hyphen MAC">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://ops-box.net/tools/mac-address-formatter.html">
+    
+    <meta property="og:title" content="MAC Address Formatter — Convert MAC Formats">
+    <meta property="og:description" content="Convert MAC addresses between colon, hyphen, Cisco, and raw formats instantly.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ops-box.net/tools/mac-address-formatter.html">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "MAC Address Formatter",
+        "url": "https://ops-box.net/tools/mac-address-formatter.html",
+        "description": "Convert MAC addresses between different formats",
+        "applicationCategory": "NetworkingApplication",
+        "operatingSystem": "Any",
+        "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}
+    }
+    </script>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <a href="/" class="logo">
+                <div class="logo-icon">⚡</div>
+                <div class="logo-text">OPS<span>-BOX</span></div>
+            </a>
+            <nav class="header-nav">
+                <a href="/tools/password-generator.html">Password</a>
+                <a href="/tools/subnet-calculator.html">Subnet</a>
+                <a href="/tools/mac-vendor-lookup.html">MAC Lookup</a>
+                <a href="/tools/hash-generator.html">Hash</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <nav class="breadcrumb">
+            <a href="/">Home</a><span>›</span><span class="breadcrumb-current">MAC Address Formatter</span>
+        </nav>
+
+        <div class="tool-container">
+            <div class="tool-header">
+                <h1 class="tool-title">MAC Address Formatter</h1>
+                <p class="tool-description">Convert MAC addresses between colon, hyphen, Cisco dot notation, and raw formats. Click any format to copy.</p>
+            </div>
+            <div class="tool-content">
+                <div class="form-group">
+                    <label class="form-label">MAC Address</label>
+                    <input type="text" class="form-input" id="macInput" placeholder="AA:BB:CC:DD:EE:FF or AABBCCDDEEFF or aabb.ccdd.eeff">
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="formatMAC()">Format</button>
+                </div>
+                <div class="form-group" style="margin-top: 1.5rem;">
+                    <label class="form-label">Output Formats (click to copy)</label>
+                    <div class="format-options" id="macFormats"></div>
+                </div>
+            </div>
+        </div>
+
+        <section class="seo-content">
+            <h2>MAC Address Formats Explained</h2>
+            <p>MAC (Media Access Control) addresses can be written in several formats depending on the operating system or network equipment vendor. This tool converts between all common formats.</p>
+            
+            <h3>Common MAC Address Formats</h3>
+            <ul>
+                <li><strong>Colon notation (Unix/Linux)</strong> — AA:BB:CC:DD:EE:FF</li>
+                <li><strong>Hyphen notation (Windows)</strong> — AA-BB-CC-DD-EE-FF</li>
+                <li><strong>Cisco dot notation</strong> — aabb.ccdd.eeff</li>
+                <li><strong>Raw/No separator</strong> — AABBCCDDEEFF</li>
+            </ul>
+            
+            <h3>When You Need Format Conversion</h3>
+            <ul>
+                <li><strong>Cisco configs</strong> — Require lowercase dot notation (aabb.ccdd.eeff)</li>
+                <li><strong>Windows DHCP</strong> — Uses hyphen format (AA-BB-CC-DD-EE-FF)</li>
+                <li><strong>Linux/Unix</strong> — Typically uses colon format (aa:bb:cc:dd:ee:ff)</li>
+                <li><strong>Database storage</strong> — Often stores raw format without separators</li>
+            </ul>
+            
+            <h3>Need Bulk Conversion?</h3>
+            <p>For converting multiple MAC addresses at once, use our <a href="/tools/bulk-mac-formatter.html">Bulk MAC Formatter</a> tool.</p>
+        </section>
+
+        <section class="related-tools">
+            <h2>Related Tools</h2>
+            <div class="related-grid">
+                <a href="/tools/bulk-mac-formatter.html" class="related-card">
+                    <h3>Bulk MAC Formatter</h3>
+                    <p>Convert multiple MAC addresses at once.</p>
+                </a>
+                <a href="/tools/mac-vendor-lookup.html" class="related-card">
+                    <h3>MAC Vendor Lookup</h3>
+                    <p>Identify device manufacturers from MAC addresses.</p>
+                </a>
+                <a href="/tools/subnet-calculator.html" class="related-card">
+                    <h3>Subnet Calculator</h3>
+                    <p>Calculate IP network ranges and subnets.</p>
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Network Tools</h3>
+                <a href="/tools/subnet-calculator.html">Subnet Calculator</a>
+                <a href="/tools/mac-vendor-lookup.html">MAC Vendor Lookup</a>
+                <a href="/tools/mac-address-formatter.html">MAC Formatter</a>
+                <a href="/tools/bulk-mac-formatter.html">Bulk MAC Formatter</a>
+            </div>
+            <div class="footer-section">
+                <h3>Security Tools</h3>
+                <a href="/tools/password-generator.html">Password Generator</a>
+                <a href="/tools/hash-generator.html">Hash Generator</a>
+                <a href="/tools/uuid-generator.html">UUID Generator</a>
+            </div>
+            <div class="footer-section">
+                <h3>Developer Tools</h3>
+                <a href="/tools/json-formatter.html">JSON Formatter</a>
+                <a href="/tools/base64-encoder.html">Base64 Encoder</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals.</p>
+        </div>
+    </footer>
+
+    <div class="toast" id="toast">Copied to clipboard!</div>
+
+    <script src="../js/common.js"></script>
+    <script>
+        function formatMAC() {
+            const cleaned = document.getElementById('macInput').value.replace(/[^a-fA-F0-9]/g, '');
+            if (cleaned.length !== 12) { 
+                alert('Invalid MAC address. Please enter 12 hex characters.'); 
+                return; 
+            }
+            
+            const formats = {
+                'Colon Upper': cleaned.match(/.{2}/g).join(':').toUpperCase(),
+                'Colon Lower': cleaned.match(/.{2}/g).join(':').toLowerCase(),
+                'Hyphen Upper': cleaned.match(/.{2}/g).join('-').toUpperCase(),
+                'Hyphen Lower': cleaned.match(/.{2}/g).join('-').toLowerCase(),
+                'Cisco': cleaned.match(/.{4}/g).join('.').toLowerCase(),
+                'Raw Upper': cleaned.toUpperCase(),
+                'Raw Lower': cleaned.toLowerCase()
+            };
+            
+            const container = document.getElementById('macFormats');
+            container.innerHTML = '';
+            
+            for (const [label, value] of Object.entries(formats)) {
+                const btn = document.createElement('button');
+                btn.className = 'format-btn';
+                btn.textContent = value;
+                btn.title = label;
+                btn.onclick = () => navigator.clipboard.writeText(value).then(() => showToast('Copied: ' + value));
+                container.appendChild(btn);
+            }
+        }
+    </script>
+</body>
+</html>

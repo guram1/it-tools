@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://ops-box.net/sitemap.xml

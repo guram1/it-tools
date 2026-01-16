@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bulk MAC Address Formatter — Convert Multiple MAC Addresses | OPS-BOX</title>
+    <meta name="description" content="Free bulk MAC address formatter. Convert hundreds of MAC addresses between formats instantly. Paste from switch exports, spreadsheets, or any source. Supports all MAC formats.">
+    <meta name="keywords" content="bulk MAC formatter, batch MAC converter, multiple MAC addresses, MAC address bulk convert, network inventory MAC, switch MAC export">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://ops-box.net/tools/bulk-mac-formatter.html">
+    
+    <meta property="og:title" content="Bulk MAC Address Formatter — Convert Multiple MACs">
+    <meta property="og:description" content="Convert hundreds of MAC addresses between formats instantly. Perfect for network inventory.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ops-box.net/tools/bulk-mac-formatter.html">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Bulk MAC Address Formatter",
+        "url": "https://ops-box.net/tools/bulk-mac-formatter.html",
+        "description": "Convert multiple MAC addresses between formats at once",
+        "applicationCategory": "NetworkingApplication",
+        "operatingSystem": "Any",
+        "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}
+    }
+    </script>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <a href="/" class="logo">
+                <div class="logo-icon">⚡</div>
+                <div class="logo-text">OPS<span>-BOX</span></div>
+            </a>
+            <nav class="header-nav">
+                <a href="/tools/password-generator.html">Password</a>
+                <a href="/tools/subnet-calculator.html">Subnet</a>
+                <a href="/tools/mac-vendor-lookup.html">MAC Lookup</a>
+                <a href="/tools/hash-generator.html">Hash</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <nav class="breadcrumb">
+            <a href="/">Home</a><span>›</span><span class="breadcrumb-current">Bulk MAC Formatter</span>
+        </nav>
+
+        <div class="tool-container">
+            <div class="tool-header">
+                <h1 class="tool-title">Bulk MAC Address Formatter</h1>
+                <p class="tool-description">Convert multiple MAC addresses at once. Paste from switch exports, spreadsheets, or any source — one MAC per line.</p>
+            </div>
+            <div class="tool-content">
+                <div class="form-group">
+                    <label class="form-label">MAC Addresses (one per line)</label>
+                    <textarea class="form-textarea" id="bulkMacInput" placeholder="AA:BB:CC:DD:EE:FF
+00-11-22-33-44-55
+aabb.ccdd.eeff
+001122334455"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Output Format</label>
+                    <select class="form-select" id="bulkMacFormat">
+                        <option value="colon-upper">Colon Uppercase (AA:BB:CC:DD:EE:FF)</option>
+                        <option value="colon-lower">Colon Lowercase (aa:bb:cc:dd:ee:ff)</option>
+                        <option value="hyphen-upper">Hyphen Uppercase (AA-BB-CC-DD-EE-FF)</option>
+                        <option value="hyphen-lower">Hyphen Lowercase (aa-bb-cc-dd-ee-ff)</option>
+                        <option value="cisco">Cisco (aabb.ccdd.eeff)</option>
+                        <option value="none-upper">No Separator Uppercase (AABBCCDDEEFF)</option>
+                        <option value="none-lower">No Separator Lowercase (aabbccddeeff)</option>
+                    </select>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="formatBulkMAC()">Format All</button>
+                    <button class="btn btn-secondary" onclick="copyToClipboard('bulkMacResult')">Copy All</button>
+                </div>
+                <div class="bulk-output"><pre id="bulkMacResult">Formatted MAC addresses will appear here...</pre></div>
+                <div class="output-box">
+                    <div class="output-label">Statistics</div>
+                    <div class="output-value text-white" id="bulkMacStats">—</div>
+                </div>
+            </div>
+        </div>
+
+        <section class="seo-content">
+            <h2>Bulk MAC Address Conversion</h2>
+            <p>This tool converts multiple MAC addresses at once, making it perfect for network administrators who need to standardize MAC address formats from different sources like switch exports, DHCP logs, or inventory spreadsheets.</p>
+            
+            <h3>Supported Input Formats</h3>
+            <p>Paste MAC addresses in any format — the tool automatically detects and converts them:</p>
+            <ul>
+                <li>AA:BB:CC:DD:EE:FF (colon separated)</li>
+                <li>AA-BB-CC-DD-EE-FF (hyphen separated)</li>
+                <li>aabb.ccdd.eeff (Cisco format)</li>
+                <li>AABBCCDDEEFF (no separator)</li>
+            </ul>
+            
+            <h3>Common Use Cases</h3>
+            <ul>
+                <li><strong>Switch MAC Table Export</strong> — Convert Cisco format to colon format for inventory</li>
+                <li><strong>DHCP Server Logs</strong> — Standardize formats for database import</li>
+                <li><strong>Network Inventory</strong> — Normalize MAC addresses across different vendors</li>
+                <li><strong>Access Control Lists</strong> — Format MACs for firewall or NAC rules</li>
+            </ul>
+            
+            <h3>Invalid MAC Detection</h3>
+            <p>The tool identifies and marks invalid MAC addresses (those that don't have exactly 12 hex characters) so you can quickly spot data issues in your exports.</p>
+        </section>
+
+        <section class="related-tools">
+            <h2>Related Tools</h2>
+            <div class="related-grid">
+                <a href="/tools/mac-address-formatter.html" class="related-card">
+                    <h3>MAC Address Formatter</h3>
+                    <p>Convert a single MAC address with all format options visible.</p>
+                </a>
+                <a href="/tools/mac-vendor-lookup.html" class="related-card">
+                    <h3>MAC Vendor Lookup</h3>
+                    <p>Identify device manufacturers from your MAC address list.</p>
+                </a>
+                <a href="/tools/subnet-calculator.html" class="related-card">
+                    <h3>Subnet Calculator</h3>
+                    <p>Calculate IP ranges for network planning.</p>
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Network Tools</h3>
+                <a href="/tools/subnet-calculator.html">Subnet Calculator</a>
+                <a href="/tools/mac-vendor-lookup.html">MAC Vendor Lookup</a>
+                <a href="/tools/mac-address-formatter.html">MAC Formatter</a>
+                <a href="/tools/bulk-mac-formatter.html">Bulk MAC Formatter</a>
+            </div>
+            <div class="footer-section">
+                <h3>Security Tools</h3>
+                <a href="/tools/password-generator.html">Password Generator</a>
+                <a href="/tools/hash-generator.html">Hash Generator</a>
+                <a href="/tools/uuid-generator.html">UUID Generator</a>
+            </div>
+            <div class="footer-section">
+                <h3>Developer Tools</h3>
+                <a href="/tools/json-formatter.html">JSON Formatter</a>
+                <a href="/tools/base64-encoder.html">Base64 Encoder</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals.</p>
+        </div>
+    </footer>
+
+    <div class="toast" id="toast">Copied to clipboard!</div>
+
+    <script src="../js/common.js"></script>
+    <script>
+        function formatBulkMAC() {
+            const lines = document.getElementById('bulkMacInput').value.trim().split('\n').filter(l => l.trim());
+            const format = document.getElementById('bulkMacFormat').value;
+            
+            if (!lines.length) { alert('Enter MAC addresses'); return; }
+            
+            const results = [];
+            let valid = 0, invalid = 0;
+            
+            for (const line of lines) {
+                const cleaned = line.replace(/[^a-fA-F0-9]/g, '');
+                
+                if (cleaned.length !== 12) { 
+                    results.push('INVALID: ' + line); 
+                    invalid++; 
+                    continue; 
+                }
+                
+                valid++;
+                let formatted;
+                
+                switch (format) {
+                    case 'colon-upper': formatted = cleaned.match(/.{2}/g).join(':').toUpperCase(); break;
+                    case 'colon-lower': formatted = cleaned.match(/.{2}/g).join(':').toLowerCase(); break;
+                    case 'hyphen-upper': formatted = cleaned.match(/.{2}/g).join('-').toUpperCase(); break;
+                    case 'hyphen-lower': formatted = cleaned.match(/.{2}/g).join('-').toLowerCase(); break;
+                    case 'cisco': formatted = cleaned.match(/.{4}/g).join('.').toLowerCase(); break;
+                    case 'none-upper': formatted = cleaned.toUpperCase(); break;
+                    case 'none-lower': formatted = cleaned.toLowerCase(); break;
+                }
+                
+                results.push(formatted);
+            }
+            
+            document.getElementById('bulkMacResult').textContent = results.join('\n');
+            document.getElementById('bulkMacStats').textContent = 'Total: ' + lines.length + ' | Valid: ' + valid + ' | Invalid: ' + invalid;
+        }
+    </script>
+</body>
+</html>

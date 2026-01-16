@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON Formatter & Validator — Format, Minify, Validate JSON Online | OPS-BOX</title>
+    <meta name="description" content="Free online JSON formatter and validator. Beautify, minify, and validate JSON data instantly. Syntax error detection with line numbers. 100% client-side processing.">
+    <meta name="keywords" content="JSON formatter, JSON validator, JSON beautifier, JSON minifier, format JSON online, validate JSON, pretty print JSON, JSON parser">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://ops-box.net/tools/json-formatter.html">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <a href="/" class="logo">
+                <div class="logo-icon">⚡</div>
+                <div class="logo-text">OPS<span>-BOX</span></div>
+            </a>
+            <nav class="header-nav">
+                <a href="/tools/password-generator.html">Password</a>
+                <a href="/tools/subnet-calculator.html">Subnet</a>
+                <a href="/tools/mac-vendor-lookup.html">MAC Lookup</a>
+                <a href="/tools/hash-generator.html">Hash</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <nav class="breadcrumb">
+            <a href="/">Home</a><span>›</span><span class="breadcrumb-current">JSON Formatter</span>
+        </nav>
+
+        <div class="tool-container">
+            <div class="tool-header">
+                <h1 class="tool-title">JSON Formatter & Validator</h1>
+                <p class="tool-description">Format, validate, and minify JSON data. Instant syntax error detection.</p>
+            </div>
+            <div class="tool-content">
+                <div class="form-group">
+                    <label class="form-label">JSON Input</label>
+                    <textarea class="form-textarea" id="jsonInput" placeholder='Paste your JSON here...'></textarea>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="formatJSON()">Format</button>
+                    <button class="btn btn-secondary" onclick="minifyJSON()">Minify</button>
+                    <button class="btn btn-secondary" onclick="validateJSON()">Validate</button>
+                </div>
+                <div class="output-box">
+                    <div class="output-label">Result</div>
+                    <pre class="output-value text-white" id="jsonResult" style="white-space: pre-wrap;">—</pre>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="copyToClipboard('jsonResult')">Copy Result</button>
+                </div>
+            </div>
+        </div>
+
+        <section class="seo-content">
+            <h2>How to Use the JSON Formatter</h2>
+            <p>Paste your JSON data into the input field and click Format to beautify it with proper indentation, Minify to compress it, or Validate to check for syntax errors.</p>
+            
+            <h3>Features</h3>
+            <ul>
+                <li><strong>Format/Beautify</strong> — Adds indentation and line breaks for readability</li>
+                <li><strong>Minify</strong> — Removes whitespace to reduce file size</li>
+                <li><strong>Validate</strong> — Checks syntax and reports errors with details</li>
+            </ul>
+            
+            <h3>Common JSON Errors</h3>
+            <ul>
+                <li>Missing or extra commas</li>
+                <li>Unquoted property names</li>
+                <li>Single quotes instead of double quotes</li>
+                <li>Trailing commas after last element</li>
+                <li>Unescaped special characters in strings</li>
+            </ul>
+        </section>
+
+        <section class="related-tools">
+            <h2>Related Tools</h2>
+            <div class="related-grid">
+                <a href="/tools/base64-encoder.html" class="related-card">
+                    <h3>Base64 Encoder</h3>
+                    <p>Encode JSON for URL parameters or API requests.</p>
+                </a>
+                <a href="/tools/hash-generator.html" class="related-card">
+                    <h3>Hash Generator</h3>
+                    <p>Generate checksums for JSON data verification.</p>
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Network Tools</h3>
+                <a href="/tools/subnet-calculator.html">Subnet Calculator</a>
+                <a href="/tools/mac-vendor-lookup.html">MAC Vendor Lookup</a>
+            </div>
+            <div class="footer-section">
+                <h3>Security Tools</h3>
+                <a href="/tools/password-generator.html">Password Generator</a>
+                <a href="/tools/hash-generator.html">Hash Generator</a>
+            </div>
+            <div class="footer-section">
+                <h3>Developer Tools</h3>
+                <a href="/tools/json-formatter.html">JSON Formatter</a>
+                <a href="/tools/base64-encoder.html">Base64 Encoder</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals.</p>
+        </div>
+    </footer>
+
+    <div class="toast" id="toast">Copied to clipboard!</div>
+
+    <script src="../js/common.js"></script>
+    <script>
+        function formatJSON() {
+            try { 
+                document.getElementById('jsonResult').textContent = JSON.stringify(JSON.parse(document.getElementById('jsonInput').value), null, 2); 
+            } catch(e) { 
+                document.getElementById('jsonResult').textContent = 'Error: ' + e.message; 
+            }
+        }
+        function minifyJSON() {
+            try { 
+                document.getElementById('jsonResult').textContent = JSON.stringify(JSON.parse(document.getElementById('jsonInput').value)); 
+            } catch(e) { 
+                document.getElementById('jsonResult').textContent = 'Error: ' + e.message; 
+            }
+        }
+        function validateJSON() {
+            try { 
+                JSON.parse(document.getElementById('jsonInput').value); 
+                document.getElementById('jsonResult').textContent = '✓ Valid JSON'; 
+            } catch(e) { 
+                document.getElementById('jsonResult').textContent = '✗ Invalid: ' + e.message; 
+            }
+        }
+    </script>
+</body>
+</html>

@@ -3,717 +3,221 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OPS-BOX — IT Utilities for Professionals</title>
-    <meta name="description" content="Free online tools for IT professionals: password generator, subnet calculator, hash generator, JSON formatter, and more. | ops-box.net">
+    <title>OPS-BOX — Free Online IT Tools for Network Engineers & Professionals</title>
+    <meta name="description" content="Free online IT utilities: password generator, subnet calculator, MAC address lookup, hash generator, JSON formatter. 100% client-side, your data stays private.">
+    <meta name="keywords" content="IT tools, network tools, password generator, subnet calculator, MAC address lookup, hash generator, JSON formatter, UUID generator, base64 encoder">
+    <meta name="author" content="OPS-BOX">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://ops-box.net/">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="OPS-BOX — Free Online IT Tools">
+    <meta property="og:description" content="Free online IT utilities for network engineers. Password generator, subnet calculator, MAC vendor lookup, and more.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ops-box.net/">
+    <meta property="og:site_name" content="OPS-BOX">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="OPS-BOX — Free Online IT Tools">
+    <meta name="twitter:description" content="Free online IT utilities for network engineers. 100% client-side, your data stays private.">
+    
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg-primary: #0a0a0b;
-            --bg-secondary: #111113;
-            --bg-card: #161618;
-            --bg-card-hover: #1a1a1d;
-            --border: #27272a;
-            --border-hover: #3f3f46;
-            --text-primary: #fafafa;
-            --text-secondary: #a1a1aa;
-            --text-muted: #71717a;
-            --accent: #22c55e;
-            --accent-dim: #16a34a;
-            --accent-glow: rgba(34, 197, 94, 0.15);
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --info: #3b82f6;
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/style.css">
+    
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "OPS-BOX",
+        "url": "https://ops-box.net/",
+        "description": "Free online IT tools for network engineers and IT professionals",
+        "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://ops-box.net/search?q={search_term_string}",
+            "query-input": "required name=search_term_string"
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Outfit', -apple-system, sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; line-height: 1.6; }
-        header { border-bottom: 1px solid var(--border); padding: 1rem 2rem; position: sticky; top: 0; background: rgba(10, 10, 11, 0.9); backdrop-filter: blur(12px); z-index: 100; }
-        .header-content { max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
-        .logo { display: flex; align-items: center; gap: 0.75rem; text-decoration: none; color: var(--text-primary); }
-        .logo-icon { width: 36px; height: 36px; background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dim) 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.1rem; }
-        .logo-text { font-size: 1.25rem; font-weight: 600; letter-spacing: -0.02em; }
-        .logo-text span { color: var(--accent); }
-        .tagline { color: var(--text-muted); font-size: 0.85rem; display: none; }
-        @media (min-width: 768px) { .tagline { display: block; } }
-        main { max-width: 1400px; margin: 0 auto; padding: 2rem; display: grid; grid-template-columns: 240px 1fr; gap: 2rem; }
-        @media (max-width: 900px) { main { grid-template-columns: 1fr; padding: 1rem; } }
-        .sidebar { position: sticky; top: 80px; height: fit-content; }
-        @media (max-width: 900px) { .sidebar { position: static; display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.5rem; } }
-        .nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; color: var(--text-secondary); border: 1px solid transparent; margin-bottom: 0.25rem; white-space: nowrap; }
-        .nav-item:hover { background: var(--bg-card); color: var(--text-primary); }
-        .nav-item.active { background: var(--accent-glow); color: var(--accent); border-color: rgba(34, 197, 94, 0.3); }
-        .nav-icon { width: 20px; height: 20px; opacity: 0.7; }
-        .nav-item.active .nav-icon { opacity: 1; }
-        .tool-container { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
-        .tool-header { padding: 1.5rem 2rem; border-bottom: 1px solid var(--border); }
-        .tool-title { font-size: 1.5rem; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 0.25rem; }
-        .tool-description { color: var(--text-muted); font-size: 0.95rem; }
-        .tool-content { padding: 2rem; }
-        .tool-section { display: none; }
-        .tool-section.active { display: block; animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-        .form-group { margin-bottom: 1.5rem; }
-        .form-label { display: block; font-size: 0.875rem; font-weight: 500; color: var(--text-secondary); margin-bottom: 0.5rem; }
-        .form-input, .form-textarea, .form-select { width: 100%; padding: 0.75rem 1rem; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary); font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; transition: all 0.2s ease; }
-        .form-input:focus, .form-textarea:focus, .form-select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
-        .form-textarea { min-height: 150px; resize: vertical; }
-        .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; }
-        .checkbox-group { display: flex; flex-wrap: wrap; gap: 1rem; }
-        .checkbox-label { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: var(--text-secondary); font-size: 0.9rem; }
-        .checkbox-label input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer; }
-        .range-container { display: flex; align-items: center; gap: 1rem; }
-        .range-input { flex: 1; height: 6px; appearance: none; background: var(--border); border-radius: 3px; cursor: pointer; }
-        .range-input::-webkit-slider-thumb { appearance: none; width: 18px; height: 18px; background: var(--accent); border-radius: 50%; cursor: pointer; }
-        .range-value { font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; color: var(--accent); min-width: 3ch; text-align: center; }
-        .output-box { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; margin-top: 1rem; }
-        .output-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 0.5rem; }
-        .output-value { font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; word-break: break-all; color: var(--accent); line-height: 1.8; white-space: pre-wrap; }
-        .output-value.text-white { color: var(--text-primary); }
-        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem 1.5rem; border-radius: 8px; font-family: 'Outfit', sans-serif; font-size: 0.95rem; font-weight: 500; cursor: pointer; transition: all 0.2s ease; border: none; }
-        .btn-primary { background: var(--accent); color: #000; }
-        .btn-primary:hover { background: var(--accent-dim); }
-        .btn-secondary { background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border); }
-        .btn-secondary:hover { background: var(--bg-card-hover); }
-        .btn-group { display: flex; gap: 0.75rem; margin-top: 1.5rem; flex-wrap: wrap; }
-        .btn-icon { width: 18px; height: 18px; }
-        .strength-bar { height: 4px; background: var(--border); border-radius: 2px; margin-top: 0.75rem; overflow: hidden; }
-        .strength-fill { height: 100%; border-radius: 2px; transition: all 0.3s ease; }
-        .strength-text { font-size: 0.8rem; margin-top: 0.5rem; color: var(--text-muted); }
-        .subnet-results { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1.5rem; }
-        .subnet-card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; }
-        .subnet-card-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 0.25rem; }
-        .subnet-card-value { font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; color: var(--text-primary); }
-        .hash-results { margin-top: 1.5rem; }
-        .hash-item { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem; }
-        .hash-type { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); margin-bottom: 0.25rem; display: flex; justify-content: space-between; align-items: center; }
-        .hash-value { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--text-primary); word-break: break-all; }
-        .copy-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0.25rem; border-radius: 4px; transition: all 0.2s ease; }
-        .copy-btn:hover { color: var(--accent); background: var(--accent-glow); }
-        .toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--bg-card); border: 1px solid var(--accent); color: var(--text-primary); padding: 1rem 1.5rem; border-radius: 8px; font-size: 0.9rem; opacity: 0; transform: translateY(20px); transition: all 0.3s ease; z-index: 1000; }
-        .toast.show { opacity: 1; transform: translateY(0); }
-        footer { border-top: 1px solid var(--border); padding: 2rem; text-align: center; color: var(--text-muted); font-size: 0.85rem; margin-top: 4rem; }
-        .format-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.5rem; margin-top: 1rem; }
-        .format-btn { padding: 0.5rem 0.75rem; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 6px; color: var(--text-secondary); font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; cursor: pointer; transition: all 0.2s ease; }
-        .format-btn:hover { background: var(--accent-glow); border-color: var(--accent); color: var(--accent); }
-        .bulk-output { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; margin-top: 1rem; max-height: 300px; overflow-y: auto; }
-        .bulk-output pre { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--text-primary); white-space: pre-wrap; word-break: break-all; }
-    </style>
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "OPS-BOX",
+        "url": "https://ops-box.net/",
+        "logo": "https://ops-box.net/logo.png"
+    }
+    </script>
 </head>
 <body>
     <header>
         <div class="header-content">
-            <a href="#" class="logo">
+            <a href="/" class="logo">
                 <div class="logo-icon">⚡</div>
                 <div class="logo-text">OPS<span>-BOX</span></div>
             </a>
-            <div class="tagline">Free IT utilities — 100% client-side, your data stays private</div>
+            <nav class="header-nav">
+                <a href="/tools/password-generator.html">Password</a>
+                <a href="/tools/subnet-calculator.html">Subnet</a>
+                <a href="/tools/mac-vendor-lookup.html">MAC Lookup</a>
+                <a href="/tools/hash-generator.html">Hash</a>
+            </nav>
         </div>
     </header>
+
     <main>
-        <nav class="sidebar">
-            <div class="nav-item active" data-tool="password">
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><circle cx="12" cy="16" r="1"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                Password Generator
-            </div>
-            <div class="nav-item" data-tool="subnet">
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-                Subnet Calculator
-            </div>
-            <div class="nav-item" data-tool="hash">
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>
-                Hash Generator
-            </div>
-            <div class="nav-item" data-tool="mac">
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-                MAC Formatter
-            </div>
-            <div class="nav-item" data-tool="bulkmac">
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="6" y1="8" x2="18" y2="8"/><line x1="6" y1="12" x2="18" y2="12"/></svg>
-                Bulk MAC Formatter
-            </div>
-            <div class="nav-item" data-tool="macvendor">
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-                MAC Vendor Lookup
-            </div>
-            <div class="nav-item" data-tool="base64">
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-                Base64 Encoder
-            </div>
-            <div class="nav-item" data-tool="json">
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                JSON Formatter
-            </div>
-            <div class="nav-item" data-tool="uuid">
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-                UUID Generator
-            </div>
-        </nav>
-        <div class="tool-container">
-            <section class="tool-section active" id="password">
-                <div class="tool-header">
-                    <h1 class="tool-title">Password Generator</h1>
-                    <p class="tool-description">Generate secure, random passwords with customizable options</p>
-                </div>
-                <div class="tool-content">
-                    <div class="form-group">
-                        <label class="form-label">Password Length</label>
-                        <div class="range-container">
-                            <input type="range" class="range-input" id="pwdLength" min="4" max="128" value="24">
-                            <span class="range-value" id="pwdLengthValue">24</span>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Character Options</label>
-                        <div class="checkbox-group">
-                            <label class="checkbox-label"><input type="checkbox" id="pwdUpper" checked> Uppercase (A-Z)</label>
-                            <label class="checkbox-label"><input type="checkbox" id="pwdLower" checked> Lowercase (a-z)</label>
-                            <label class="checkbox-label"><input type="checkbox" id="pwdNumbers" checked> Numbers (0-9)</label>
-                            <label class="checkbox-label"><input type="checkbox" id="pwdSymbols" checked> Symbols (!@#$...)</label>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Exclude Characters</label>
-                        <input type="text" class="form-input" id="pwdExclude" placeholder="e.g., 0O1lI">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Number of Passwords</label>
-                        <div class="range-container">
-                            <input type="range" class="range-input" id="pwdCount" min="1" max="50" value="1">
-                            <span class="range-value" id="pwdCountValue">1</span>
-                        </div>
-                    </div>
-                    <div class="output-box">
-                        <div class="output-label">Generated Password</div>
-                        <div class="output-value" id="pwdResult">Click generate to create password</div>
-                        <div class="strength-bar"><div class="strength-fill" id="pwdStrength"></div></div>
-                        <div class="strength-text" id="pwdStrengthText"></div>
-                    </div>
-                    <div class="btn-group">
-                        <button class="btn btn-primary" onclick="generatePassword()">Generate</button>
-                        <button class="btn btn-secondary" onclick="copyToClipboard('pwdResult')">Copy</button>
-                    </div>
-                </div>
-            </section>
+        <section class="hero">
+            <h1>Free <span>IT Tools</span> for Professionals</h1>
+            <p>Secure, fast, and privacy-focused utilities for network engineers, sysadmins, and developers. All tools run 100% in your browser.</p>
+        </section>
 
-            <section class="tool-section" id="subnet">
-                <div class="tool-header">
-                    <h1 class="tool-title">Subnet Calculator</h1>
-                    <p class="tool-description">Calculate network addresses, broadcast addresses, and host ranges</p>
+        <section class="tools-grid">
+            <a href="/tools/password-generator.html" class="tool-card">
+                <div class="tool-card-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2"/>
+                        <circle cx="12" cy="16" r="1"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
                 </div>
-                <div class="tool-content">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label">IP Address</label>
-                            <input type="text" class="form-input" id="subnetIP" placeholder="192.168.1.0">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">CIDR / Subnet Mask</label>
-                            <input type="text" class="form-input" id="subnetMask" placeholder="/24 or 255.255.255.0">
-                        </div>
-                    </div>
-                    <div class="btn-group">
-                        <button class="btn btn-primary" onclick="calculateSubnet()">Calculate</button>
-                    </div>
-                    <div class="subnet-results" id="subnetResults" style="display: none;">
-                        <div class="subnet-card"><div class="subnet-card-label">Network Address</div><div class="subnet-card-value" id="netAddress">—</div></div>
-                        <div class="subnet-card"><div class="subnet-card-label">Broadcast Address</div><div class="subnet-card-value" id="broadcastAddress">—</div></div>
-                        <div class="subnet-card"><div class="subnet-card-label">First Host</div><div class="subnet-card-value" id="firstHost">—</div></div>
-                        <div class="subnet-card"><div class="subnet-card-label">Last Host</div><div class="subnet-card-value" id="lastHost">—</div></div>
-                        <div class="subnet-card"><div class="subnet-card-label">Total Hosts</div><div class="subnet-card-value" id="totalHosts">—</div></div>
-                        <div class="subnet-card"><div class="subnet-card-label">Usable Hosts</div><div class="subnet-card-value" id="usableHosts">—</div></div>
-                        <div class="subnet-card"><div class="subnet-card-label">Subnet Mask</div><div class="subnet-card-value" id="subnetMaskResult">—</div></div>
-                        <div class="subnet-card"><div class="subnet-card-label">Wildcard Mask</div><div class="subnet-card-value" id="wildcardMask">—</div></div>
-                        <div class="subnet-card"><div class="subnet-card-label">IP Class</div><div class="subnet-card-value" id="ipClass">—</div></div>
-                        <div class="subnet-card"><div class="subnet-card-label">CIDR Notation</div><div class="subnet-card-value" id="cidrNotation">—</div></div>
-                        <div class="subnet-card"><div class="subnet-card-label">IP Type</div><div class="subnet-card-value" id="ipType">—</div></div>
-                    </div>
-                </div>
-            </section>
+                <h2>Password Generator</h2>
+                <p>Generate secure random passwords with customizable length, character sets, and bulk generation options.</p>
+            </a>
 
-            <section class="tool-section" id="hash">
-                <div class="tool-header">
-                    <h1 class="tool-title">Hash Generator</h1>
-                    <p class="tool-description">Generate MD5, SHA-1, SHA-256, and SHA-512 hashes</p>
+            <a href="/tools/subnet-calculator.html" class="tool-card">
+                <div class="tool-card-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="2" y1="12" x2="22" y2="12"/>
+                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                    </svg>
                 </div>
-                <div class="tool-content">
-                    <div class="form-group">
-                        <label class="form-label">Input Text</label>
-                        <textarea class="form-textarea" id="hashInput" placeholder="Enter text to hash..."></textarea>
-                    </div>
-                    <div class="btn-group">
-                        <button class="btn btn-primary" onclick="generateHashes()">Generate Hashes</button>
-                    </div>
-                    <div class="hash-results" id="hashResults"></div>
-                </div>
-            </section>
+                <h2>Subnet Calculator</h2>
+                <p>Calculate network addresses, broadcast addresses, host ranges, and CIDR notation for any IP subnet.</p>
+            </a>
 
-            <section class="tool-section" id="mac">
-                <div class="tool-header">
-                    <h1 class="tool-title">MAC Address Formatter</h1>
-                    <p class="tool-description">Convert MAC addresses between different formats</p>
+            <a href="/tools/mac-vendor-lookup.html" class="tool-card">
+                <div class="tool-card-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"/>
+                        <path d="M21 21l-4.35-4.35"/>
+                    </svg>
                 </div>
-                <div class="tool-content">
-                    <div class="form-group">
-                        <label class="form-label">MAC Address</label>
-                        <input type="text" class="form-input" id="macInput" placeholder="AA:BB:CC:DD:EE:FF or AABBCCDDEEFF">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Output Formats</label>
-                        <div class="format-options" id="macFormats"></div>
-                    </div>
-                    <div class="btn-group">
-                        <button class="btn btn-primary" onclick="formatMAC()">Format</button>
-                    </div>
-                </div>
-            </section>
+                <h2>MAC Vendor Lookup</h2>
+                <p>Identify device manufacturers from MAC addresses. Supports bulk lookup with CSV export for network audits.</p>
+            </a>
 
-            <section class="tool-section" id="bulkmac">
-                <div class="tool-header">
-                    <h1 class="tool-title">Bulk MAC Address Formatter</h1>
-                    <p class="tool-description">Convert multiple MAC addresses at once — paste one per line</p>
+            <a href="/tools/mac-address-formatter.html" class="tool-card">
+                <div class="tool-card-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="3" width="20" height="14" rx="2"/>
+                        <line x1="8" y1="21" x2="16" y2="21"/>
+                        <line x1="12" y1="17" x2="12" y2="21"/>
+                    </svg>
                 </div>
-                <div class="tool-content">
-                    <div class="form-group">
-                        <label class="form-label">MAC Addresses (one per line)</label>
-                        <textarea class="form-textarea" id="bulkMacInput" placeholder="AA:BB:CC:DD:EE:FF
-00-11-22-33-44-55
-aabb.ccdd.eeff"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Output Format</label>
-                        <select class="form-select" id="bulkMacFormat">
-                            <option value="colon-upper">Colon Uppercase (AA:BB:CC:DD:EE:FF)</option>
-                            <option value="colon-lower">Colon Lowercase (aa:bb:cc:dd:ee:ff)</option>
-                            <option value="hyphen-upper">Hyphen Uppercase (AA-BB-CC-DD-EE-FF)</option>
-                            <option value="hyphen-lower">Hyphen Lowercase (aa-bb-cc-dd-ee-ff)</option>
-                            <option value="cisco">Cisco (aabb.ccdd.eeff)</option>
-                            <option value="none-upper">No Separator Uppercase (AABBCCDDEEFF)</option>
-                            <option value="none-lower">No Separator Lowercase (aabbccddeeff)</option>
-                        </select>
-                    </div>
-                    <div class="btn-group">
-                        <button class="btn btn-primary" onclick="formatBulkMAC()">Format All</button>
-                        <button class="btn btn-secondary" onclick="copyToClipboard('bulkMacResult')">Copy All</button>
-                    </div>
-                    <div class="bulk-output"><pre id="bulkMacResult">Formatted MAC addresses will appear here...</pre></div>
-                    <div class="output-box">
-                        <div class="output-label">Statistics</div>
-                        <div class="output-value text-white" id="bulkMacStats">—</div>
-                    </div>
-                </div>
-            </section>
+                <h2>MAC Address Formatter</h2>
+                <p>Convert MAC addresses between formats: colon, hyphen, Cisco dot notation. Bulk formatting supported.</p>
+            </a>
 
-            <section class="tool-section" id="macvendor">
-                <div class="tool-header">
-                    <h1 class="tool-title">MAC Vendor Lookup</h1>
-                    <p class="tool-description">Identify device manufacturers from MAC addresses — supports bulk lookup</p>
+            <a href="/tools/hash-generator.html" class="tool-card">
+                <div class="tool-card-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="4" y1="9" x2="20" y2="9"/>
+                        <line x1="4" y1="15" x2="20" y2="15"/>
+                        <line x1="10" y1="3" x2="8" y2="21"/>
+                        <line x1="16" y1="3" x2="14" y2="21"/>
+                    </svg>
                 </div>
-                <div class="tool-content">
-                    <div class="form-group">
-                        <label class="form-label">MAC Addresses (one per line)</label>
-                        <textarea class="form-textarea" id="macVendorInput" placeholder="AA:BB:CC:DD:EE:FF
-00-11-22-33-44-55
-aabb.ccdd.eeff"></textarea>
-                    </div>
-                    <div class="btn-group">
-                        <button class="btn btn-primary" onclick="lookupMacVendors()">Lookup Vendors</button>
-                        <button class="btn btn-secondary" onclick="copyToClipboard('macVendorResult')">Copy Results</button>
-                        <button class="btn btn-secondary" onclick="exportVendorCSV()">Export CSV</button>
-                    </div>
-                    <div class="bulk-output" style="max-height: 400px;"><pre id="macVendorResult">Vendor information will appear here...</pre></div>
-                    <div class="output-box">
-                        <div class="output-label">Summary</div>
-                        <div class="output-value text-white" id="macVendorStats">—</div>
-                    </div>
-                </div>
-            </section>
+                <h2>Hash Generator</h2>
+                <p>Generate SHA-1, SHA-256, SHA-512 hashes instantly. Perfect for file integrity verification.</p>
+            </a>
 
-            <section class="tool-section" id="base64">
-                <div class="tool-header">
-                    <h1 class="tool-title">Base64 Encoder/Decoder</h1>
-                    <p class="tool-description">Encode and decode Base64 strings</p>
+            <a href="/tools/json-formatter.html" class="tool-card">
+                <div class="tool-card-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                    </svg>
                 </div>
-                <div class="tool-content">
-                    <div class="form-group">
-                        <label class="form-label">Input</label>
-                        <textarea class="form-textarea" id="base64Input" placeholder="Enter text to encode or decode..."></textarea>
-                    </div>
-                    <div class="btn-group">
-                        <button class="btn btn-primary" onclick="base64Encode()">Encode</button>
-                        <button class="btn btn-secondary" onclick="base64Decode()">Decode</button>
-                    </div>
-                    <div class="output-box">
-                        <div class="output-label">Result</div>
-                        <div class="output-value text-white" id="base64Result">—</div>
-                    </div>
-                    <div class="btn-group">
-                        <button class="btn btn-secondary" onclick="copyToClipboard('base64Result')">Copy Result</button>
-                    </div>
-                </div>
-            </section>
+                <h2>JSON Formatter</h2>
+                <p>Format, validate, and minify JSON data. Syntax highlighting and error detection included.</p>
+            </a>
 
-            <section class="tool-section" id="json">
-                <div class="tool-header">
-                    <h1 class="tool-title">JSON Formatter & Validator</h1>
-                    <p class="tool-description">Format, validate, and minify JSON data</p>
+            <a href="/tools/base64-encoder.html" class="tool-card">
+                <div class="tool-card-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="16 18 22 12 16 6"/>
+                        <polyline points="8 6 2 12 8 18"/>
+                    </svg>
                 </div>
-                <div class="tool-content">
-                    <div class="form-group">
-                        <label class="form-label">JSON Input</label>
-                        <textarea class="form-textarea" id="jsonInput" placeholder='{"key": "value"}'></textarea>
-                    </div>
-                    <div class="btn-group">
-                        <button class="btn btn-primary" onclick="formatJSON()">Format</button>
-                        <button class="btn btn-secondary" onclick="minifyJSON()">Minify</button>
-                        <button class="btn btn-secondary" onclick="validateJSON()">Validate</button>
-                    </div>
-                    <div class="output-box">
-                        <div class="output-label">Result</div>
-                        <pre class="output-value text-white" id="jsonResult" style="white-space: pre-wrap;">—</pre>
-                    </div>
-                    <div class="btn-group">
-                        <button class="btn btn-secondary" onclick="copyToClipboard('jsonResult')">Copy Result</button>
-                    </div>
-                </div>
-            </section>
+                <h2>Base64 Encoder/Decoder</h2>
+                <p>Encode and decode Base64 strings. UTF-8 safe, perfect for API authentication and data encoding.</p>
+            </a>
 
-            <section class="tool-section" id="uuid">
-                <div class="tool-header">
-                    <h1 class="tool-title">UUID Generator</h1>
-                    <p class="tool-description">Generate random UUIDs (v4) for your applications</p>
+            <a href="/tools/uuid-generator.html" class="tool-card">
+                <div class="tool-card-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7"/>
+                        <rect x="14" y="3" width="7" height="7"/>
+                        <rect x="14" y="14" width="7" height="7"/>
+                        <rect x="3" y="14" width="7" height="7"/>
+                    </svg>
                 </div>
-                <div class="tool-content">
-                    <div class="form-group">
-                        <label class="form-label">Number of UUIDs</label>
-                        <div class="range-container">
-                            <input type="range" class="range-input" id="uuidCount" min="1" max="100" value="1">
-                            <span class="range-value" id="uuidCountValue">1</span>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Format</label>
-                        <div class="checkbox-group">
-                            <label class="checkbox-label"><input type="checkbox" id="uuidUppercase"> Uppercase</label>
-                            <label class="checkbox-label"><input type="checkbox" id="uuidNoDashes"> No dashes</label>
-                            <label class="checkbox-label"><input type="checkbox" id="uuidBraces"> With braces</label>
-                        </div>
-                    </div>
-                    <div class="btn-group">
-                        <button class="btn btn-primary" onclick="generateUUIDs()">Generate</button>
-                        <button class="btn btn-secondary" onclick="copyToClipboard('uuidResult')">Copy</button>
-                    </div>
-                    <div class="bulk-output"><pre id="uuidResult">Click generate to create UUIDs</pre></div>
-                </div>
-            </section>
-        </div>
+                <h2>UUID Generator</h2>
+                <p>Generate random UUIDs (v4) for databases, APIs, and applications. Bulk generation with format options.</p>
+            </a>
+        </section>
+
+        <section class="seo-content">
+            <h2>Why Use OPS-BOX IT Tools?</h2>
+            <p>OPS-BOX provides a comprehensive suite of free online tools designed specifically for IT professionals, network engineers, system administrators, and developers. Every tool runs entirely in your browser — your data never leaves your device.</p>
+            
+            <h3>Privacy First</h3>
+            <p>Unlike many online tools, OPS-BOX processes everything client-side using JavaScript. Your passwords, IP addresses, MAC addresses, and other sensitive data are never transmitted to any server. This makes our tools safe to use even in enterprise environments with strict security policies.</p>
+            
+            <h3>Built by Engineers, for Engineers</h3>
+            <p>Our tools are designed with real-world workflows in mind. Need to convert 500 MAC addresses from a switch export? Our bulk formatter handles it instantly. Troubleshooting network connectivity? The subnet calculator shows you exactly which hosts belong to which network.</p>
+            
+            <h3>No Registration Required</h3>
+            <p>All tools are completely free with no sign-up, no email collection, and no usage limits. Bookmark the tools you need and they're always ready when you are.</p>
+        </section>
     </main>
+
     <footer>
-        <p>OPS-BOX.net — Free IT utilities for professionals</p>
-        <p style="margin-top: 0.5rem;">All tools run 100% client-side. Your data never leaves your browser.</p>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Network Tools</h3>
+                <a href="/tools/subnet-calculator.html">Subnet Calculator</a>
+                <a href="/tools/mac-vendor-lookup.html">MAC Vendor Lookup</a>
+                <a href="/tools/mac-address-formatter.html">MAC Formatter</a>
+            </div>
+            <div class="footer-section">
+                <h3>Security Tools</h3>
+                <a href="/tools/password-generator.html">Password Generator</a>
+                <a href="/tools/hash-generator.html">Hash Generator</a>
+                <a href="/tools/uuid-generator.html">UUID Generator</a>
+            </div>
+            <div class="footer-section">
+                <h3>Developer Tools</h3>
+                <a href="/tools/json-formatter.html">JSON Formatter</a>
+                <a href="/tools/base64-encoder.html">Base64 Encoder</a>
+            </div>
+            <div class="footer-section">
+                <h3>About</h3>
+                <a href="/about.html">About OPS-BOX</a>
+                <a href="/privacy.html">Privacy Policy</a>
+                <a href="/contact.html">Contact</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals. All tools run 100% client-side.</p>
+        </div>
     </footer>
-    <div class="toast" id="toast">Copied to clipboard!</div>
-    <script>
-        // Navigation
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.addEventListener('click', () => {
-                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-                document.querySelectorAll('.tool-section').forEach(s => s.classList.remove('active'));
-                item.classList.add('active');
-                document.getElementById(item.dataset.tool).classList.add('active');
-            });
-        });
-
-        // Range sliders
-        document.getElementById('pwdLength').addEventListener('input', function() { document.getElementById('pwdLengthValue').textContent = this.value; });
-        document.getElementById('pwdCount').addEventListener('input', function() { document.getElementById('pwdCountValue').textContent = this.value; });
-        document.getElementById('uuidCount').addEventListener('input', function() { document.getElementById('uuidCountValue').textContent = this.value; });
-
-        // Toast
-        function showToast(msg = 'Copied to clipboard!') {
-            const t = document.getElementById('toast');
-            t.textContent = msg;
-            t.classList.add('show');
-            setTimeout(() => t.classList.remove('show'), 2000);
-        }
-
-        function copyToClipboard(id) {
-            navigator.clipboard.writeText(document.getElementById(id).textContent).then(() => showToast());
-        }
-
-        // Password Generator
-        function generatePassword() {
-            const length = parseInt(document.getElementById('pwdLength').value);
-            const count = parseInt(document.getElementById('pwdCount').value);
-            let chars = '';
-            if (document.getElementById('pwdUpper').checked) chars += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-            if (document.getElementById('pwdLower').checked) chars += 'abcdefghijklmnopqrstuvwxyz';
-            if (document.getElementById('pwdNumbers').checked) chars += '0123456789';
-            if (document.getElementById('pwdSymbols').checked) chars += '!@#$%^&*()_+-=[]{}|;:,.<>?';
-            const exclude = document.getElementById('pwdExclude').value;
-            for (const c of exclude) chars = chars.replace(new RegExp(c.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), '');
-            if (!chars) { document.getElementById('pwdResult').textContent = 'Select at least one character type'; return; }
-            const arr = new Uint32Array(length * count);
-            crypto.getRandomValues(arr);
-            const passwords = [];
-            for (let i = 0; i < count; i++) {
-                let pwd = '';
-                for (let j = 0; j < length; j++) pwd += chars[arr[i * length + j] % chars.length];
-                passwords.push(pwd);
-            }
-            document.getElementById('pwdResult').textContent = passwords.join('\n');
-            const pwd = passwords[0];
-            let str = 0;
-            if (pwd.length >= 8) str += 25;
-            if (pwd.length >= 16) str += 15;
-            if (pwd.length >= 24) str += 10;
-            if (/[a-z]/.test(pwd)) str += 10;
-            if (/[A-Z]/.test(pwd)) str += 10;
-            if (/[0-9]/.test(pwd)) str += 10;
-            if (/[^a-zA-Z0-9]/.test(pwd)) str += 20;
-            const fill = document.getElementById('pwdStrength');
-            fill.style.width = Math.min(str, 100) + '%';
-            fill.style.background = str < 40 ? 'var(--danger)' : str < 70 ? 'var(--warning)' : 'var(--accent)';
-            document.getElementById('pwdStrengthText').textContent = str < 40 ? 'Weak' : str < 70 ? 'Moderate' : 'Strong';
-        }
-
-        // Subnet Calculator
-        function calculateSubnet() {
-            const ipInput = document.getElementById('subnetIP').value.trim();
-            let maskInput = document.getElementById('subnetMask').value.trim();
-            if (!ipInput) { alert('Enter an IP address'); return; }
-            const ipParts = ipInput.split('.').map(Number);
-            if (ipParts.length !== 4 || ipParts.some(p => isNaN(p) || p < 0 || p > 255)) { alert('Invalid IP'); return; }
-            let cidr;
-            if (maskInput.startsWith('/')) cidr = parseInt(maskInput.substring(1));
-            else if (maskInput.includes('.')) {
-                const maskParts = maskInput.split('.').map(Number);
-                cidr = maskParts.map(p => p.toString(2).padStart(8, '0')).join('').split('1').length - 1;
-            } else cidr = parseInt(maskInput) || 24;
-            if (cidr < 0 || cidr > 32) { alert('Invalid CIDR'); return; }
-            const ip = (ipParts[0] << 24) + (ipParts[1] << 16) + (ipParts[2] << 8) + ipParts[3];
-            const mask = cidr === 0 ? 0 : (~0 << (32 - cidr)) >>> 0;
-            const network = (ip & mask) >>> 0;
-            const broadcast = (network | (~mask >>> 0)) >>> 0;
-            const toIP = n => [(n >>> 24) & 255, (n >>> 16) & 255, (n >>> 8) & 255, n & 255].join('.');
-            const totalHosts = Math.pow(2, 32 - cidr);
-            const usableHosts = cidr >= 31 ? totalHosts : totalHosts - 2;
-            document.getElementById('netAddress').textContent = toIP(network);
-            document.getElementById('broadcastAddress').textContent = toIP(broadcast);
-            document.getElementById('firstHost').textContent = cidr >= 31 ? toIP(network) : toIP(network + 1);
-            document.getElementById('lastHost').textContent = cidr >= 31 ? toIP(broadcast) : toIP(broadcast - 1);
-            document.getElementById('totalHosts').textContent = totalHosts.toLocaleString();
-            document.getElementById('usableHosts').textContent = usableHosts.toLocaleString();
-            document.getElementById('subnetMaskResult').textContent = toIP(mask);
-            document.getElementById('wildcardMask').textContent = toIP((~mask >>> 0));
-            document.getElementById('cidrNotation').textContent = '/' + cidr;
-            let ipClass = ipParts[0] < 128 ? 'A' : ipParts[0] < 192 ? 'B' : ipParts[0] < 224 ? 'C' : ipParts[0] < 240 ? 'D' : 'E';
-            document.getElementById('ipClass').textContent = 'Class ' + ipClass;
-            let ipType = 'Public';
-            if (ipParts[0] === 10 || (ipParts[0] === 172 && ipParts[1] >= 16 && ipParts[1] <= 31) || (ipParts[0] === 192 && ipParts[1] === 168)) ipType = 'Private (RFC 1918)';
-            else if (ipParts[0] === 127) ipType = 'Loopback';
-            else if (ipParts[0] === 169 && ipParts[1] === 254) ipType = 'Link-Local';
-            document.getElementById('ipType').textContent = ipType;
-            document.getElementById('subnetResults').style.display = 'grid';
-        }
-
-        // Hash Generator
-        async function generateHashes() {
-            const input = document.getElementById('hashInput').value;
-            if (!input) { alert('Enter text to hash'); return; }
-            const data = new TextEncoder().encode(input);
-            const results = document.getElementById('hashResults');
-            results.innerHTML = '';
-            for (const algo of ['SHA-1', 'SHA-256', 'SHA-512']) {
-                const buf = await crypto.subtle.digest(algo, data);
-                const hash = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
-                results.innerHTML += '<div class="hash-item"><div class="hash-type"><span>' + algo + '</span><button class="copy-btn" onclick="navigator.clipboard.writeText(\'' + hash + '\').then(()=>showToast())">Copy</button></div><div class="hash-value">' + hash + '</div></div>';
-            }
-        }
-
-        // MAC Formatter
-        function formatMAC() {
-            const cleaned = document.getElementById('macInput').value.replace(/[^a-fA-F0-9]/g, '');
-            if (cleaned.length !== 12) { alert('Invalid MAC'); return; }
-            const formats = {
-                'Colon Upper': cleaned.match(/.{2}/g).join(':').toUpperCase(),
-                'Colon Lower': cleaned.match(/.{2}/g).join(':').toLowerCase(),
-                'Hyphen': cleaned.match(/.{2}/g).join('-').toUpperCase(),
-                'Cisco': cleaned.match(/.{4}/g).join('.').toLowerCase(),
-                'Raw': cleaned.toUpperCase()
-            };
-            const container = document.getElementById('macFormats');
-            container.innerHTML = '';
-            for (const [label, value] of Object.entries(formats)) {
-                const btn = document.createElement('button');
-                btn.className = 'format-btn';
-                btn.textContent = value;
-                btn.onclick = () => navigator.clipboard.writeText(value).then(() => showToast('Copied: ' + value));
-                container.appendChild(btn);
-            }
-        }
-
-        // Bulk MAC Formatter
-        function formatBulkMAC() {
-            const lines = document.getElementById('bulkMacInput').value.trim().split('\n').filter(l => l.trim());
-            const format = document.getElementById('bulkMacFormat').value;
-            const results = [];
-            let valid = 0, invalid = 0;
-            for (const line of lines) {
-                const cleaned = line.replace(/[^a-fA-F0-9]/g, '');
-                if (cleaned.length !== 12) { results.push('INVALID: ' + line); invalid++; continue; }
-                valid++;
-                let formatted;
-                switch (format) {
-                    case 'colon-upper': formatted = cleaned.match(/.{2}/g).join(':').toUpperCase(); break;
-                    case 'colon-lower': formatted = cleaned.match(/.{2}/g).join(':').toLowerCase(); break;
-                    case 'hyphen-upper': formatted = cleaned.match(/.{2}/g).join('-').toUpperCase(); break;
-                    case 'hyphen-lower': formatted = cleaned.match(/.{2}/g).join('-').toLowerCase(); break;
-                    case 'cisco': formatted = cleaned.match(/.{4}/g).join('.').toLowerCase(); break;
-                    case 'none-upper': formatted = cleaned.toUpperCase(); break;
-                    case 'none-lower': formatted = cleaned.toLowerCase(); break;
-                }
-                results.push(formatted);
-            }
-            document.getElementById('bulkMacResult').textContent = results.join('\n');
-            document.getElementById('bulkMacStats').textContent = 'Total: ' + lines.length + ' | Valid: ' + valid + ' | Invalid: ' + invalid;
-        }
-
-        // --- MAC VENDOR LOOKUP (OPTIMIZED SHARDING) ---
-        // Global variables for caching and export
-        const loadedShards = {};
-        let vendorResults = []; 
-
-        async function lookupMacVendors() {
-            const inputField = document.getElementById('macVendorInput');
-            const resultBox = document.getElementById('macVendorResult');
-            const statsBox = document.getElementById('macVendorStats');
-            
-            const lines = inputField.value.trim().split('\n').filter(l => l.trim());
-            if (!lines.length) { alert('Enter MAC addresses'); return; }
-
-            // Show loading state
-            resultBox.textContent = "Scanning database shards... please wait...";
-            
-            const results = [];
-            vendorResults = []; // Reset global results
-            let valid = 0, invalid = 0;
-            const vendorCount = {};
-
-            // Process line by line
-            for (const line of lines) {
-                // Clean input (Hex only)
-                const cleaned = line.replace(/[^a-fA-F0-9]/g, '').toUpperCase();
-
-                if (cleaned.length < 6) { 
-                    results.push('INVALID: ' + line); 
-                    invalid++; 
-                    continue; 
-                }
-
-                valid++;
-                const oui = cleaned.substring(0, 6);       // "001A2B"
-                const shardKey = cleaned.substring(0, 2);  // "00"
-
-                // 1. Check if shard is in memory, if not, Fetch it
-                if (!loadedShards[shardKey]) {
-                    try {
-                        const response = await fetch(`mac_db/${shardKey}.json`);
-                        if (response.ok) {
-                            loadedShards[shardKey] = await response.json();
-                        } else {
-                            loadedShards[shardKey] = {}; // Create empty if 404
-                        }
-                    } catch (err) {
-                        console.error(`Error loading shard ${shardKey}:`, err);
-                        loadedShards[shardKey] = {};
-                    }
-                }
-
-                // 2. Perform Lookup
-                const vendor = loadedShards[shardKey][oui] || 'Unknown Vendor';
-
-                // Format Output
-                const macFormatted = cleaned.length >= 12 
-                    ? cleaned.substring(0, 12).match(/.{2}/g).join(':') 
-                    : cleaned.match(/.{2}/g).join(':');
-
-                results.push(`${macFormatted.padEnd(18)} → ${vendor}`);
-                
-                // Store for CSV Export
-                vendorResults.push({ mac: macFormatted, oui, vendor });
-                
-                // Stats Logic
-                if (vendor !== 'Unknown Vendor') {
-                    vendorCount[vendor] = (vendorCount[vendor] || 0) + 1;
-                }
-            }
-
-            // 3. Update UI
-            resultBox.textContent = results.join('\n');
-            
-            const topVendors = Object.entries(vendorCount)
-                .sort((a, b) => b[1] - a[1])
-                .slice(0, 5)
-                .map(([v, c]) => `${v}: ${c}`)
-                .join(' | ');
-
-            statsBox.textContent = `Total: ${lines.length} | Valid: ${valid} | Invalid: ${invalid}\nTop: ${topVendors || 'None'}`;
-        }
-
-        function exportVendorCSV() {
-            if (!vendorResults.length) { alert('Run lookup first'); return; }
-            let csv = 'MAC Address,OUI,Vendor\n';
-            vendorResults.forEach(r => csv += '"' + r.mac + '","' + r.oui + '","' + r.vendor + '"\n');
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
-            a.download = 'mac_vendor_lookup.csv';
-            a.click();
-            showToast('CSV exported!');
-        }
-
-        // Base64
-        function base64Encode() {
-            try { document.getElementById('base64Result').textContent = btoa(unescape(encodeURIComponent(document.getElementById('base64Input').value))); }
-            catch(e) { document.getElementById('base64Result').textContent = 'Error encoding'; }
-        }
-        function base64Decode() {
-            try { document.getElementById('base64Result').textContent = decodeURIComponent(escape(atob(document.getElementById('base64Input').value))); }
-            catch(e) { document.getElementById('base64Result').textContent = 'Invalid Base64'; }
-        }
-
-        // JSON
-        function formatJSON() {
-            try { document.getElementById('jsonResult').textContent = JSON.stringify(JSON.parse(document.getElementById('jsonInput').value), null, 2); }
-            catch(e) { document.getElementById('jsonResult').textContent = 'Error: ' + e.message; }
-        }
-        function minifyJSON() {
-            try { document.getElementById('jsonResult').textContent = JSON.stringify(JSON.parse(document.getElementById('jsonInput').value)); }
-            catch(e) { document.getElementById('jsonResult').textContent = 'Error: ' + e.message; }
-        }
-        function validateJSON() {
-            try { JSON.parse(document.getElementById('jsonInput').value); document.getElementById('jsonResult').textContent = '✓ Valid JSON'; }
-            catch(e) { document.getElementById('jsonResult').textContent = '✗ Invalid: ' + e.message; }
-        }
-
-        // UUID
-        function generateUUIDs() {
-            const count = parseInt(document.getElementById('uuidCount').value);
-            const upper = document.getElementById('uuidUppercase').checked;
-            const noDash = document.getElementById('uuidNoDashes').checked;
-            const braces = document.getElementById('uuidBraces').checked;
-            const uuids = [];
-            for (let i = 0; i < count; i++) {
-                let u = crypto.randomUUID();
-                if (upper) u = u.toUpperCase();
-                if (noDash) u = u.replace(/-/g, '');
-                if (braces) u = '{' + u + '}';
-                uuids.push(u);
-            }
-            document.getElementById('uuidResult').textContent = uuids.join('\n');
-        }
-
-        generatePassword();
-    </script>
 </body>
 </html>

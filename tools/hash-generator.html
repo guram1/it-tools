@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hash Generator — SHA-256, SHA-512, SHA-1 Online | OPS-BOX</title>
+    <meta name="description" content="Free online hash generator. Create SHA-256, SHA-512, SHA-1 hashes instantly. Perfect for file integrity verification, password hashing, and checksums. 100% client-side.">
+    <meta name="keywords" content="hash generator, SHA-256 generator, SHA-512 hash, SHA-1 online, checksum calculator, hash calculator, file integrity, password hash">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://ops-box.net/tools/hash-generator.html">
+    
+    <meta property="og:title" content="Hash Generator — SHA-256, SHA-512, SHA-1 Online">
+    <meta property="og:description" content="Generate secure hashes instantly. SHA-256, SHA-512, SHA-1 supported.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ops-box.net/tools/hash-generator.html">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Hash Generator",
+        "url": "https://ops-box.net/tools/hash-generator.html",
+        "description": "Generate SHA-256, SHA-512, SHA-1 hashes online",
+        "applicationCategory": "SecurityApplication",
+        "operatingSystem": "Any",
+        "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}
+    }
+    </script>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <a href="/" class="logo">
+                <div class="logo-icon">⚡</div>
+                <div class="logo-text">OPS<span>-BOX</span></div>
+            </a>
+            <nav class="header-nav">
+                <a href="/tools/password-generator.html">Password</a>
+                <a href="/tools/subnet-calculator.html">Subnet</a>
+                <a href="/tools/mac-vendor-lookup.html">MAC Lookup</a>
+                <a href="/tools/hash-generator.html">Hash</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <nav class="breadcrumb">
+            <a href="/">Home</a><span>›</span><span class="breadcrumb-current">Hash Generator</span>
+        </nav>
+
+        <div class="tool-container">
+            <div class="tool-header">
+                <h1 class="tool-title">Hash Generator</h1>
+                <p class="tool-description">Generate SHA-1, SHA-256, and SHA-512 cryptographic hashes instantly. Your data never leaves your browser.</p>
+            </div>
+            <div class="tool-content">
+                <div class="form-group">
+                    <label class="form-label">Input Text</label>
+                    <textarea class="form-textarea" id="hashInput" placeholder="Enter text to hash..."></textarea>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="generateHashes()">Generate Hashes</button>
+                </div>
+                <div class="hash-results" id="hashResults"></div>
+            </div>
+        </div>
+
+        <section class="seo-content">
+            <h2>About Cryptographic Hash Functions</h2>
+            <p>A cryptographic hash function takes an input and produces a fixed-size string of characters. The same input always produces the same hash, but even a tiny change in input creates a completely different hash.</p>
+            
+            <h3>Hash Algorithms Compared</h3>
+            <ul>
+                <li><strong>SHA-1 (160-bit)</strong> — Legacy algorithm, not recommended for security-critical applications</li>
+                <li><strong>SHA-256 (256-bit)</strong> — Widely used, excellent security, standard for most applications</li>
+                <li><strong>SHA-512 (512-bit)</strong> — Highest security, used when maximum protection is needed</li>
+            </ul>
+            
+            <h3>Common Use Cases</h3>
+            <ul>
+                <li><strong>File Integrity</strong> — Verify downloads haven't been tampered with</li>
+                <li><strong>Password Storage</strong> — Store password hashes instead of plaintext</li>
+                <li><strong>Digital Signatures</strong> — Part of certificate and signature verification</li>
+                <li><strong>Data Deduplication</strong> — Identify identical files by their hash</li>
+            </ul>
+        </section>
+
+        <section class="related-tools">
+            <h2>Related Tools</h2>
+            <div class="related-grid">
+                <a href="/tools/password-generator.html" class="related-card">
+                    <h3>Password Generator</h3>
+                    <p>Generate secure random passwords to hash.</p>
+                </a>
+                <a href="/tools/base64-encoder.html" class="related-card">
+                    <h3>Base64 Encoder</h3>
+                    <p>Encode hashes for transmission in text formats.</p>
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Network Tools</h3>
+                <a href="/tools/subnet-calculator.html">Subnet Calculator</a>
+                <a href="/tools/mac-vendor-lookup.html">MAC Vendor Lookup</a>
+            </div>
+            <div class="footer-section">
+                <h3>Security Tools</h3>
+                <a href="/tools/password-generator.html">Password Generator</a>
+                <a href="/tools/hash-generator.html">Hash Generator</a>
+            </div>
+            <div class="footer-section">
+                <h3>Developer Tools</h3>
+                <a href="/tools/json-formatter.html">JSON Formatter</a>
+                <a href="/tools/base64-encoder.html">Base64 Encoder</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals.</p>
+        </div>
+    </footer>
+
+    <div class="toast" id="toast">Copied to clipboard!</div>
+
+    <script src="../js/common.js"></script>
+    <script>
+        async function generateHashes() {
+            const input = document.getElementById('hashInput').value;
+            if (!input) { alert('Enter text to hash'); return; }
+            
+            const data = new TextEncoder().encode(input);
+            const results = document.getElementById('hashResults');
+            results.innerHTML = '';
+            
+            for (const algo of ['SHA-1', 'SHA-256', 'SHA-512']) {
+                const buf = await crypto.subtle.digest(algo, data);
+                const hash = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+                results.innerHTML += `
+                    <div class="hash-item">
+                        <div class="hash-type">
+                            <span>${algo}</span>
+                            <button class="copy-btn" onclick="navigator.clipboard.writeText('${hash}').then(()=>showToast())">Copy</button>
+                        </div>
+                        <div class="hash-value">${hash}</div>
+                    </div>`;
+            }
+        }
+    </script>
+</body>
+</html>
