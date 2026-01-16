@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSL Certificate Checker — Check Expiry Date & Set Renewal Reminders | OPS-BOX</title>
+    <meta name="description" content="Free SSL certificate expiry checker. Check when your SSL/TLS certificate expires and create Google Calendar or Outlook reminders 1 month before renewal. Never miss a certificate renewal.">
+    <meta name="keywords" content="SSL certificate checker, certificate expiry, SSL expiry date, certificate renewal reminder, TLS certificate check, HTTPS certificate">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://ops-box.net/tools/ssl-checker.html">
+    
+    <meta property="og:title" content="SSL Certificate Checker — Check Expiry & Set Reminders">
+    <meta property="og:description" content="Check SSL certificate expiry dates and create calendar reminders for renewal.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ops-box.net/tools/ssl-checker.html">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "SSL Certificate Checker",
+        "url": "https://ops-box.net/tools/ssl-checker.html",
+        "description": "Check SSL certificate expiry dates and create renewal reminders",
+        "applicationCategory": "SecurityApplication",
+        "operatingSystem": "Any",
+        "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
+        "featureList": [
+            "SSL certificate expiry check",
+            "Google Calendar reminder",
+            "Outlook calendar reminder",
+            "Certificate details view",
+            "Days until expiry calculation"
+        ]
+    }
+    </script>
+    
+    <style>
+        .cert-result {
+            display: none;
+            margin-top: 1.5rem;
+        }
+        
+        .cert-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .cert-status {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .status-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+        }
+        
+        .status-icon.valid {
+            background: rgba(34, 197, 94, 0.15);
+            color: var(--accent);
+        }
+        
+        .status-icon.warning {
+            background: rgba(251, 191, 36, 0.15);
+            color: #fbbf24;
+        }
+        
+        .status-icon.expired {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+        }
+        
+        .status-text h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .status-text p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        
+        .days-badge {
+            margin-left: auto;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .days-badge.valid {
+            background: rgba(34, 197, 94, 0.15);
+            color: var(--accent);
+        }
+        
+        .days-badge.warning {
+            background: rgba(251, 191, 36, 0.15);
+            color: #fbbf24;
+        }
+        
+        .days-badge.expired {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+        }
+        
+        .cert-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        
+        .cert-detail-item {
+            padding: 1rem;
+            background: var(--bg-card);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+        
+        .cert-detail-item .label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+        
+        .cert-detail-item .value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            word-break: break-all;
+        }
+        
+        .reminder-section {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+        }
+        
+        .reminder-section h3 {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .reminder-section p {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+        }
+        
+        .reminder-date {
+            background: var(--bg-card);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .reminder-date .icon {
+            color: var(--accent);
+            font-size: 1.25rem;
+        }
+        
+        .reminder-date .text {
+            flex: 1;
+        }
+        
+        .reminder-date .text .label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        
+        .reminder-date .text .date {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 500;
+        }
+        
+        .calendar-buttons {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+        
+        .calendar-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            border-radius: 8px;
+            font-weight: 500;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: none;
+        }
+        
+        .calendar-btn.google {
+            background: #4285f4;
+            color: white;
+        }
+        
+        .calendar-btn.google:hover {
+            background: #3367d6;
+        }
+        
+        .calendar-btn.outlook {
+            background: #0078d4;
+            color: white;
+        }
+        
+        .calendar-btn.outlook:hover {
+            background: #006cbe;
+        }
+        
+        .calendar-btn.ics {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+        
+        .calendar-btn.ics:hover {
+            background: var(--border);
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+        }
+        
+        .loading.active {
+            display: block;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .error-box {
+            display: none;
+            padding: 1rem;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 8px;
+            color: #ef4444;
+            margin-top: 1rem;
+        }
+        
+        .bulk-section {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+        }
+        
+        .bulk-section h3 {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .bulk-results {
+            display: none;
+            margin-top: 1rem;
+        }
+        
+        .bulk-results table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+        
+        .bulk-results th,
+        .bulk-results td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .bulk-results th {
+            color: var(--text-muted);
+            font-weight: 500;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .bulk-results td {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+        
+        .status-dot.valid { background: var(--accent); }
+        .status-dot.warning { background: #fbbf24; }
+        .status-dot.expired { background: #ef4444; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <a href="/" class="logo">
+                <div class="logo-icon">⚡</div>
+                <div class="logo-text">OPS<span>-BOX</span></div>
+            </a>
+            <nav class="header-nav">
+                <a href="/tools/password-generator.html">Password</a>
+                <a href="/tools/subnet-calculator.html">Subnet</a>
+                <a href="/tools/mac-vendor-lookup.html">MAC Lookup</a>
+                <a href="/tools/ssl-checker.html">SSL Check</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <nav class="breadcrumb">
+            <a href="/">Home</a><span>›</span><span class="breadcrumb-current">SSL Certificate Checker</span>
+        </nav>
+
+        <div class="tool-container">
+            <div class="tool-header">
+                <h1 class="tool-title">SSL Certificate Checker</h1>
+                <p class="tool-description">Check SSL/TLS certificate expiry dates and create calendar reminders to renew before expiration.</p>
+            </div>
+            <div class="tool-content">
+                <div class="form-group">
+                    <label class="form-label">Website URL or Domain</label>
+                    <input type="text" class="form-input" id="urlInput" placeholder="example.com or https://example.com">
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="checkCertificate()">Check Certificate</button>
+                </div>
+                
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>Checking certificate...</p>
+                </div>
+                
+                <div class="error-box" id="errorBox"></div>
+                
+                <div class="cert-result" id="certResult">
+                    <div class="cert-card">
+                        <div class="cert-status" id="certStatus">
+                            <!-- Filled by JS -->
+                        </div>
+                        <div class="cert-details" id="certDetails">
+                            <!-- Filled by JS -->
+                        </div>
+                    </div>
+                    
+                    <div class="reminder-section" id="reminderSection">
+                        <h3>📅 Set Renewal Reminder</h3>
+                        <p>Create a calendar event 1 month before the certificate expires to remind you to renew.</p>
+                        
+                        <div class="reminder-date" id="reminderDate">
+                            <!-- Filled by JS -->
+                        </div>
+                        
+                        <div class="calendar-buttons" id="calendarButtons">
+                            <!-- Filled by JS -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Bulk Check Section -->
+                <div class="bulk-section">
+                    <h3>Bulk Certificate Check</h3>
+                    <div class="form-group">
+                        <label class="form-label">Multiple Domains (one per line)</label>
+                        <textarea class="form-textarea" id="bulkUrls" placeholder="google.com
+github.com
+cloudflare.com"></textarea>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-secondary" onclick="bulkCheck()">Check All</button>
+                        <button class="btn btn-secondary" onclick="exportBulkCSV()" id="exportBulkBtn" style="display:none;">Export CSV</button>
+                    </div>
+                    
+                    <div class="bulk-results" id="bulkResults">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Domain</th>
+                                    <th>Status</th>
+                                    <th>Expires</th>
+                                    <th>Days Left</th>
+                                    <th>Issuer</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bulkResultsBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <section class="seo-content">
+            <h2>Why Monitor SSL Certificate Expiry?</h2>
+            <p>Expired SSL certificates cause browser security warnings that scare away visitors and damage your site's credibility. They can also break API integrations, email delivery, and other services that rely on valid certificates.</p>
+            
+            <h3>What This Tool Does</h3>
+            <ul>
+                <li><strong>Checks certificate validity</strong> — See if the certificate is valid, expiring soon, or already expired</li>
+                <li><strong>Shows expiry date</strong> — Exact date and time when the certificate expires</li>
+                <li><strong>Calculates days remaining</strong> — Easy to understand countdown</li>
+                <li><strong>Creates calendar reminders</strong> — Google Calendar, Outlook, or ICS file for any calendar app</li>
+                <li><strong>Bulk checking</strong> — Check multiple domains at once and export to CSV</li>
+            </ul>
+            
+            <h3>Certificate Details Explained</h3>
+            <ul>
+                <li><strong>Common Name (CN)</strong> — The primary domain the certificate covers</li>
+                <li><strong>Issuer</strong> — The Certificate Authority (CA) that issued the certificate</li>
+                <li><strong>Valid From</strong> — When the certificate became valid</li>
+                <li><strong>Valid Until</strong> — When the certificate expires</li>
+                <li><strong>Serial Number</strong> — Unique identifier for the certificate</li>
+            </ul>
+            
+            <h3>Best Practices for SSL Management</h3>
+            <ul>
+                <li>Set reminders at least 30 days before expiry</li>
+                <li>Use automated certificate renewal (Let's Encrypt, certbot)</li>
+                <li>Monitor all your domains regularly</li>
+                <li>Keep track of certificates issued by different CAs</li>
+            </ul>
+        </section>
+
+        <section class="related-tools">
+            <h2>Related Tools</h2>
+            <div class="related-grid">
+                <a href="/tools/password-generator.html" class="related-card">
+                    <h3>Password Generator</h3>
+                    <p>Generate secure passwords for your server and certificate management.</p>
+                </a>
+                <a href="/tools/subnet-calculator.html" class="related-card">
+                    <h3>Subnet Calculator</h3>
+                    <p>Plan your network infrastructure and IP addressing.</p>
+                </a>
+                <a href="/tools/hash-generator.html" class="related-card">
+                    <h3>Hash Generator</h3>
+                    <p>Generate SHA-256 hashes for file integrity verification.</p>
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Network Tools</h3>
+                <a href="/tools/subnet-calculator.html">Subnet Calculator</a>
+                <a href="/tools/mac-vendor-lookup.html">MAC Vendor Lookup</a>
+                <a href="/tools/ssl-checker.html">SSL Checker</a>
+            </div>
+            <div class="footer-section">
+                <h3>Security Tools</h3>
+                <a href="/tools/password-generator.html">Password Generator</a>
+                <a href="/tools/hash-generator.html">Hash Generator</a>
+                <a href="/tools/uuid-generator.html">UUID Generator</a>
+            </div>
+            <div class="footer-section">
+                <h3>Developer Tools</h3>
+                <a href="/tools/json-formatter.html">JSON Formatter</a>
+                <a href="/tools/base64-encoder.html">Base64 Encoder</a>
+                <a href="/tools/wifi-qr-generator.html">WiFi QR Generator</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals.</p>
+        </div>
+    </footer>
+
+    <div class="toast" id="toast">Copied to clipboard!</div>
+
+    <script src="../js/common.js"></script>
+    <script>
+        const API_URL = 'https://ssl-api.ops-box.net/';
+        let currentCertData = null;
+        let bulkResults = [];
+        
+        function cleanDomain(input) {
+            let domain = input.trim().toLowerCase();
+            domain = domain.replace(/^https?:\/\//, '');
+            domain = domain.replace(/\/.*$/, '');
+            domain = domain.replace(/:\d+$/, '');
+            return domain;
+        }
+        
+        async function checkCertificate() {
+            const input = document.getElementById('urlInput').value.trim();
+            if (!input) {
+                alert('Please enter a domain or URL');
+                return;
+            }
+            
+            const domain = cleanDomain(input);
+            
+            document.getElementById('loading').classList.add('active');
+            document.getElementById('certResult').style.display = 'none';
+            document.getElementById('errorBox').style.display = 'none';
+            
+            try {
+                const response = await fetch(`${API_URL}?url=${encodeURIComponent(domain)}`);
+                const data = await response.json();
+                
+                document.getElementById('loading').classList.remove('active');
+                
+                if (data.status === 'error' || !data.certificate) {
+                    throw new Error(data.message || 'Could not retrieve certificate information');
+                }
+                
+                currentCertData = data;
+                displayCertificate(data, domain);
+                
+            } catch (error) {
+                document.getElementById('loading').classList.remove('active');
+                document.getElementById('errorBox').textContent = 'Error: ' + error.message;
+                document.getElementById('errorBox').style.display = 'block';
+            }
+        }
+        
+        function displayCertificate(data, domain) {
+            const cert = data.certificate;
+            const now = new Date();
+            const expiryDate = new Date(cert.valid_to);
+            const daysLeft = Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
+            
+            let statusClass, statusIcon, statusText;
+            
+            if (daysLeft < 0) {
+                statusClass = 'expired';
+                statusIcon = '❌';
+                statusText = 'Certificate Expired';
+            } else if (daysLeft <= 30) {
+                statusClass = 'warning';
+                statusIcon = '⚠️';
+                statusText = 'Expiring Soon';
+            } else {
+                statusClass = 'valid';
+                statusIcon = '✅';
+                statusText = 'Certificate Valid';
+            }
+            
+            // Status section
+            document.getElementById('certStatus').innerHTML = `
+                <div class="status-icon ${statusClass}">${statusIcon}</div>
+                <div class="status-text">
+                    <h3>${statusText}</h3>
+                    <p>${domain}</p>
+                </div>
+                <div class="days-badge ${statusClass}">
+                    ${daysLeft < 0 ? 'Expired ' + Math.abs(daysLeft) + ' days ago' : daysLeft + ' days left'}
+                </div>
+            `;
+            
+            // Details section
+            document.getElementById('certDetails').innerHTML = `
+                <div class="cert-detail-item">
+                    <div class="label">Common Name</div>
+                    <div class="value">${cert.common_name || domain}</div>
+                </div>
+                <div class="cert-detail-item">
+                    <div class="label">Issuer</div>
+                    <div class="value">${cert.issuer?.organization || cert.issuer?.common_name || 'Unknown'}</div>
+                </div>
+                <div class="cert-detail-item">
+                    <div class="label">Valid From</div>
+                    <div class="value">${formatDate(cert.valid_from)}</div>
+                </div>
+                <div class="cert-detail-item">
+                    <div class="label">Valid Until</div>
+                    <div class="value">${formatDate(cert.valid_to)}</div>
+                </div>
+                <div class="cert-detail-item">
+                    <div class="label">Serial Number</div>
+                    <div class="value">${cert.serial_number || 'N/A'}</div>
+                </div>
+                <div class="cert-detail-item">
+                    <div class="label">Signature Algorithm</div>
+                    <div class="value">${cert.signature_algorithm || 'N/A'}</div>
+                </div>
+            `;
+            
+            // Reminder section
+            if (daysLeft > 0) {
+                const reminderDate = new Date(expiryDate);
+                reminderDate.setMonth(reminderDate.getMonth() - 1);
+                
+                // If reminder date is in the past, set it to tomorrow
+                if (reminderDate < now) {
+                    reminderDate.setTime(now.getTime() + 24 * 60 * 60 * 1000);
+                }
+                
+                document.getElementById('reminderDate').innerHTML = `
+                    <div class="icon">🔔</div>
+                    <div class="text">
+                        <div class="label">Reminder will be set for</div>
+                        <div class="date">${formatDate(reminderDate.toISOString())} (1 month before expiry)</div>
+                    </div>
+                `;
+                
+                const eventTitle = `Renew SSL Certificate: ${domain}`;
+                const eventDescription = `SSL certificate for ${domain} expires on ${formatDate(cert.valid_to)}.\n\nIssuer: ${cert.issuer?.organization || 'Unknown'}\n\nChecked with OPS-BOX.net`;
+                
+                document.getElementById('calendarButtons').innerHTML = `
+                    <a href="${generateGoogleCalendarUrl(eventTitle, eventDescription, reminderDate)}" target="_blank" class="calendar-btn google">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19.5 3h-15A1.5 1.5 0 003 4.5v15A1.5 1.5 0 004.5 21h15a1.5 1.5 0 001.5-1.5v-15A1.5 1.5 0 0019.5 3zm-9 15h-3v-9h3v9zm4.5 0h-3v-6h3v6zm4.5 0h-3v-3h3v3zM7.5 7.5h9v1.5h-9V7.5z"/></svg>
+                        Google Calendar
+                    </a>
+                    <a href="${generateOutlookCalendarUrl(eventTitle, eventDescription, reminderDate)}" target="_blank" class="calendar-btn outlook">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M21 6h-7V3l-7 4.5L14 12V9h7v11H7v-4H4v7h20V6h-3zM4 12.5l5-3.25v6.5L4 12.5z"/></svg>
+                        Outlook Calendar
+                    </a>
+                    <button onclick="downloadICS('${domain}', '${cert.valid_to}')" class="calendar-btn ics">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Download .ICS
+                    </button>
+                `;
+                
+                document.getElementById('reminderSection').style.display = 'block';
+            } else {
+                document.getElementById('reminderSection').style.display = 'none';
+            }
+            
+            document.getElementById('certResult').style.display = 'block';
+        }
+        
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+        
+        function generateGoogleCalendarUrl(title, description, date) {
+            const startDate = formatDateForCalendar(date);
+            const endDate = formatDateForCalendar(new Date(date.getTime() + 60 * 60 * 1000)); // 1 hour event
+            
+            const params = new URLSearchParams({
+                action: 'TEMPLATE',
+                text: title,
+                details: description,
+                dates: `${startDate}/${endDate}`
+            });
+            
+            return `https://calendar.google.com/calendar/render?${params.toString()}`;
+        }
+        
+        function generateOutlookCalendarUrl(title, description, date) {
+            const startDate = date.toISOString();
+            const endDate = new Date(date.getTime() + 60 * 60 * 1000).toISOString();
+            
+            const params = new URLSearchParams({
+                path: '/calendar/action/compose',
+                rru: 'addevent',
+                subject: title,
+                body: description,
+                startdt: startDate,
+                enddt: endDate
+            });
+            
+            return `https://outlook.live.com/calendar/0/deeplink/compose?${params.toString()}`;
+        }
+        
+        function formatDateForCalendar(date) {
+            return date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+        }
+        
+        function downloadICS(domain, expiryDateStr) {
+            const expiryDate = new Date(expiryDateStr);
+            const reminderDate = new Date(expiryDate);
+            reminderDate.setMonth(reminderDate.getMonth() - 1);
+            
+            const now = new Date();
+            if (reminderDate < now) {
+                reminderDate.setTime(now.getTime() + 24 * 60 * 60 * 1000);
+            }
+            
+            const endDate = new Date(reminderDate.getTime() + 60 * 60 * 1000);
+            
+            const formatICSDate = (d) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+            
+            const icsContent = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//OPS-BOX.net//SSL Checker//EN
+BEGIN:VEVENT
+UID:${Date.now()}@ops-box.net
+DTSTAMP:${formatICSDate(now)}
+DTSTART:${formatICSDate(reminderDate)}
+DTEND:${formatICSDate(endDate)}
+SUMMARY:Renew SSL Certificate: ${domain}
+DESCRIPTION:SSL certificate for ${domain} expires on ${formatDate(expiryDateStr)}.\\n\\nChecked with OPS-BOX.net
+BEGIN:VALARM
+TRIGGER:-PT30M
+ACTION:DISPLAY
+DESCRIPTION:SSL Certificate Renewal Reminder
+END:VALARM
+END:VEVENT
+END:VCALENDAR`;
+            
+            const blob = new Blob([icsContent], { type: 'text/calendar' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `ssl-reminder-${domain}.ics`;
+            link.click();
+            
+            showToast('ICS file downloaded!');
+        }
+        
+        // Bulk check functionality
+        async function bulkCheck() {
+            const input = document.getElementById('bulkUrls').value.trim();
+            if (!input) {
+                alert('Please enter at least one domain');
+                return;
+            }
+            
+            const domains = input.split('\n').map(d => cleanDomain(d)).filter(d => d);
+            
+            if (domains.length === 0) {
+                alert('No valid domains found');
+                return;
+            }
+            
+            if (domains.length > 20) {
+                alert('Maximum 20 domains allowed at once');
+                return;
+            }
+            
+            bulkResults = [];
+            const tbody = document.getElementById('bulkResultsBody');
+            tbody.innerHTML = '';
+            document.getElementById('bulkResults').style.display = 'block';
+            document.getElementById('exportBulkBtn').style.display = 'none';
+            
+            for (const domain of domains) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${domain}</td>
+                    <td><span class="status-dot"></span>Checking...</td>
+                    <td>—</td>
+                    <td>—</td>
+                    <td>—</td>
+                `;
+                tbody.appendChild(row);
+                
+                try {
+                    const response = await fetch(`${API_URL}?url=${encodeURIComponent(domain)}`);
+                    const data = await response.json();
+                    
+                    if (data.status === 'error' || !data.certificate) {
+                        row.innerHTML = `
+                            <td>${domain}</td>
+                            <td><span class="status-dot expired"></span>Error</td>
+                            <td>—</td>
+                            <td>—</td>
+                            <td>—</td>
+                        `;
+                        bulkResults.push({ domain, status: 'Error', expires: '', daysLeft: '', issuer: '' });
+                    } else {
+                        const cert = data.certificate;
+                        const expiryDate = new Date(cert.valid_to);
+                        const daysLeft = Math.ceil((expiryDate - new Date()) / (1000 * 60 * 60 * 24));
+                        
+                        let statusClass = daysLeft < 0 ? 'expired' : (daysLeft <= 30 ? 'warning' : 'valid');
+                        let statusText = daysLeft < 0 ? 'Expired' : (daysLeft <= 30 ? 'Warning' : 'Valid');
+                        
+                        row.innerHTML = `
+                            <td>${domain}</td>
+                            <td><span class="status-dot ${statusClass}"></span>${statusText}</td>
+                            <td>${formatDate(cert.valid_to)}</td>
+                            <td>${daysLeft}</td>
+                            <td>${cert.issuer?.organization || cert.issuer?.common_name || 'Unknown'}</td>
+                        `;
+                        
+                        bulkResults.push({
+                            domain,
+                            status: statusText,
+                            expires: cert.valid_to,
+                            daysLeft: daysLeft,
+                            issuer: cert.issuer?.organization || cert.issuer?.common_name || 'Unknown'
+                        });
+                    }
+                } catch (e) {
+                    row.innerHTML = `
+                        <td>${domain}</td>
+                        <td><span class="status-dot expired"></span>Failed</td>
+                        <td>—</td>
+                        <td>—</td>
+                        <td>—</td>
+                    `;
+                    bulkResults.push({ domain, status: 'Failed', expires: '', daysLeft: '', issuer: '' });
+                }
+                
+                // Small delay between requests
+                await new Promise(r => setTimeout(r, 300));
+            }
+            
+            document.getElementById('exportBulkBtn').style.display = 'inline-flex';
+        }
+        
+        function exportBulkCSV() {
+            if (bulkResults.length === 0) return;
+            
+            let csv = 'Domain,Status,Expires,Days Left,Issuer\n';
+            bulkResults.forEach(r => {
+                csv += `"${r.domain}","${r.status}","${r.expires}","${r.daysLeft}","${r.issuer}"\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'ssl-certificates.csv';
+            link.click();
+            
+            showToast('CSV exported!');
+        }
+        
+        // Allow Enter key to submit
+        document.getElementById('urlInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') checkCertificate();
+        });
+    </script>
+</body>
+</html>
