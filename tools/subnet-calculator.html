@@ -3,52 +3,363 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Subnet Calculator — IP Network Calculator with CIDR | OPS-BOX</title>
-    <meta name="description" content="Free online subnet calculator. Calculate network address, broadcast address, host range, wildcard mask from any IP and CIDR. Supports IPv4 subnetting for network engineers.">
-    <meta name="keywords" content="subnet calculator, CIDR calculator, IP calculator, network calculator, subnet mask calculator, wildcard mask, IPv4 subnetting, network address calculator">
+    <title>Subnet Calculator — VLSM, IP Range, CIDR Calculator | OPS-BOX</title>
+    <meta name="description" content="Advanced subnet calculator with VLSM planning, subnet splitting, IP range to CIDR conversion, and supernetting. Calculate network addresses, broadcast, host ranges with visual diagrams.">
+    <meta name="keywords" content="subnet calculator, VLSM calculator, CIDR calculator, IP calculator, network calculator, subnet mask calculator, wildcard mask, IPv4 subnetting, supernet calculator, IP range to CIDR">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://ops-box.net/tools/subnet-calculator.html">
     
-    <!-- Open Graph -->
-    <meta property="og:title" content="Subnet Calculator — IP Network Calculator with CIDR">
-    <meta property="og:description" content="Calculate network addresses, broadcast addresses, host ranges, and CIDR notation for any IP subnet.">
+    <meta property="og:title" content="Subnet Calculator — VLSM, IP Range, CIDR Calculator">
+    <meta property="og:description" content="Advanced subnet calculator with VLSM planning, subnet splitting, and IP range conversion.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://ops-box.net/tools/subnet-calculator.html">
     
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
     <link rel="stylesheet" href="../css/style.css">
     
-    <!-- Structured Data -->
     <script type="application/ld+json">
     {
         "@context": "https://schema.org",
         "@type": "WebApplication",
-        "name": "Subnet Calculator",
+        "name": "Advanced Subnet Calculator",
         "url": "https://ops-box.net/tools/subnet-calculator.html",
-        "description": "Calculate network addresses, broadcast addresses, and host ranges for IP subnets",
+        "description": "Calculate subnets with VLSM, subnet splitting, IP range to CIDR conversion",
         "applicationCategory": "NetworkingApplication",
         "operatingSystem": "Any",
-        "offers": {
-            "@type": "Offer",
-            "price": "0",
-            "priceCurrency": "USD"
+        "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
+        "featureList": ["Subnet calculation", "VLSM planning", "Subnet splitting", "IP range to CIDR", "Supernetting", "Binary visualization"]
+    }
+    </script>
+    
+    <style>
+        .tool-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1rem;
+            flex-wrap: wrap;
         }
-    }
-    </script>
-    <script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "BreadcrumbList",
-        "itemListElement": [
-            {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://ops-box.net/"},
-            {"@type": "ListItem", "position": 2, "name": "Subnet Calculator", "item": "https://ops-box.net/tools/subnet-calculator.html"}
-        ]
-    }
-    </script>
+        
+        .tool-tab {
+            padding: 0.6rem 1rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        .tool-tab:hover {
+            background: var(--bg-card);
+            color: var(--text-primary);
+        }
+        
+        .tool-tab.active {
+            background: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .subnet-results {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+        }
+        
+        .subnet-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            position: relative;
+        }
+        
+        .subnet-card-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+        
+        .subnet-card-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            word-break: break-all;
+        }
+        
+        .subnet-card .copy-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 0.25rem;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        
+        .subnet-card:hover .copy-btn {
+            opacity: 1;
+        }
+        
+        .subnet-card .copy-btn:hover {
+            color: var(--accent);
+        }
+        
+        .binary-display {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            overflow-x: auto;
+        }
+        
+        .binary-row {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            align-items: center;
+        }
+        
+        .binary-label {
+            width: 100px;
+            color: var(--text-muted);
+            flex-shrink: 0;
+        }
+        
+        .binary-value {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .binary-octet {
+            padding: 0.25rem 0.5rem;
+            background: var(--bg-card);
+            border-radius: 4px;
+        }
+        
+        .binary-octet .network-bits {
+            color: var(--accent);
+        }
+        
+        .binary-octet .host-bits {
+            color: var(--info);
+        }
+        
+        .vlsm-input-row {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+            align-items: center;
+        }
+        
+        .vlsm-input-row input {
+            flex: 1;
+        }
+        
+        .vlsm-input-row .remove-btn {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        
+        .add-subnet-btn {
+            margin-top: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-secondary);
+            border: 1px dashed var(--border);
+            color: var(--text-secondary);
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+        }
+        
+        .add-subnet-btn:hover {
+            background: var(--bg-card);
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+        
+        .vlsm-results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+        }
+        
+        .vlsm-results-table th,
+        .vlsm-results-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .vlsm-results-table th {
+            color: var(--text-muted);
+            font-weight: 500;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            background: var(--bg-secondary);
+        }
+        
+        .vlsm-results-table td {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .vlsm-results-table tr:hover {
+            background: var(--bg-secondary);
+        }
+        
+        .subnet-visual {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+        
+        .subnet-bar {
+            height: 30px;
+            background: var(--bg-card);
+            border-radius: 6px;
+            overflow: hidden;
+            display: flex;
+            margin-top: 0.5rem;
+        }
+        
+        .subnet-segment {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: #fff;
+            min-width: 2px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            padding: 0 0.25rem;
+        }
+        
+        .cidr-reference {
+            margin-top: 1.5rem;
+        }
+        
+        .cidr-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+        
+        .cidr-table th,
+        .cidr-table td {
+            padding: 0.5rem 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .cidr-table th {
+            color: var(--text-muted);
+            font-weight: 500;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            background: var(--bg-secondary);
+        }
+        
+        .cidr-table td {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .cidr-table tr:hover {
+            background: var(--bg-secondary);
+        }
+        
+        .cidr-table .clickable {
+            cursor: pointer;
+            color: var(--accent);
+        }
+        
+        .cidr-table .clickable:hover {
+            text-decoration: underline;
+        }
+        
+        .summary-box {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .summary-box.warning {
+            background: rgba(251, 191, 36, 0.1);
+            border-color: rgba(251, 191, 36, 0.3);
+        }
+        
+        .summary-box.error {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+        
+        .export-btns {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .ip-input-group {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        
+        .ip-input-group span {
+            color: var(--text-muted);
+        }
+        
+        @media (max-width: 640px) {
+            .tool-tabs {
+                gap: 0.25rem;
+            }
+            .tool-tab {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.75rem;
+            }
+            .binary-display {
+                font-size: 0.7rem;
+            }
+            .binary-label {
+                width: 70px;
+            }
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -61,81 +372,247 @@
                 <a href="/tools/password-generator.html">Password</a>
                 <a href="/tools/subnet-calculator.html">Subnet</a>
                 <a href="/tools/mac-vendor-lookup.html">MAC Lookup</a>
-                <a href="/tools/hash-generator.html">Hash</a>
+                <a href="/tools/ssl-checker.html">SSL Check</a>
             </nav>
         </div>
     </header>
 
     <main>
         <nav class="breadcrumb">
-            <a href="/">Home</a>
-            <span>›</span>
-            <span class="breadcrumb-current">Subnet Calculator</span>
+            <a href="/">Home</a><span>›</span><span class="breadcrumb-current">Subnet Calculator</span>
         </nav>
 
         <div class="tool-container">
             <div class="tool-header">
-                <h1 class="tool-title">Subnet Calculator</h1>
-                <p class="tool-description">Calculate network addresses, broadcast addresses, host ranges, and CIDR notation for any IPv4 subnet.</p>
+                <h1 class="tool-title">Advanced Subnet Calculator</h1>
+                <p class="tool-description">Calculate subnets, plan VLSM, split networks, convert IP ranges, and aggregate subnets.</p>
             </div>
+            
+            <div class="tool-tabs">
+                <button class="tool-tab active" onclick="switchTab('basic')">Subnet Calc</button>
+                <button class="tool-tab" onclick="switchTab('vlsm')">VLSM Planner</button>
+                <button class="tool-tab" onclick="switchTab('split')">Subnet Splitter</button>
+                <button class="tool-tab" onclick="switchTab('range')">IP Range → CIDR</button>
+                <button class="tool-tab" onclick="switchTab('supernet')">Supernet</button>
+                <button class="tool-tab" onclick="switchTab('reference')">CIDR Reference</button>
+            </div>
+            
             <div class="tool-content">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label">IP Address</label>
-                        <input type="text" class="form-input" id="subnetIP" placeholder="192.168.1.0">
+                <!-- Basic Subnet Calculator -->
+                <div id="tab-basic" class="tab-content active">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">IP Address</label>
+                            <input type="text" class="form-input" id="subnetIP" placeholder="192.168.1.0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">CIDR / Subnet Mask</label>
+                            <input type="text" class="form-input" id="subnetMask" placeholder="/24 or 255.255.255.0">
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">CIDR / Subnet Mask</label>
-                        <input type="text" class="form-input" id="subnetMask" placeholder="/24 or 255.255.255.0">
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="calculateSubnet()">Calculate</button>
+                    </div>
+                    
+                    <div id="subnetResults" style="display: none;">
+                        <div class="subnet-results">
+                            <div class="subnet-card">
+                                <button class="copy-btn" onclick="copyValue('netAddress')">📋</button>
+                                <div class="subnet-card-label">Network Address</div>
+                                <div class="subnet-card-value" id="netAddress">—</div>
+                            </div>
+                            <div class="subnet-card">
+                                <button class="copy-btn" onclick="copyValue('broadcastAddress')">📋</button>
+                                <div class="subnet-card-label">Broadcast Address</div>
+                                <div class="subnet-card-value" id="broadcastAddress">—</div>
+                            </div>
+                            <div class="subnet-card">
+                                <button class="copy-btn" onclick="copyValue('firstHost')">📋</button>
+                                <div class="subnet-card-label">First Usable Host</div>
+                                <div class="subnet-card-value" id="firstHost">—</div>
+                            </div>
+                            <div class="subnet-card">
+                                <button class="copy-btn" onclick="copyValue('lastHost')">📋</button>
+                                <div class="subnet-card-label">Last Usable Host</div>
+                                <div class="subnet-card-value" id="lastHost">—</div>
+                            </div>
+                            <div class="subnet-card">
+                                <div class="subnet-card-label">Total Addresses</div>
+                                <div class="subnet-card-value" id="totalHosts">—</div>
+                            </div>
+                            <div class="subnet-card">
+                                <div class="subnet-card-label">Usable Hosts</div>
+                                <div class="subnet-card-value" id="usableHosts">—</div>
+                            </div>
+                            <div class="subnet-card">
+                                <button class="copy-btn" onclick="copyValue('subnetMaskResult')">📋</button>
+                                <div class="subnet-card-label">Subnet Mask</div>
+                                <div class="subnet-card-value" id="subnetMaskResult">—</div>
+                            </div>
+                            <div class="subnet-card">
+                                <button class="copy-btn" onclick="copyValue('wildcardMask')">📋</button>
+                                <div class="subnet-card-label">Wildcard Mask</div>
+                                <div class="subnet-card-value" id="wildcardMask">—</div>
+                            </div>
+                            <div class="subnet-card">
+                                <div class="subnet-card-label">IP Class</div>
+                                <div class="subnet-card-value" id="ipClass">—</div>
+                            </div>
+                            <div class="subnet-card">
+                                <div class="subnet-card-label">CIDR Notation</div>
+                                <div class="subnet-card-value" id="cidrNotation">—</div>
+                            </div>
+                            <div class="subnet-card">
+                                <div class="subnet-card-label">IP Type</div>
+                                <div class="subnet-card-value" id="ipType">—</div>
+                            </div>
+                            <div class="subnet-card">
+                                <div class="subnet-card-label">Binary Mask</div>
+                                <div class="subnet-card-value" id="binaryMask" style="font-size: 0.7rem;">—</div>
+                            </div>
+                        </div>
+                        
+                        <div class="binary-display" id="binaryDisplay"></div>
+                        
+                        <div class="subnet-visual">
+                            <div class="subnet-card-label">Network Visualization</div>
+                            <div class="subnet-bar" id="subnetBar"></div>
+                            <div style="display: flex; justify-content: space-between; margin-top: 0.5rem; font-size: 0.75rem; color: var(--text-muted);">
+                                <span id="barStart"></span>
+                                <span id="barEnd"></span>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="btn-group">
-                    <button class="btn btn-primary" onclick="calculateSubnet()">Calculate</button>
+                
+                <!-- VLSM Planner -->
+                <div id="tab-vlsm" class="tab-content">
+                    <div class="form-group">
+                        <label class="form-label">Network Address (CIDR)</label>
+                        <input type="text" class="form-input" id="vlsmNetwork" placeholder="192.168.1.0/24">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Subnets (Name and Hosts Required)</label>
+                        <div id="vlsmInputs">
+                            <div class="vlsm-input-row">
+                                <input type="text" class="form-input" placeholder="Subnet name (e.g., Sales)">
+                                <input type="number" class="form-input" placeholder="Hosts needed" min="1">
+                                <button class="remove-btn" onclick="removeVlsmRow(this)">✕</button>
+                            </div>
+                            <div class="vlsm-input-row">
+                                <input type="text" class="form-input" placeholder="Subnet name (e.g., IT)">
+                                <input type="number" class="form-input" placeholder="Hosts needed" min="1">
+                                <button class="remove-btn" onclick="removeVlsmRow(this)">✕</button>
+                            </div>
+                        </div>
+                        <button class="add-subnet-btn" onclick="addVlsmRow()">+ Add Subnet</button>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="calculateVLSM()">Calculate VLSM</button>
+                    </div>
+                    <div id="vlsmResults"></div>
                 </div>
-                <div class="subnet-results" id="subnetResults" style="display: none;">
-                    <div class="subnet-card"><div class="subnet-card-label">Network Address</div><div class="subnet-card-value" id="netAddress">—</div></div>
-                    <div class="subnet-card"><div class="subnet-card-label">Broadcast Address</div><div class="subnet-card-value" id="broadcastAddress">—</div></div>
-                    <div class="subnet-card"><div class="subnet-card-label">First Usable Host</div><div class="subnet-card-value" id="firstHost">—</div></div>
-                    <div class="subnet-card"><div class="subnet-card-label">Last Usable Host</div><div class="subnet-card-value" id="lastHost">—</div></div>
-                    <div class="subnet-card"><div class="subnet-card-label">Total Addresses</div><div class="subnet-card-value" id="totalHosts">—</div></div>
-                    <div class="subnet-card"><div class="subnet-card-label">Usable Hosts</div><div class="subnet-card-value" id="usableHosts">—</div></div>
-                    <div class="subnet-card"><div class="subnet-card-label">Subnet Mask</div><div class="subnet-card-value" id="subnetMaskResult">—</div></div>
-                    <div class="subnet-card"><div class="subnet-card-label">Wildcard Mask</div><div class="subnet-card-value" id="wildcardMask">—</div></div>
-                    <div class="subnet-card"><div class="subnet-card-label">IP Class</div><div class="subnet-card-value" id="ipClass">—</div></div>
-                    <div class="subnet-card"><div class="subnet-card-label">CIDR Notation</div><div class="subnet-card-value" id="cidrNotation">—</div></div>
-                    <div class="subnet-card"><div class="subnet-card-label">IP Type</div><div class="subnet-card-value" id="ipType">—</div></div>
+                
+                <!-- Subnet Splitter -->
+                <div id="tab-split" class="tab-content">
+                    <div class="form-group">
+                        <label class="form-label">Network Address (CIDR)</label>
+                        <input type="text" class="form-input" id="splitNetwork" placeholder="10.0.0.0/8">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Split Into</label>
+                            <select class="form-select" id="splitMethod">
+                                <option value="subnets">Number of Subnets</option>
+                                <option value="hosts">Hosts per Subnet</option>
+                                <option value="cidr">New CIDR</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Value</label>
+                            <input type="number" class="form-input" id="splitValue" placeholder="4" min="1">
+                        </div>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="splitSubnet()">Split Network</button>
+                    </div>
+                    <div id="splitResults"></div>
+                </div>
+                
+                <!-- IP Range to CIDR -->
+                <div id="tab-range" class="tab-content">
+                    <div class="form-group">
+                        <label class="form-label">IP Range</label>
+                        <div class="ip-input-group">
+                            <input type="text" class="form-input" id="rangeStart" placeholder="192.168.1.0">
+                            <span>to</span>
+                            <input type="text" class="form-input" id="rangeEnd" placeholder="192.168.1.255">
+                        </div>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="rangeToCIDR()">Convert to CIDR</button>
+                    </div>
+                    <div id="rangeResults"></div>
+                </div>
+                
+                <!-- Supernet Calculator -->
+                <div id="tab-supernet" class="tab-content">
+                    <div class="form-group">
+                        <label class="form-label">Networks to Aggregate (one per line)</label>
+                        <textarea class="form-textarea" id="supernetInput" placeholder="192.168.0.0/24
+192.168.1.0/24
+192.168.2.0/24
+192.168.3.0/24"></textarea>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="calculateSupernet()">Calculate Supernet</button>
+                    </div>
+                    <div id="supernetResults"></div>
+                </div>
+                
+                <!-- CIDR Reference -->
+                <div id="tab-reference" class="tab-content">
+                    <div class="cidr-reference">
+                        <table class="cidr-table">
+                            <thead>
+                                <tr>
+                                    <th>CIDR</th>
+                                    <th>Subnet Mask</th>
+                                    <th>Wildcard</th>
+                                    <th>Addresses</th>
+                                    <th>Usable Hosts</th>
+                                    <th>Class</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cidrTableBody">
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
 
         <section class="seo-content">
-            <h2>How to Use the Subnet Calculator</h2>
-            <p>Enter an IP address and subnet mask (in CIDR notation like /24 or dotted decimal like 255.255.255.0) to calculate all subnet details including network address, broadcast address, and usable host range.</p>
+            <h2>Advanced Subnet Calculator Features</h2>
+            <p>This comprehensive subnet calculator provides all the tools network engineers need for IP address planning and management.</p>
             
-            <h3>Understanding Subnet Results</h3>
-            <ul>
-                <li><strong>Network Address</strong> — The first address in the subnet, identifies the network itself</li>
-                <li><strong>Broadcast Address</strong> — The last address in the subnet, used to send packets to all hosts</li>
-                <li><strong>First/Last Usable Host</strong> — The range of IP addresses you can assign to devices</li>
-                <li><strong>Wildcard Mask</strong> — Inverse of subnet mask, used in Cisco ACLs and OSPF</li>
-            </ul>
+            <h3>Subnet Calculator</h3>
+            <p>Enter any IP address and CIDR notation or subnet mask to instantly calculate network address, broadcast address, host range, wildcard mask, and see a visual binary representation.</p>
             
-            <h3>Common Subnet Masks</h3>
-            <ul>
-                <li><strong>/8 (255.0.0.0)</strong> — Class A, 16 million hosts</li>
-                <li><strong>/16 (255.255.0.0)</strong> — Class B, 65,534 hosts</li>
-                <li><strong>/24 (255.255.255.0)</strong> — Class C, 254 hosts</li>
-                <li><strong>/30 (255.255.255.252)</strong> — Point-to-point links, 2 hosts</li>
-                <li><strong>/32 (255.255.255.255)</strong> — Host route, 1 host</li>
-            </ul>
+            <h3>VLSM Planner</h3>
+            <p>Variable Length Subnet Masking (VLSM) allows you to divide a network into subnets of different sizes based on actual host requirements. This is more efficient than using equal-sized subnets.</p>
             
-            <h3>Private IP Address Ranges (RFC 1918)</h3>
-            <p>The calculator identifies private vs public IP addresses:</p>
-            <ul>
-                <li><strong>10.0.0.0/8</strong> — 10.0.0.0 to 10.255.255.255</li>
-                <li><strong>172.16.0.0/12</strong> — 172.16.0.0 to 172.31.255.255</li>
-                <li><strong>192.168.0.0/16</strong> — 192.168.0.0 to 192.168.255.255</li>
-            </ul>
+            <h3>Subnet Splitter</h3>
+            <p>Split any network into smaller subnets by specifying the number of subnets needed, hosts per subnet, or the target CIDR. Useful for planning new network segments.</p>
+            
+            <h3>IP Range to CIDR</h3>
+            <p>Convert a range of IP addresses to CIDR notation. The tool finds the minimum number of CIDR blocks needed to exactly cover the specified range.</p>
+            
+            <h3>Supernet Calculator</h3>
+            <p>Aggregate multiple contiguous networks into a single supernet (route summarization). This reduces routing table size and improves network efficiency.</p>
+            
+            <h3>CIDR Reference Table</h3>
+            <p>Quick reference for all CIDR notations from /0 to /32 showing subnet masks, wildcard masks, and host counts.</p>
         </section>
 
         <section class="related-tools">
@@ -145,9 +622,13 @@
                     <h3>MAC Vendor Lookup</h3>
                     <p>Identify device manufacturers from MAC addresses on your network.</p>
                 </a>
-                <a href="/tools/mac-address-formatter.html" class="related-card">
-                    <h3>MAC Address Formatter</h3>
-                    <p>Convert MAC addresses between colon, hyphen, and Cisco formats.</p>
+                <a href="/tools/ssl-checker.html" class="related-card">
+                    <h3>SSL Certificate Checker</h3>
+                    <p>Check SSL certificate expiry and set renewal reminders.</p>
+                </a>
+                <a href="/tools/wifi-qr-generator.html" class="related-card">
+                    <h3>WiFi QR Generator</h3>
+                    <p>Generate WiFi QR codes for easy network access.</p>
                 </a>
             </div>
         </section>
@@ -159,12 +640,14 @@
                 <h3>Network Tools</h3>
                 <a href="/tools/subnet-calculator.html">Subnet Calculator</a>
                 <a href="/tools/mac-vendor-lookup.html">MAC Vendor Lookup</a>
-                <a href="/tools/mac-address-formatter.html">MAC Formatter</a>
+                <a href="/tools/ssl-checker.html">SSL Checker</a>
+                <a href="/tools/wifi-qr-generator.html">WiFi QR Generator</a>
             </div>
             <div class="footer-section">
                 <h3>Security Tools</h3>
                 <a href="/tools/password-generator.html">Password Generator</a>
                 <a href="/tools/hash-generator.html">Hash Generator</a>
+                <a href="/tools/uuid-generator.html">UUID Generator</a>
             </div>
             <div class="footer-section">
                 <h3>Developer Tools</h3>
@@ -181,6 +664,80 @@
 
     <script src="../js/common.js"></script>
     <script>
+        // Tab switching
+        function switchTab(tabId) {
+            document.querySelectorAll('.tool-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelector(`[onclick="switchTab('${tabId}')"]`).classList.add('active');
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+            
+            if (tabId === 'reference') generateCIDRTable();
+        }
+        
+        // Utility functions
+        function parseIP(ip) {
+            const parts = ip.trim().split('.').map(Number);
+            if (parts.length !== 4 || parts.some(p => isNaN(p) || p < 0 || p > 255)) return null;
+            return (parts[0] << 24 >>> 0) + (parts[1] << 16) + (parts[2] << 8) + parts[3];
+        }
+        
+        function toIP(n) {
+            return [(n >>> 24) & 255, (n >>> 16) & 255, (n >>> 8) & 255, n & 255].join('.');
+        }
+        
+        function parseCIDR(input) {
+            input = input.trim();
+            let ip, cidr;
+            
+            if (input.includes('/')) {
+                const parts = input.split('/');
+                ip = parseIP(parts[0]);
+                cidr = parseInt(parts[1]);
+            } else {
+                ip = parseIP(input);
+                cidr = 24;
+            }
+            
+            if (ip === null || isNaN(cidr) || cidr < 0 || cidr > 32) return null;
+            return { ip, cidr };
+        }
+        
+        function getMask(cidr) {
+            return cidr === 0 ? 0 : (~0 << (32 - cidr)) >>> 0;
+        }
+        
+        function getNetwork(ip, cidr) {
+            return (ip & getMask(cidr)) >>> 0;
+        }
+        
+        function getBroadcast(network, cidr) {
+            return (network | (~getMask(cidr) >>> 0)) >>> 0;
+        }
+        
+        function getHostCount(cidr) {
+            return Math.pow(2, 32 - cidr);
+        }
+        
+        function getUsableHosts(cidr) {
+            const total = getHostCount(cidr);
+            return cidr >= 31 ? total : total - 2;
+        }
+        
+        function cidrForHosts(hosts) {
+            // Find smallest CIDR that can fit required hosts + 2 (network + broadcast)
+            for (let c = 30; c >= 0; c--) {
+                if (getUsableHosts(c) >= hosts) return c;
+            }
+            return 0;
+        }
+        
+        function copyValue(id) {
+            const text = document.getElementById(id).textContent;
+            navigator.clipboard.writeText(text);
+            showToast('Copied: ' + text);
+        }
+        
+        // Basic Subnet Calculator
         function calculateSubnet() {
             const ipInput = document.getElementById('subnetIP').value.trim();
             let maskInput = document.getElementById('subnetMask').value.trim();
@@ -188,9 +745,8 @@
             if (!ipInput) { alert('Enter an IP address'); return; }
             
             const ipParts = ipInput.split('.').map(Number);
-            if (ipParts.length !== 4 || ipParts.some(p => isNaN(p) || p < 0 || p > 255)) { 
-                alert('Invalid IP address'); 
-                return; 
+            if (ipParts.length !== 4 || ipParts.some(p => isNaN(p) || p < 0 || p > 255)) {
+                alert('Invalid IP address'); return;
             }
             
             let cidr;
@@ -206,15 +762,12 @@
             
             if (cidr < 0 || cidr > 32) { alert('Invalid CIDR (0-32)'); return; }
             
-            const ip = (ipParts[0] << 24) + (ipParts[1] << 16) + (ipParts[2] << 8) + ipParts[3];
-            const mask = cidr === 0 ? 0 : (~0 << (32 - cidr)) >>> 0;
-            const network = (ip & mask) >>> 0;
-            const broadcast = (network | (~mask >>> 0)) >>> 0;
-            
-            const toIP = n => [(n >>> 24) & 255, (n >>> 16) & 255, (n >>> 8) & 255, n & 255].join('.');
-            
-            const totalHosts = Math.pow(2, 32 - cidr);
-            const usableHosts = cidr >= 31 ? totalHosts : totalHosts - 2;
+            const ip = parseIP(ipInput);
+            const mask = getMask(cidr);
+            const network = getNetwork(ip, cidr);
+            const broadcast = getBroadcast(network, cidr);
+            const totalHosts = getHostCount(cidr);
+            const usableHosts = getUsableHosts(cidr);
             
             document.getElementById('netAddress').textContent = toIP(network);
             document.getElementById('broadcastAddress').textContent = toIP(broadcast);
@@ -226,9 +779,15 @@
             document.getElementById('wildcardMask').textContent = toIP((~mask >>> 0));
             document.getElementById('cidrNotation').textContent = '/' + cidr;
             
+            // Binary mask
+            const binaryMask = mask.toString(2).padStart(32, '0');
+            document.getElementById('binaryMask').textContent = binaryMask.match(/.{8}/g).join('.');
+            
+            // IP Class
             let ipClass = ipParts[0] < 128 ? 'A' : ipParts[0] < 192 ? 'B' : ipParts[0] < 224 ? 'C' : ipParts[0] < 240 ? 'D' : 'E';
             document.getElementById('ipClass').textContent = 'Class ' + ipClass;
             
+            // IP Type
             let ipType = 'Public';
             if (ipParts[0] === 10 || (ipParts[0] === 172 && ipParts[1] >= 16 && ipParts[1] <= 31) || (ipParts[0] === 192 && ipParts[1] === 168)) {
                 ipType = 'Private (RFC 1918)';
@@ -236,11 +795,465 @@
                 ipType = 'Loopback';
             } else if (ipParts[0] === 169 && ipParts[1] === 254) {
                 ipType = 'Link-Local (APIPA)';
+            } else if (ipParts[0] >= 224 && ipParts[0] <= 239) {
+                ipType = 'Multicast';
             }
             document.getElementById('ipType').textContent = ipType;
             
-            document.getElementById('subnetResults').style.display = 'grid';
+            // Binary display
+            const ipBinary = ip.toString(2).padStart(32, '0');
+            const netBinary = network.toString(2).padStart(32, '0');
+            const broadBinary = broadcast.toString(2).padStart(32, '0');
+            
+            document.getElementById('binaryDisplay').innerHTML = `
+                <div class="binary-row">
+                    <span class="binary-label">IP Address:</span>
+                    <div class="binary-value">
+                        ${ipBinary.match(/.{8}/g).map((octet, i) => `
+                            <span class="binary-octet">
+                                <span class="network-bits">${octet.substring(0, Math.min(8, Math.max(0, cidr - i*8)))}</span><span class="host-bits">${octet.substring(Math.min(8, Math.max(0, cidr - i*8)))}</span>
+                            </span>
+                        `).join('')}
+                    </div>
+                </div>
+                <div class="binary-row">
+                    <span class="binary-label">Subnet Mask:</span>
+                    <div class="binary-value">
+                        ${binaryMask.match(/.{8}/g).map(octet => `<span class="binary-octet">${octet}</span>`).join('')}
+                    </div>
+                </div>
+                <div class="binary-row">
+                    <span class="binary-label">Network:</span>
+                    <div class="binary-value">
+                        ${netBinary.match(/.{8}/g).map(octet => `<span class="binary-octet">${octet}</span>`).join('')}
+                    </div>
+                </div>
+                <div class="binary-row">
+                    <span class="binary-label">Broadcast:</span>
+                    <div class="binary-value">
+                        ${broadBinary.match(/.{8}/g).map(octet => `<span class="binary-octet">${octet}</span>`).join('')}
+                    </div>
+                </div>
+                <div style="margin-top: 0.75rem; font-size: 0.75rem; color: var(--text-muted);">
+                    <span style="color: var(--accent);">■</span> Network bits (${cidr}) &nbsp;&nbsp;
+                    <span style="color: var(--info);">■</span> Host bits (${32 - cidr})
+                </div>
+            `;
+            
+            // Visual bar
+            document.getElementById('subnetBar').innerHTML = `
+                <div class="subnet-segment" style="width: 1px; background: #ef4444;" title="Network: ${toIP(network)}"></div>
+                <div class="subnet-segment" style="flex: 1; background: var(--accent);" title="${usableHosts.toLocaleString()} usable hosts">${usableHosts > 10 ? usableHosts.toLocaleString() + ' hosts' : ''}</div>
+                <div class="subnet-segment" style="width: 1px; background: #3b82f6;" title="Broadcast: ${toIP(broadcast)}"></div>
+            `;
+            document.getElementById('barStart').textContent = toIP(network);
+            document.getElementById('barEnd').textContent = toIP(broadcast);
+            
+            document.getElementById('subnetResults').style.display = 'block';
         }
+        
+        // VLSM Planner
+        function addVlsmRow() {
+            const container = document.getElementById('vlsmInputs');
+            const row = document.createElement('div');
+            row.className = 'vlsm-input-row';
+            row.innerHTML = `
+                <input type="text" class="form-input" placeholder="Subnet name">
+                <input type="number" class="form-input" placeholder="Hosts needed" min="1">
+                <button class="remove-btn" onclick="removeVlsmRow(this)">✕</button>
+            `;
+            container.appendChild(row);
+        }
+        
+        function removeVlsmRow(btn) {
+            const rows = document.querySelectorAll('.vlsm-input-row');
+            if (rows.length > 1) btn.parentElement.remove();
+        }
+        
+        function calculateVLSM() {
+            const networkInput = document.getElementById('vlsmNetwork').value;
+            const parsed = parseCIDR(networkInput);
+            
+            if (!parsed) { alert('Invalid network address'); return; }
+            
+            const rows = document.querySelectorAll('.vlsm-input-row');
+            const subnets = [];
+            
+            rows.forEach(row => {
+                const inputs = row.querySelectorAll('input');
+                const name = inputs[0].value.trim() || 'Unnamed';
+                const hosts = parseInt(inputs[1].value) || 0;
+                if (hosts > 0) subnets.push({ name, hosts });
+            });
+            
+            if (subnets.length === 0) { alert('Add at least one subnet with hosts'); return; }
+            
+            // Sort by hosts descending (VLSM allocates largest first)
+            subnets.sort((a, b) => b.hosts - a.hosts);
+            
+            const totalAvailable = getHostCount(parsed.cidr);
+            let currentIP = getNetwork(parsed.ip, parsed.cidr);
+            const results = [];
+            let totalUsed = 0;
+            
+            for (const subnet of subnets) {
+                const cidr = cidrForHosts(subnet.hosts);
+                const blockSize = getHostCount(cidr);
+                
+                // Align to block boundary
+                if (currentIP % blockSize !== 0) {
+                    currentIP = Math.ceil(currentIP / blockSize) * blockSize;
+                }
+                
+                const network = currentIP;
+                const broadcast = network + blockSize - 1;
+                
+                if (broadcast > getNetwork(parsed.ip, parsed.cidr) + totalAvailable - 1) {
+                    results.push({ ...subnet, error: 'Not enough space' });
+                } else {
+                    results.push({
+                        name: subnet.name,
+                        hosts: subnet.hosts,
+                        cidr: cidr,
+                        network: toIP(network),
+                        broadcast: toIP(broadcast),
+                        firstHost: toIP(network + 1),
+                        lastHost: toIP(broadcast - 1),
+                        usable: getUsableHosts(cidr),
+                        mask: toIP(getMask(cidr))
+                    });
+                    currentIP = broadcast + 1;
+                    totalUsed += blockSize;
+                }
+            }
+            
+            const remaining = totalAvailable - totalUsed;
+            const utilizationPercent = ((totalUsed / totalAvailable) * 100).toFixed(1);
+            
+            let html = `
+                <div class="summary-box ${remaining < 0 ? 'error' : remaining < totalAvailable * 0.1 ? 'warning' : ''}">
+                    <strong>Summary:</strong> Using ${totalUsed.toLocaleString()} of ${totalAvailable.toLocaleString()} addresses (${utilizationPercent}%)
+                    ${remaining > 0 ? `<br>Remaining: ${remaining.toLocaleString()} addresses` : ''}
+                    ${remaining < 0 ? '<br>⚠️ Not enough address space!' : ''}
+                </div>
+                <table class="vlsm-results-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Needed</th>
+                            <th>Allocated</th>
+                            <th>Network</th>
+                            <th>Range</th>
+                            <th>Mask</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            results.forEach(r => {
+                if (r.error) {
+                    html += `<tr style="color: #ef4444;"><td>${r.name}</td><td>${r.hosts}</td><td colspan="4">${r.error}</td></tr>`;
+                } else {
+                    html += `
+                        <tr>
+                            <td>${r.name}</td>
+                            <td>${r.hosts}</td>
+                            <td>${r.usable} (/${r.cidr})</td>
+                            <td>${r.network}/${r.cidr}</td>
+                            <td>${r.firstHost} - ${r.lastHost}</td>
+                            <td>${r.mask}</td>
+                        </tr>
+                    `;
+                }
+            });
+            
+            html += '</tbody></table>';
+            
+            // Visual
+            html += '<div class="subnet-visual"><div class="subnet-card-label">Address Space Allocation</div><div class="subnet-bar">';
+            const colors = ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'];
+            results.forEach((r, i) => {
+                if (!r.error) {
+                    const width = (getHostCount(r.cidr) / totalAvailable) * 100;
+                    html += `<div class="subnet-segment" style="width: ${width}%; background: ${colors[i % colors.length]};" title="${r.name}: ${r.network}/${r.cidr}">${width > 8 ? r.name : ''}</div>`;
+                }
+            });
+            if (remaining > 0) {
+                const width = (remaining / totalAvailable) * 100;
+                html += `<div class="subnet-segment" style="width: ${width}%; background: var(--bg-card); color: var(--text-muted);" title="Unused">${width > 8 ? 'Free' : ''}</div>`;
+            }
+            html += '</div></div>';
+            
+            document.getElementById('vlsmResults').innerHTML = html;
+        }
+        
+        // Subnet Splitter
+        function splitSubnet() {
+            const networkInput = document.getElementById('splitNetwork').value;
+            const method = document.getElementById('splitMethod').value;
+            const value = parseInt(document.getElementById('splitValue').value);
+            
+            const parsed = parseCIDR(networkInput);
+            if (!parsed) { alert('Invalid network address'); return; }
+            if (!value || value < 1) { alert('Enter a valid value'); return; }
+            
+            let newCidr;
+            
+            if (method === 'subnets') {
+                const bitsNeeded = Math.ceil(Math.log2(value));
+                newCidr = parsed.cidr + bitsNeeded;
+            } else if (method === 'hosts') {
+                newCidr = cidrForHosts(value);
+            } else {
+                newCidr = value;
+            }
+            
+            if (newCidr > 32 || newCidr < parsed.cidr) {
+                alert('Invalid split parameters'); return;
+            }
+            
+            const network = getNetwork(parsed.ip, parsed.cidr);
+            const subnetCount = Math.pow(2, newCidr - parsed.cidr);
+            const blockSize = getHostCount(newCidr);
+            
+            let html = `
+                <div class="summary-box">
+                    <strong>Splitting ${toIP(network)}/${parsed.cidr} into ${subnetCount} subnets of /${newCidr}</strong><br>
+                    Each subnet has ${getUsableHosts(newCidr).toLocaleString()} usable hosts
+                </div>
+                <table class="vlsm-results-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Network</th>
+                            <th>First Host</th>
+                            <th>Last Host</th>
+                            <th>Broadcast</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            const maxShow = Math.min(subnetCount, 256);
+            for (let i = 0; i < maxShow; i++) {
+                const subnetNet = network + (i * blockSize);
+                const subnetBroad = subnetNet + blockSize - 1;
+                html += `
+                    <tr>
+                        <td>${i + 1}</td>
+                        <td>${toIP(subnetNet)}/${newCidr}</td>
+                        <td>${newCidr >= 31 ? toIP(subnetNet) : toIP(subnetNet + 1)}</td>
+                        <td>${newCidr >= 31 ? toIP(subnetBroad) : toIP(subnetBroad - 1)}</td>
+                        <td>${toIP(subnetBroad)}</td>
+                    </tr>
+                `;
+            }
+            
+            if (subnetCount > maxShow) {
+                html += `<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">... and ${(subnetCount - maxShow).toLocaleString()} more subnets</td></tr>`;
+            }
+            
+            html += '</tbody></table>';
+            document.getElementById('splitResults').innerHTML = html;
+        }
+        
+        // IP Range to CIDR
+        function rangeToCIDR() {
+            const start = parseIP(document.getElementById('rangeStart').value);
+            const end = parseIP(document.getElementById('rangeEnd').value);
+            
+            if (start === null || end === null) { alert('Invalid IP addresses'); return; }
+            if (start > end) { alert('Start IP must be less than end IP'); return; }
+            
+            const cidrs = [];
+            let current = start;
+            
+            while (current <= end) {
+                let maxSize = 32;
+                
+                // Find the largest block that starts at current and doesn't exceed end
+                while (maxSize > 0) {
+                    const mask = getMask(maxSize - 1);
+                    const network = current & mask;
+                    const broadcast = (network | (~mask >>> 0)) >>> 0;
+                    
+                    if (network === current && broadcast <= end) {
+                        maxSize--;
+                    } else {
+                        break;
+                    }
+                }
+                
+                cidrs.push({ network: current, cidr: maxSize });
+                current = (current + getHostCount(maxSize)) >>> 0;
+            }
+            
+            let html = `
+                <div class="summary-box">
+                    <strong>Range ${toIP(start)} - ${toIP(end)}</strong><br>
+                    Converted to ${cidrs.length} CIDR block${cidrs.length > 1 ? 's' : ''}
+                    (${(end - start + 1).toLocaleString()} total addresses)
+                </div>
+                <table class="vlsm-results-table">
+                    <thead>
+                        <tr>
+                            <th>CIDR Block</th>
+                            <th>Range</th>
+                            <th>Addresses</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            cidrs.forEach(c => {
+                const broadcast = getBroadcast(c.network, c.cidr);
+                html += `
+                    <tr>
+                        <td>${toIP(c.network)}/${c.cidr}</td>
+                        <td>${toIP(c.network)} - ${toIP(broadcast)}</td>
+                        <td>${getHostCount(c.cidr).toLocaleString()}</td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table>';
+            document.getElementById('rangeResults').innerHTML = html;
+        }
+        
+        // Supernet Calculator
+        function calculateSupernet() {
+            const input = document.getElementById('supernetInput').value.trim();
+            const lines = input.split('\n').filter(l => l.trim());
+            
+            const networks = [];
+            for (const line of lines) {
+                const parsed = parseCIDR(line);
+                if (parsed) {
+                    networks.push({
+                        original: line.trim(),
+                        network: getNetwork(parsed.ip, parsed.cidr),
+                        cidr: parsed.cidr
+                    });
+                }
+            }
+            
+            if (networks.length < 2) { alert('Enter at least 2 networks'); return; }
+            
+            // Sort by network address
+            networks.sort((a, b) => a.network - b.network);
+            
+            // Find the common prefix
+            let minIP = networks[0].network;
+            let maxIP = networks[networks.length - 1].network + getHostCount(networks[networks.length - 1].cidr) - 1;
+            
+            // Find smallest CIDR that covers all
+            let supernetCidr = 0;
+            for (let c = 32; c >= 0; c--) {
+                const mask = getMask(c);
+                const net = minIP & mask;
+                const broad = getBroadcast(net, c);
+                if (net <= minIP && broad >= maxIP) {
+                    supernetCidr = c;
+                    break;
+                }
+            }
+            
+            const supernetNetwork = getNetwork(minIP, supernetCidr);
+            const supernetBroadcast = getBroadcast(supernetNetwork, supernetCidr);
+            
+            // Check if networks are contiguous
+            let isContiguous = true;
+            let expectedNext = networks[0].network;
+            for (const net of networks) {
+                if (net.network !== expectedNext) {
+                    isContiguous = false;
+                }
+                expectedNext = net.network + getHostCount(net.cidr);
+            }
+            
+            // Check for gaps
+            const actualUsed = networks.reduce((sum, n) => sum + getHostCount(n.cidr), 0);
+            const supernetSize = getHostCount(supernetCidr);
+            const hasGaps = actualUsed < supernetSize;
+            
+            let html = `
+                <div class="summary-box ${hasGaps ? 'warning' : ''}">
+                    <strong>Supernet: ${toIP(supernetNetwork)}/${supernetCidr}</strong><br>
+                    Aggregates ${networks.length} networks into one route<br>
+                    ${hasGaps ? `⚠️ Warning: Supernet includes ${(supernetSize - actualUsed).toLocaleString()} addresses not in original networks` : '✓ Perfect aggregation'}
+                </div>
+                <div class="subnet-results">
+                    <div class="subnet-card">
+                        <div class="subnet-card-label">Supernet</div>
+                        <div class="subnet-card-value">${toIP(supernetNetwork)}/${supernetCidr}</div>
+                    </div>
+                    <div class="subnet-card">
+                        <div class="subnet-card-label">Subnet Mask</div>
+                        <div class="subnet-card-value">${toIP(getMask(supernetCidr))}</div>
+                    </div>
+                    <div class="subnet-card">
+                        <div class="subnet-card-label">Range</div>
+                        <div class="subnet-card-value">${toIP(supernetNetwork)} - ${toIP(supernetBroadcast)}</div>
+                    </div>
+                    <div class="subnet-card">
+                        <div class="subnet-card-label">Total Addresses</div>
+                        <div class="subnet-card-value">${supernetSize.toLocaleString()}</div>
+                    </div>
+                </div>
+                <h4 style="margin-top: 1.5rem; font-size: 0.9rem;">Input Networks:</h4>
+                <table class="vlsm-results-table">
+                    <thead><tr><th>Network</th><th>Addresses</th></tr></thead>
+                    <tbody>
+            `;
+            
+            networks.forEach(n => {
+                html += `<tr><td>${n.original}</td><td>${getHostCount(n.cidr).toLocaleString()}</td></tr>`;
+            });
+            
+            html += '</tbody></table>';
+            document.getElementById('supernetResults').innerHTML = html;
+        }
+        
+        // CIDR Reference Table
+        function generateCIDRTable() {
+            const tbody = document.getElementById('cidrTableBody');
+            if (tbody.innerHTML) return; // Already generated
+            
+            let html = '';
+            for (let cidr = 32; cidr >= 0; cidr--) {
+                const mask = getMask(cidr);
+                const hosts = getHostCount(cidr);
+                const usable = getUsableHosts(cidr);
+                
+                let classType = '-';
+                if (cidr >= 24) classType = 'C';
+                else if (cidr >= 16) classType = 'B';
+                else if (cidr >= 8) classType = 'A';
+                
+                html += `
+                    <tr>
+                        <td class="clickable" onclick="useRefCIDR(${cidr})">/${cidr}</td>
+                        <td>${toIP(mask)}</td>
+                        <td>${toIP(~mask >>> 0)}</td>
+                        <td>${hosts.toLocaleString()}</td>
+                        <td>${usable.toLocaleString()}</td>
+                        <td>${classType}</td>
+                    </tr>
+                `;
+            }
+            tbody.innerHTML = html;
+        }
+        
+        function useRefCIDR(cidr) {
+            document.getElementById('subnetMask').value = '/' + cidr;
+            switchTab('basic');
+            document.getElementById('subnetIP').focus();
+            showToast('CIDR /' + cidr + ' selected');
+        }
+        
+        // Enter key support
+        document.getElementById('subnetIP').addEventListener('keypress', e => { if (e.key === 'Enter') calculateSubnet(); });
+        document.getElementById('subnetMask').addEventListener('keypress', e => { if (e.key === 'Enter') calculateSubnet(); });
     </script>
 </body>
 </html>
