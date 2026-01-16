@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WiFi QR Code Generator — Batch Generate WiFi QR Codes | OPS-BOX</title>
+    <meta name="description" content="Free batch WiFi QR code generator. Create multiple WiFi QR codes at once for guest networks, hotels, offices. Download as ZIP or print A4 layout. No data stored.">
+    <meta name="keywords" content="WiFi QR code generator, batch QR code, guest WiFi QR, WiFi password QR, print WiFi QR codes, bulk QR generator">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://ops-box.net/tools/wifi-qr-generator.html">
+    
+    <meta property="og:title" content="WiFi QR Code Generator — Batch Generate WiFi QR Codes">
+    <meta property="og:description" content="Create multiple WiFi QR codes at once. Download as ZIP or print A4 layout.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ops-box.net/tools/wifi-qr-generator.html">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    
+    <!-- QR Code Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "WiFi QR Code Generator",
+        "url": "https://ops-box.net/tools/wifi-qr-generator.html",
+        "description": "Generate batch WiFi QR codes for guest networks",
+        "applicationCategory": "NetworkingApplication",
+        "operatingSystem": "Any",
+        "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
+        "featureList": [
+            "Batch QR code generation",
+            "Download as ZIP",
+            "Printable A4 layout",
+            "Custom logo support",
+            "WPA/WPA2/WEP support"
+        ]
+    }
+    </script>
+    
+    <style>
+        /* Additional styles for WiFi QR Generator */
+        .progress-container {
+            display: none;
+            margin-top: 1.5rem;
+            padding: 1.25rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 0.75rem;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: var(--accent);
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 4px;
+        }
+        
+        .progress-text {
+            text-align: center;
+            color: var(--accent);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .preview-container {
+            display: none;
+            margin-top: 1.5rem;
+            padding: 1.25rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+        
+        .preview-container h3 {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 1rem;
+        }
+        
+        .preview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 1rem;
+        }
+        
+        .preview-item {
+            text-align: center;
+            padding: 0.75rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        
+        .preview-item canvas {
+            margin-bottom: 0.5rem;
+            border-radius: 4px;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .action-buttons .btn {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .btn-download {
+            background: var(--accent);
+            color: #000;
+            display: none;
+        }
+        
+        .btn-print {
+            background: var(--info);
+            color: #fff;
+            display: none;
+        }
+        
+        .btn-print:hover {
+            background: #2563eb;
+        }
+        
+        .logo-preview {
+            margin-top: 0.75rem;
+            display: none;
+        }
+        
+        .logo-preview img {
+            max-width: 50px;
+            max-height: 50px;
+            border: 1px solid var(--border);
+            padding: 0.25rem;
+            border-radius: 6px;
+            background: var(--bg-card);
+        }
+        
+        .hidden-canvas {
+            display: none;
+        }
+        
+        .file-input-wrapper {
+            position: relative;
+        }
+        
+        .file-input-wrapper input[type="file"] {
+            padding: 0.5rem;
+        }
+        
+        .hint-text {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+        }
+        
+        .single-qr-section {
+            border-top: 1px solid var(--border);
+            padding-top: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .single-qr-section h3 {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+        
+        .single-qr-output {
+            display: none;
+            text-align: center;
+            padding: 1.5rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+        
+        .single-qr-output canvas {
+            border-radius: 8px;
+        }
+        
+        .single-qr-output .qr-info {
+            margin-top: 1rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <a href="/" class="logo">
+                <div class="logo-icon">⚡</div>
+                <div class="logo-text">OPS<span>-BOX</span></div>
+            </a>
+            <nav class="header-nav">
+                <a href="/tools/password-generator.html">Password</a>
+                <a href="/tools/subnet-calculator.html">Subnet</a>
+                <a href="/tools/mac-vendor-lookup.html">MAC Lookup</a>
+                <a href="/tools/wifi-qr-generator.html">WiFi QR</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <nav class="breadcrumb">
+            <a href="/">Home</a><span>›</span><span class="breadcrumb-current">WiFi QR Generator</span>
+        </nav>
+
+        <div class="tool-container">
+            <div class="tool-header">
+                <h1 class="tool-title">WiFi QR Code Generator</h1>
+                <p class="tool-description">Generate batch WiFi QR codes for guest networks, hotels, offices. Download as ZIP or print on A4 paper.</p>
+            </div>
+            <div class="tool-content">
+                <form id="wifiForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Network Name (SSID)</label>
+                            <input type="text" class="form-input" id="ssid" required placeholder="e.g., Guest-WiFi">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Security Type</label>
+                            <select class="form-select" id="security">
+                                <option value="WPA">WPA/WPA2/WPA3</option>
+                                <option value="WEP">WEP</option>
+                                <option value="nopass">Open (No Password)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Passwords (One per line for batch generation)</label>
+                        <textarea class="form-textarea" id="passwords" required placeholder="Enter passwords, one per line:
+guest2024-01
+guest2024-02
+guest2024-03
+..."></textarea>
+                        <p class="hint-text">Enter up to 50 passwords for batch generation. Each password creates a separate QR code.</p>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Display Text (shown on QR card)</label>
+                            <input type="text" class="form-input" id="displayName" placeholder="e.g., Guest WiFi">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">File Prefix</label>
+                            <input type="text" class="form-input" id="prefix" placeholder="e.g., guest → guest_1.png">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Logo (Optional)</label>
+                        <div class="file-input-wrapper">
+                            <input type="file" class="form-input" id="logo" accept="image/*" onchange="handleLogoUpload(event)">
+                        </div>
+                        <p class="hint-text">Upload a logo to display on QR cards (recommended: square image)</p>
+                        <div class="logo-preview" id="logoPreview">
+                            <img id="logoPreviewImg" alt="Logo preview">
+                        </div>
+                    </div>
+                    
+                    <div class="btn-group">
+                        <button type="submit" class="btn btn-primary" id="generateBtn">Generate QR Codes</button>
+                    </div>
+                </form>
+                
+                <div class="progress-container" id="progressContainer">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="progress-text" id="progressText">Generating QR codes...</div>
+                </div>
+                
+                <div class="preview-container" id="previewContainer">
+                    <h3>Preview (First 6 QR codes)</h3>
+                    <div class="preview-grid" id="previewGrid"></div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn btn-download" id="downloadBtn" onclick="downloadAllQR()">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Download All as ZIP
+                    </button>
+                    <button class="btn btn-print" id="printBtn" onclick="generatePrintLayout()">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                        Print A4 Layout
+                    </button>
+                </div>
+                
+                <!-- Single QR Code Section -->
+                <div class="single-qr-section">
+                    <h3>Quick Single QR Code</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">SSID</label>
+                            <input type="text" class="form-input" id="singleSsid" placeholder="WiFi Name">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Password</label>
+                            <input type="text" class="form-input" id="singlePassword" placeholder="WiFi Password">
+                        </div>
+                    </div>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-secondary" onclick="generateSingleQR()">Generate Single QR</button>
+                    </div>
+                    <div class="single-qr-output" id="singleQrOutput">
+                        <div id="singleQrCode"></div>
+                        <div class="qr-info" id="singleQrInfo"></div>
+                        <div class="btn-group" style="justify-content: center;">
+                            <button class="btn btn-secondary" onclick="downloadSingleQR()">Download PNG</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <section class="seo-content">
+            <h2>About WiFi QR Codes</h2>
+            <p>WiFi QR codes allow users to connect to your wireless network instantly by scanning the code with their smartphone camera. No need to manually type long passwords or share credentials insecurely.</p>
+            
+            <h3>Use Cases</h3>
+            <ul>
+                <li><strong>Hotels & Hospitality</strong> — Generate unique QR codes for each room or guest</li>
+                <li><strong>Offices</strong> — Create visitor WiFi cards with rotating passwords</li>
+                <li><strong>Events & Conferences</strong> — Print QR codes on badges or signage</li>
+                <li><strong>Cafes & Restaurants</strong> — Display QR codes on tables or menus</li>
+                <li><strong>Airbnb & Rentals</strong> — Include WiFi QR in welcome packets</li>
+            </ul>
+            
+            <h3>Features</h3>
+            <ul>
+                <li><strong>Batch Generation</strong> — Create up to 50 QR codes at once</li>
+                <li><strong>ZIP Download</strong> — All QR codes packaged with info file</li>
+                <li><strong>A4 Print Layout</strong> — 9 QR codes per page, ready to print and cut</li>
+                <li><strong>Custom Branding</strong> — Add your logo to QR cards</li>
+                <li><strong>100% Client-Side</strong> — Your passwords never leave your browser</li>
+            </ul>
+            
+            <h3>WiFi QR Code Format</h3>
+            <p>The standard WiFi QR code format is: <code>WIFI:T:WPA;S:NetworkName;P:Password;;</code></p>
+            <p>This format is supported by iOS (11+), Android, and most QR scanner apps.</p>
+        </section>
+
+        <section class="related-tools">
+            <h2>Related Tools</h2>
+            <div class="related-grid">
+                <a href="/tools/password-generator.html" class="related-card">
+                    <h3>Password Generator</h3>
+                    <p>Generate secure random passwords for your WiFi networks.</p>
+                </a>
+                <a href="/tools/subnet-calculator.html" class="related-card">
+                    <h3>Subnet Calculator</h3>
+                    <p>Plan your network IP addressing scheme.</p>
+                </a>
+                <a href="/tools/mac-vendor-lookup.html" class="related-card">
+                    <h3>MAC Vendor Lookup</h3>
+                    <p>Identify devices connected to your WiFi network.</p>
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Network Tools</h3>
+                <a href="/tools/subnet-calculator.html">Subnet Calculator</a>
+                <a href="/tools/mac-vendor-lookup.html">MAC Vendor Lookup</a>
+                <a href="/tools/wifi-qr-generator.html">WiFi QR Generator</a>
+            </div>
+            <div class="footer-section">
+                <h3>Security Tools</h3>
+                <a href="/tools/password-generator.html">Password Generator</a>
+                <a href="/tools/hash-generator.html">Hash Generator</a>
+                <a href="/tools/uuid-generator.html">UUID Generator</a>
+            </div>
+            <div class="footer-section">
+                <h3>Developer Tools</h3>
+                <a href="/tools/json-formatter.html">JSON Formatter</a>
+                <a href="/tools/base64-encoder.html">Base64 Encoder</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals.</p>
+        </div>
+    </footer>
+
+    <div class="toast" id="toast">Copied to clipboard!</div>
+    <div id="hiddenCanvas" class="hidden-canvas"></div>
+
+    <script src="../js/common.js"></script>
+    <script>
+        let generatedQRCodes = [];
+        let zip = null;
+        let uploadedLogo = null;
+        
+        function handleLogoUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    uploadedLogo = new Image();
+                    uploadedLogo.onload = function() {
+                        document.getElementById('logoPreviewImg').src = e.target.result;
+                        document.getElementById('logoPreview').style.display = 'block';
+                    };
+                    uploadedLogo.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+        
+        // Batch QR Generation
+        document.getElementById('wifiForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const ssid = document.getElementById('ssid').value.trim();
+            const passwordsText = document.getElementById('passwords').value.trim();
+            const security = document.getElementById('security').value;
+            const prefix = document.getElementById('prefix').value.trim() || 'wifi';
+            const displayName = document.getElementById('displayName').value.trim() || ssid;
+            
+            const passwords = passwordsText.split('\n').filter(p => p.trim() !== '');
+            
+            if (passwords.length === 0) {
+                alert('Please enter at least one password');
+                return;
+            }
+            
+            if (passwords.length > 50) {
+                alert('Maximum 50 passwords allowed. You entered ' + passwords.length);
+                return;
+            }
+            
+            // Reset
+            generatedQRCodes = [];
+            zip = new JSZip();
+            document.getElementById('previewGrid').innerHTML = '';
+            document.getElementById('previewContainer').style.display = 'none';
+            document.getElementById('downloadBtn').style.display = 'none';
+            document.getElementById('printBtn').style.display = 'none';
+            
+            // Show progress
+            document.getElementById('progressContainer').style.display = 'block';
+            document.getElementById('generateBtn').disabled = true;
+            
+            // Generate QR codes
+            for (let i = 0; i < passwords.length; i++) {
+                const password = passwords[i].trim();
+                
+                const progress = ((i + 1) / passwords.length) * 100;
+                document.getElementById('progressFill').style.width = progress + '%';
+                document.getElementById('progressText').textContent = `Generating QR code ${i + 1} of ${passwords.length}...`;
+                
+                let wifiString = security === 'nopass' 
+                    ? `WIFI:T:nopass;S:${ssid};;`
+                    : `WIFI:T:${security};S:${ssid};P:${password};;`;
+                
+                const tempDiv = document.createElement('div');
+                tempDiv.style.position = 'absolute';
+                tempDiv.style.left = '-9999px';
+                document.body.appendChild(tempDiv);
+                
+                const qrcode = new QRCode(tempDiv, {
+                    text: wifiString,
+                    width: 256,
+                    height: 256,
+                    colorDark: '#000000',
+                    colorLight: '#ffffff',
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+                
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
+                const canvas = tempDiv.querySelector('canvas');
+                if (canvas) {
+                    const finalCanvas = document.createElement('canvas');
+                    finalCanvas.width = 300;
+                    finalCanvas.height = 380;
+                    const ctx = finalCanvas.getContext('2d');
+                    
+                    // White background
+                    ctx.fillStyle = 'white';
+                    ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
+                    
+                    // Draw QR code
+                    ctx.drawImage(canvas, 22, 20, 256, 256);
+                    
+                    // Draw logo or WiFi icon
+                    if (uploadedLogo) {
+                        const logoSize = 40;
+                        ctx.drawImage(uploadedLogo, 30, 290, logoSize, logoSize);
+                    } else {
+                        ctx.fillStyle = '#22c55e';
+                        ctx.font = '30px Arial';
+                        ctx.textAlign = 'left';
+                        ctx.fillText('📶', 30, 320);
+                    }
+                    
+                    // Draw display name
+                    ctx.fillStyle = '#333';
+                    ctx.font = 'bold 20px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(displayName, finalCanvas.width / 2, 310);
+                    
+                    // Draw password
+                    ctx.fillStyle = '#666';
+                    ctx.font = '14px monospace';
+                    ctx.fillText(`Password: ${password}`, finalCanvas.width / 2, 340);
+                    
+                    // Border
+                    ctx.strokeStyle = '#e0e0e0';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(10, 10, finalCanvas.width - 20, finalCanvas.height - 20);
+                    
+                    // Preview (first 6)
+                    if (i < 6) {
+                        const previewItem = document.createElement('div');
+                        previewItem.className = 'preview-item';
+                        
+                        const previewCanvas = document.createElement('canvas');
+                        previewCanvas.width = 100;
+                        previewCanvas.height = 126;
+                        const pctx = previewCanvas.getContext('2d');
+                        pctx.drawImage(finalCanvas, 0, 0, 100, 126);
+                        
+                        previewItem.appendChild(previewCanvas);
+                        previewItem.innerHTML += `<div>${prefix}_${i + 1}.png</div>`;
+                        document.getElementById('previewGrid').appendChild(previewItem);
+                    }
+                    
+                    // Add to zip
+                    await new Promise(resolve => {
+                        finalCanvas.toBlob(blob => {
+                            zip.file(`${prefix}_${i + 1}.png`, blob);
+                            generatedQRCodes.push({
+                                filename: `${prefix}_${i + 1}.png`,
+                                password: password
+                            });
+                            resolve();
+                        });
+                    });
+                }
+                
+                document.body.removeChild(tempDiv);
+            }
+            
+            // Add info file
+            let infoContent = `WiFi QR Codes Generated by OPS-BOX.net\n`;
+            infoContent += `${'='.repeat(40)}\n\n`;
+            infoContent += `SSID: ${ssid}\n`;
+            infoContent += `Security: ${security}\n`;
+            infoContent += `Display Name: ${displayName}\n\n`;
+            infoContent += `Password List:\n`;
+            generatedQRCodes.forEach((qr, index) => {
+                infoContent += `${qr.filename}: ${qr.password}\n`;
+            });
+            
+            zip.file('wifi_info.txt', infoContent);
+            
+            // Complete
+            document.getElementById('progressText').textContent = `Complete! Generated ${passwords.length} QR codes`;
+            document.getElementById('generateBtn').disabled = false;
+            document.getElementById('previewContainer').style.display = 'block';
+            document.getElementById('downloadBtn').style.display = 'inline-flex';
+            document.getElementById('printBtn').style.display = 'inline-flex';
+        });
+        
+        async function downloadAllQR() {
+            if (!zip) return;
+            const content = await zip.generateAsync({type: 'blob'});
+            const link = document.createElement('a');
+            link.download = 'wifi_qr_codes.zip';
+            link.href = URL.createObjectURL(content);
+            link.click();
+            showToast('ZIP downloaded!');
+        }
+        
+        async function generatePrintLayout() {
+            if (generatedQRCodes.length === 0) return;
+            
+            const ssid = document.getElementById('ssid').value.trim();
+            const security = document.getElementById('security').value;
+            const displayName = document.getElementById('displayName').value.trim() || ssid;
+            const passwords = document.getElementById('passwords').value.trim().split('\n').filter(p => p.trim() !== '');
+            
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Print WiFi QR Codes - OPS-BOX</title>
+                    <style>
+                        @page { size: A4; margin: 10mm; }
+                        * { margin: 0; padding: 0; box-sizing: border-box; }
+                        body { font-family: Arial, sans-serif; background: #f5f5f5; }
+                        .no-print { padding: 20px; background: #333; text-align: center; }
+                        .print-button { padding: 12px 24px; margin: 0 10px; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: 600; }
+                        .print-button.print { background: #22c55e; color: white; }
+                        .print-button.close { background: #ef4444; color: white; }
+                        .page { width: 210mm; min-height: 297mm; margin: 20px auto; padding: 10mm; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.1); page-break-after: always; }
+                        .qr-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8mm; }
+                        .qr-item { border: 1px solid #ddd; border-radius: 8px; padding: 5mm; text-align: center; background: white; }
+                        .qr-item canvas { max-width: 100%; height: auto; }
+                        @media print {
+                            .no-print { display: none; }
+                            .page { margin: 0; box-shadow: none; }
+                            body { background: white; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="no-print">
+                        <button class="print-button print" onclick="window.print()">🖨️ Print QR Codes</button>
+                        <button class="print-button close" onclick="window.close()">✕ Close</button>
+                    </div>
+            `);
+            
+            const qrPerPage = 9;
+            const totalPages = Math.ceil(generatedQRCodes.length / qrPerPage);
+            
+            for (let page = 0; page < totalPages; page++) {
+                printWindow.document.write('<div class="page"><div class="qr-grid">');
+                
+                const startIdx = page * qrPerPage;
+                const endIdx = Math.min(startIdx + qrPerPage, generatedQRCodes.length);
+                
+                for (let i = startIdx; i < endIdx; i++) {
+                    printWindow.document.write(`<div class="qr-item"><canvas id="qr-${i}" width="300" height="380"></canvas></div>`);
+                }
+                
+                printWindow.document.write('</div></div>');
+            }
+            
+            printWindow.document.write('</body></html>');
+            printWindow.document.close();
+            
+            printWindow.onload = async function() {
+                for (let i = 0; i < generatedQRCodes.length; i++) {
+                    const password = passwords[i].trim();
+                    const canvas = printWindow.document.getElementById(`qr-${i}`);
+                    if (!canvas) continue;
+                    
+                    const ctx = canvas.getContext('2d');
+                    ctx.fillStyle = 'white';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    
+                    const tempDiv = document.createElement('div');
+                    tempDiv.style.position = 'absolute';
+                    tempDiv.style.left = '-9999px';
+                    document.body.appendChild(tempDiv);
+                    
+                    let wifiString = security === 'nopass' 
+                        ? `WIFI:T:nopass;S:${ssid};;`
+                        : `WIFI:T:${security};S:${ssid};P:${password};;`;
+                    
+                    const qrcode = new QRCode(tempDiv, {
+                        text: wifiString,
+                        width: 256,
+                        height: 256,
+                        colorDark: '#000000',
+                        colorLight: '#ffffff',
+                        correctLevel: QRCode.CorrectLevel.H
+                    });
+                    
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    
+                    const qrCanvas = tempDiv.querySelector('canvas');
+                    if (qrCanvas) {
+                        ctx.drawImage(qrCanvas, 22, 20, 256, 256);
+                        
+                        if (uploadedLogo) {
+                            ctx.drawImage(uploadedLogo, 30, 290, 40, 40);
+                        } else {
+                            ctx.fillStyle = '#22c55e';
+                            ctx.font = '30px Arial';
+                            ctx.fillText('📶', 30, 320);
+                        }
+                        
+                        ctx.fillStyle = '#333';
+                        ctx.font = 'bold 20px Arial';
+                        ctx.textAlign = 'center';
+                        ctx.fillText(displayName, canvas.width / 2, 310);
+                        
+                        ctx.fillStyle = '#666';
+                        ctx.font = '14px monospace';
+                        ctx.fillText(`Password: ${password}`, canvas.width / 2, 340);
+                        
+                        ctx.strokeStyle = '#e0e0e0';
+                        ctx.lineWidth = 2;
+                        ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
+                    }
+                    
+                    document.body.removeChild(tempDiv);
+                }
+            };
+        }
+        
+        // Single QR Code Generation
+        function generateSingleQR() {
+            const ssid = document.getElementById('singleSsid').value.trim();
+            const password = document.getElementById('singlePassword').value.trim();
+            
+            if (!ssid) {
+                alert('Please enter SSID');
+                return;
+            }
+            
+            const container = document.getElementById('singleQrCode');
+            container.innerHTML = '';
+            
+            const wifiString = password 
+                ? `WIFI:T:WPA;S:${ssid};P:${password};;`
+                : `WIFI:T:nopass;S:${ssid};;`;
+            
+            new QRCode(container, {
+                text: wifiString,
+                width: 200,
+                height: 200,
+                colorDark: '#000000',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.H
+            });
+            
+            document.getElementById('singleQrInfo').innerHTML = `<strong>${ssid}</strong>${password ? '<br>Password: ' + password : ' (Open Network)'}`;
+            document.getElementById('singleQrOutput').style.display = 'block';
+        }
+        
+        function downloadSingleQR() {
+            const canvas = document.querySelector('#singleQrCode canvas');
+            if (!canvas) return;
+            
+            const link = document.createElement('a');
+            link.download = 'wifi_qr.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            showToast('QR code downloaded!');
+        }
+    </script>
+</body>
+</html>
