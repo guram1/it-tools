@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DNS Dumpster — Subdomain Finder & DNS Recon Tool | OPS-BOX</title>
+    <meta name="description" content="Free DNS reconnaissance tool. Discover subdomains, DNS records, mail servers, and hosts for any domain using Certificate Transparency logs. Alternative to DNSDumpster.">
+    <meta name="keywords" content="DNS dumpster, subdomain finder, subdomain enumeration, DNS recon, certificate transparency, subdomain discovery, DNS reconnaissance, find subdomains">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://ops-box.net/tools/dns-dumpster.html">
+    
+    <meta property="og:title" content="DNS Dumpster — Subdomain Finder & DNS Recon">
+    <meta property="og:description" content="Discover subdomains and DNS records for any domain using CT logs.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ops-box.net/tools/dns-dumpster.html">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "DNS Dumpster",
+        "url": "https://ops-box.net/tools/dns-dumpster.html",
+        "description": "Discover subdomains and perform DNS reconnaissance for any domain",
+        "applicationCategory": "SecurityApplication",
+        "operatingSystem": "Any",
+        "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
+        "featureList": ["Subdomain discovery", "Certificate Transparency lookup", "DNS record enumeration", "Host resolution", "Export results"]
+    }
+    </script>
+    
+    <style>
+        .search-section {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .search-section .form-input {
+            flex: 1;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.1rem;
+            padding: 1rem;
+        }
+        
+        .search-section .btn {
+            padding: 1rem 2rem;
+            font-size: 1rem;
+        }
+        
+        .results-container {
+            display: none;
+        }
+        
+        .stats-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 0.5rem 1.5rem;
+            border-right: 1px solid var(--border);
+        }
+        
+        .stat-item:last-child {
+            border-right: none;
+        }
+        
+        .stat-item .number {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--accent);
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .stat-item .label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .results-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .results-tab {
+            padding: 0.6rem 1.25rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        .results-tab:hover {
+            background: var(--bg-card);
+            color: var(--text-primary);
+        }
+        
+        .results-tab.active {
+            background: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+        }
+        
+        .results-tab .count {
+            background: rgba(0,0,0,0.2);
+            padding: 0.15rem 0.5rem;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            margin-left: 0.5rem;
+        }
+        
+        .tab-panel {
+            display: none;
+        }
+        
+        .tab-panel.active {
+            display: block;
+        }
+        
+        .hosts-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+        
+        .hosts-table th,
+        .hosts-table td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .hosts-table th {
+            background: var(--bg-secondary);
+            color: var(--text-muted);
+            font-weight: 500;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            position: sticky;
+            top: 0;
+        }
+        
+        .hosts-table td {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .hosts-table tr:hover {
+            background: var(--bg-secondary);
+        }
+        
+        .hosts-table .subdomain {
+            color: var(--accent);
+        }
+        
+        .hosts-table .ip {
+            color: var(--text-primary);
+        }
+        
+        .subdomain-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 0.5rem;
+            max-height: 500px;
+            overflow-y: auto;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+        
+        .subdomain-item {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            padding: 0.5rem 0.75rem;
+            background: var(--bg-card);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .subdomain-item .status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        
+        .subdomain-item .status.active {
+            background: var(--accent);
+        }
+        
+        .subdomain-item .status.unknown {
+            background: var(--text-muted);
+        }
+        
+        .subdomain-item:hover {
+            background: var(--border);
+        }
+        
+        .dns-records-section {
+            margin-bottom: 1rem;
+        }
+        
+        .dns-record-group {
+            margin-bottom: 1rem;
+        }
+        
+        .dns-record-group h4 {
+            font-size: 0.85rem;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .dns-record-item {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            padding: 0.5rem 0.75rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            margin-bottom: 0.25rem;
+            word-break: break-all;
+        }
+        
+        .loading-section {
+            display: none;
+            text-align: center;
+            padding: 3rem;
+        }
+        
+        .loading-section.active {
+            display: block;
+        }
+        
+        .spinner-large {
+            width: 60px;
+            height: 60px;
+            border: 4px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1.5rem;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .loading-section .status {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        
+        .loading-section .status-detail {
+            color: var(--accent);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+        }
+        
+        .error-box {
+            display: none;
+            padding: 1rem;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 8px;
+            color: #ef4444;
+            margin-bottom: 1rem;
+        }
+        
+        .export-section {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+        
+        .export-section h4 {
+            font-size: 0.9rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .table-container {
+            max-height: 500px;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+        
+        .filter-bar {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .filter-bar input {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .filter-bar .count {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <a href="/" class="logo">
+                <div class="logo-icon">⚡</div>
+                <div class="logo-text">OPS<span>-BOX</span></div>
+            </a>
+            <nav class="header-nav">
+                <a href="/tools/subnet-calculator.html">Subnet</a>
+                <a href="/tools/ssl-checker.html">SSL Check</a>
+                <a href="/tools/dns-lookup.html">DNS Lookup</a>
+                <a href="/tools/dns-dumpster.html">DNS Dumpster</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <nav class="breadcrumb">
+            <a href="/">Home</a><span>›</span><span class="breadcrumb-current">DNS Dumpster</span>
+        </nav>
+
+        <div class="tool-container">
+            <div class="tool-header">
+                <h1 class="tool-title">DNS Dumpster</h1>
+                <p class="tool-description">Discover subdomains, DNS records, and hosts for any domain using Certificate Transparency logs and DNS enumeration.</p>
+            </div>
+            
+            <div class="tool-content">
+                <div class="form-group">
+                    <label class="form-label">Target Domain</label>
+                    <div class="search-section">
+                        <input type="text" class="form-input" id="domainInput" placeholder="example.com">
+                        <button class="btn btn-primary" onclick="startDumpster()">🔍 Discover</button>
+                    </div>
+                </div>
+                
+                <div class="error-box" id="errorBox"></div>
+                
+                <div class="loading-section" id="loadingSection">
+                    <div class="spinner-large"></div>
+                    <div class="status">Performing DNS reconnaissance...</div>
+                    <div class="status-detail" id="loadingDetail">Querying Certificate Transparency logs</div>
+                </div>
+                
+                <div class="results-container" id="resultsContainer">
+                    <!-- Stats Bar -->
+                    <div class="stats-bar">
+                        <div class="stat-item">
+                            <div class="number" id="statSubdomains">0</div>
+                            <div class="label">Subdomains</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="number" id="statHosts">0</div>
+                            <div class="label">Active Hosts</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="number" id="statMX">0</div>
+                            <div class="label">Mail Servers</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="number" id="statNS">0</div>
+                            <div class="label">Name Servers</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Tabs -->
+                    <div class="results-tabs">
+                        <button class="results-tab active" onclick="switchResultsTab('hosts')">
+                            Active Hosts <span class="count" id="tabHostsCount">0</span>
+                        </button>
+                        <button class="results-tab" onclick="switchResultsTab('subdomains')">
+                            All Subdomains <span class="count" id="tabSubdomainsCount">0</span>
+                        </button>
+                        <button class="results-tab" onclick="switchResultsTab('dns')">
+                            DNS Records
+                        </button>
+                        <button class="results-tab" onclick="switchResultsTab('export')">
+                            Export
+                        </button>
+                    </div>
+                    
+                    <!-- Hosts Tab -->
+                    <div class="tab-panel active" id="panel-hosts">
+                        <div class="filter-bar">
+                            <input type="text" class="form-input" id="hostsFilter" placeholder="Filter hosts..." oninput="filterHosts()">
+                            <span class="count" id="hostsFilterCount"></span>
+                        </div>
+                        <div class="table-container">
+                            <table class="hosts-table">
+                                <thead>
+                                    <tr>
+                                        <th>Subdomain</th>
+                                        <th>IP Address(es)</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="hostsTableBody">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Subdomains Tab -->
+                    <div class="tab-panel" id="panel-subdomains">
+                        <div class="filter-bar">
+                            <input type="text" class="form-input" id="subdomainsFilter" placeholder="Filter subdomains..." oninput="filterSubdomains()">
+                            <span class="count" id="subdomainsFilterCount"></span>
+                        </div>
+                        <div class="subdomain-list" id="subdomainsList">
+                        </div>
+                    </div>
+                    
+                    <!-- DNS Tab -->
+                    <div class="tab-panel" id="panel-dns">
+                        <div class="dns-records-section" id="dnsRecordsSection">
+                        </div>
+                    </div>
+                    
+                    <!-- Export Tab -->
+                    <div class="tab-panel" id="panel-export">
+                        <div class="export-section">
+                            <h4>Export Format</h4>
+                            <div class="btn-group" style="margin-bottom: 1rem;">
+                                <button class="btn btn-secondary" onclick="exportAs('txt')">Download TXT</button>
+                                <button class="btn btn-secondary" onclick="exportAs('csv')">Download CSV</button>
+                                <button class="btn btn-secondary" onclick="exportAs('json')">Download JSON</button>
+                            </div>
+                            <label class="form-label">Preview (Subdomains)</label>
+                            <textarea class="form-textarea" id="exportPreview" style="min-height: 200px; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;" readonly></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <section class="seo-content">
+            <h2>About DNS Dumpster</h2>
+            <p>DNS Dumpster is a subdomain discovery and DNS reconnaissance tool that helps you map the attack surface of a domain. It uses multiple techniques to find related hosts and subdomains.</p>
+            
+            <h3>Discovery Methods</h3>
+            <ul>
+                <li><strong>Certificate Transparency Logs</strong> — Searches public CT logs (crt.sh) for SSL certificates issued to subdomains</li>
+                <li><strong>Common Subdomain Checks</strong> — Tests common subdomain names like www, mail, api, dev, staging</li>
+                <li><strong>DNS Resolution</strong> — Resolves discovered subdomains to find active hosts</li>
+                <li><strong>DNS Records</strong> — Queries all DNS record types (A, MX, TXT, NS, etc.)</li>
+            </ul>
+            
+            <h3>Use Cases</h3>
+            <ul>
+                <li><strong>Security Assessment</strong> — Discover forgotten or misconfigured subdomains</li>
+                <li><strong>Penetration Testing</strong> — Map the attack surface before testing</li>
+                <li><strong>Asset Inventory</strong> — Document all public-facing hosts</li>
+                <li><strong>Competitive Analysis</strong> — Understand competitor infrastructure</li>
+                <li><strong>Migration Planning</strong> — Identify all services before domain migration</li>
+            </ul>
+            
+            <h3>What is Certificate Transparency?</h3>
+            <p>Certificate Transparency (CT) is a public logging system for SSL/TLS certificates. When a Certificate Authority issues a certificate, it's logged publicly. This allows us to discover subdomains that have had certificates issued, even if they're not publicly linked.</p>
+        </section>
+
+        <section class="related-tools">
+            <h2>Related Tools</h2>
+            <div class="related-grid">
+                <a href="/tools/dns-lookup.html" class="related-card">
+                    <h3>DNS Lookup</h3>
+                    <p>Query specific DNS records for any domain.</p>
+                </a>
+                <a href="/tools/ssl-checker.html" class="related-card">
+                    <h3>SSL Certificate Checker</h3>
+                    <p>Check SSL certificate expiry and configuration.</p>
+                </a>
+                <a href="/tools/ip-location.html" class="related-card">
+                    <h3>IP Location Lookup</h3>
+                    <p>Find geographic location of discovered IP addresses.</p>
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Network Tools</h3>
+                <a href="/tools/subnet-calculator.html">Subnet Calculator</a>
+                <a href="/tools/dns-lookup.html">DNS Lookup</a>
+                <a href="/tools/dns-dumpster.html">DNS Dumpster</a>
+                <a href="/tools/ssl-checker.html">SSL Checker</a>
+            </div>
+            <div class="footer-section">
+                <h3>Security Tools</h3>
+                <a href="/tools/password-generator.html">Password Generator</a>
+                <a href="/tools/hash-generator.html">Hash Generator</a>
+                <a href="/tools/ip-location.html">IP Location</a>
+            </div>
+            <div class="footer-section">
+                <h3>Developer Tools</h3>
+                <a href="/tools/json-formatter.html">JSON Formatter</a>
+                <a href="/tools/base64-encoder.html">Base64 Encoder</a>
+                <a href="/tools/wifi-qr-generator.html">WiFi QR Generator</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals.</p>
+        </div>
+    </footer>
+
+    <div class="toast" id="toast">Copied to clipboard!</div>
+
+    <script src="../js/common.js"></script>
+    <script>
+        const API_URL = 'https://ssl-api.ops-box.net/dns-dumpster';
+        let currentResults = null;
+        let currentDomain = '';
+        
+        function cleanDomain(input) {
+            let domain = input.trim().toLowerCase();
+            domain = domain.replace(/^https?:\/\//, '');
+            domain = domain.replace(/\/.*$/, '');
+            domain = domain.replace(/^www\./, '');
+            return domain;
+        }
+        
+        async function startDumpster() {
+            const input = document.getElementById('domainInput').value.trim();
+            if (!input) {
+                alert('Please enter a domain name');
+                return;
+            }
+            
+            const domain = cleanDomain(input);
+            currentDomain = domain;
+            
+            document.getElementById('loadingSection').classList.add('active');
+            document.getElementById('resultsContainer').style.display = 'none';
+            document.getElementById('errorBox').style.display = 'none';
+            
+            try {
+                // Update loading status
+                updateLoadingStatus('Querying Certificate Transparency logs...');
+                
+                const response = await fetch(`${API_URL}?domain=${encodeURIComponent(domain)}`);
+                
+                if (!response.ok) {
+                    throw new Error('API request failed');
+                }
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                currentResults = data;
+                displayResults(data);
+                
+            } catch (error) {
+                document.getElementById('loadingSection').classList.remove('active');
+                document.getElementById('errorBox').textContent = 'Error: ' + error.message;
+                document.getElementById('errorBox').style.display = 'block';
+            }
+        }
+        
+        function updateLoadingStatus(text) {
+            document.getElementById('loadingDetail').textContent = text;
+        }
+        
+        function displayResults(data) {
+            document.getElementById('loadingSection').classList.remove('active');
+            document.getElementById('resultsContainer').style.display = 'block';
+            
+            // Stats
+            document.getElementById('statSubdomains').textContent = data.subdomains?.length || 0;
+            document.getElementById('statHosts').textContent = data.hosts?.length || 0;
+            document.getElementById('statMX').textContent = data.mx_records?.length || 0;
+            document.getElementById('statNS').textContent = data.ns_records?.length || 0;
+            
+            // Tab counts
+            document.getElementById('tabHostsCount').textContent = data.hosts?.length || 0;
+            document.getElementById('tabSubdomainsCount').textContent = data.subdomains?.length || 0;
+            
+            // Hosts table
+            displayHosts(data.hosts || []);
+            
+            // Subdomains list
+            displaySubdomains(data.subdomains || [], data.hosts || []);
+            
+            // DNS records
+            displayDNSRecords(data.dns_records || {});
+            
+            // Export preview
+            updateExportPreview();
+        }
+        
+        function displayHosts(hosts) {
+            const tbody = document.getElementById('hostsTableBody');
+            tbody.innerHTML = '';
+            
+            if (hosts.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: var(--text-muted);">No active hosts found</td></tr>';
+                return;
+            }
+            
+            hosts.forEach(host => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="subdomain">${host.subdomain}</td>
+                    <td class="ip">${host.ips.join(', ')}</td>
+                    <td>
+                        <button class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" onclick="lookupIP('${host.ips[0]}')">IP Lookup</button>
+                        <button class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" onclick="copyToClipboard('${host.subdomain}')">Copy</button>
+                    </td>
+                `;
+                row.dataset.subdomain = host.subdomain.toLowerCase();
+                tbody.appendChild(row);
+            });
+            
+            document.getElementById('hostsFilterCount').textContent = `${hosts.length} hosts`;
+        }
+        
+        function displaySubdomains(subdomains, hosts) {
+            const container = document.getElementById('subdomainsList');
+            container.innerHTML = '';
+            
+            const activeHosts = new Set(hosts.map(h => h.subdomain.toLowerCase()));
+            
+            subdomains.forEach(sub => {
+                const isActive = activeHosts.has(sub.toLowerCase());
+                const item = document.createElement('div');
+                item.className = 'subdomain-item';
+                item.dataset.subdomain = sub.toLowerCase();
+                item.innerHTML = `
+                    <span class="status ${isActive ? 'active' : 'unknown'}"></span>
+                    <span>${sub}</span>
+                `;
+                item.onclick = () => copyToClipboard(sub);
+                container.appendChild(item);
+            });
+            
+            document.getElementById('subdomainsFilterCount').textContent = `${subdomains.length} subdomains`;
+        }
+        
+        function displayDNSRecords(records) {
+            const container = document.getElementById('dnsRecordsSection');
+            container.innerHTML = '';
+            
+            const typeOrder = ['A', 'AAAA', 'CNAME', 'MX', 'TXT', 'DMARC', 'NS', 'SOA', 'CAA'];
+            
+            typeOrder.forEach(type => {
+                if (records[type] && records[type].length > 0) {
+                    const group = document.createElement('div');
+                    group.className = 'dns-record-group';
+                    group.innerHTML = `<h4>${type} Records (${records[type].length})</h4>`;
+                    
+                    records[type].forEach(record => {
+                        const item = document.createElement('div');
+                        item.className = 'dns-record-item';
+                        item.textContent = record.data || JSON.stringify(record);
+                        item.onclick = () => copyToClipboard(record.data);
+                        item.style.cursor = 'pointer';
+                        group.appendChild(item);
+                    });
+                    
+                    container.appendChild(group);
+                }
+            });
+            
+            if (container.children.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-muted);">No DNS records found</p>';
+            }
+        }
+        
+        function switchResultsTab(tabName) {
+            document.querySelectorAll('.results-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            
+            document.querySelector(`.results-tab[onclick="switchResultsTab('${tabName}')"]`).classList.add('active');
+            document.getElementById(`panel-${tabName}`).classList.add('active');
+        }
+        
+        function filterHosts() {
+            const filter = document.getElementById('hostsFilter').value.toLowerCase();
+            const rows = document.querySelectorAll('#hostsTableBody tr');
+            let visible = 0;
+            
+            rows.forEach(row => {
+                if (row.dataset.subdomain) {
+                    const match = row.dataset.subdomain.includes(filter);
+                    row.style.display = match ? '' : 'none';
+                    if (match) visible++;
+                }
+            });
+            
+            document.getElementById('hostsFilterCount').textContent = `${visible} hosts`;
+        }
+        
+        function filterSubdomains() {
+            const filter = document.getElementById('subdomainsFilter').value.toLowerCase();
+            const items = document.querySelectorAll('.subdomain-item');
+            let visible = 0;
+            
+            items.forEach(item => {
+                const match = item.dataset.subdomain.includes(filter);
+                item.style.display = match ? '' : 'none';
+                if (match) visible++;
+            });
+            
+            document.getElementById('subdomainsFilterCount').textContent = `${visible} subdomains`;
+        }
+        
+        function updateExportPreview() {
+            if (!currentResults) return;
+            
+            const preview = currentResults.subdomains?.join('\n') || '';
+            document.getElementById('exportPreview').value = preview;
+        }
+        
+        function exportAs(format) {
+            if (!currentResults) return;
+            
+            let content, filename, type;
+            
+            if (format === 'txt') {
+                content = `DNS Dumpster Results for ${currentDomain}\n`;
+                content += `Generated: ${new Date().toISOString()}\n`;
+                content += '='.repeat(50) + '\n\n';
+                content += `[SUBDOMAINS (${currentResults.subdomains?.length || 0})]\n`;
+                content += (currentResults.subdomains || []).join('\n');
+                content += '\n\n[ACTIVE HOSTS]\n';
+                (currentResults.hosts || []).forEach(h => {
+                    content += `${h.subdomain} -> ${h.ips.join(', ')}\n`;
+                });
+                filename = `dns-dumpster-${currentDomain}.txt`;
+                type = 'text/plain';
+            } else if (format === 'csv') {
+                content = 'Subdomain,IP Addresses,Status\n';
+                (currentResults.hosts || []).forEach(h => {
+                    content += `"${h.subdomain}","${h.ips.join('; ')}","active"\n`;
+                });
+                filename = `dns-dumpster-${currentDomain}.csv`;
+                type = 'text/csv';
+            } else if (format === 'json') {
+                content = JSON.stringify(currentResults, null, 2);
+                filename = `dns-dumpster-${currentDomain}.json`;
+                type = 'application/json';
+            }
+            
+            const blob = new Blob([content], { type });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            link.click();
+            
+            showToast(`Downloaded ${filename}`);
+        }
+        
+        function lookupIP(ip) {
+            window.open(`/tools/ip-location.html?ip=${ip}`, '_blank');
+        }
+        
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text);
+            showToast('Copied: ' + text);
+        }
+        
+        // Enter key support
+        document.getElementById('domainInput').addEventListener('keypress', e => {
+            if (e.key === 'Enter') startDumpster();
+        });
+        
+        // Check URL params for pre-fill
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('domain')) {
+            document.getElementById('domainInput').value = urlParams.get('domain');
+        }
+    </script>
+</body>
+</html>
