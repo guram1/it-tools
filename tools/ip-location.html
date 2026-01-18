@@ -437,7 +437,7 @@
                 <div class="bulk-section">
                     <h3>Bulk IP Lookup</h3>
                     <div class="form-group">
-                        <label class="form-label">Multiple IP Addresses (one per line, max 20)</label>
+                        <label class="form-label">Multiple IP Addresses (one per line, max 10)</label>
                         <textarea class="form-textarea" id="bulkIPs" placeholder="8.8.8.8
 1.1.1.1
 208.67.222.222"></textarea>
@@ -543,7 +543,7 @@
     <script src="../js/common.js"></script>
     <script>
         const MY_IP_API = 'https://api.ipify.org?format=json';
-        const IP_LOOKUP_API = 'https://ip-api.com/json/'; // Free IP geolocation API
+        const IP_LOOKUP_API = 'https://ipapi.co/'; // Free IP geolocation API with HTTPS
         let currentData = null;
         let bulkData = [];
         
@@ -590,14 +590,14 @@
             document.getElementById('errorBox').style.display = 'none';
             
             try {
-                // Using ip-api.com (free, no API key needed, 45 requests/minute)
-                const response = await fetch(`${IP_LOOKUP_API}${encodeURIComponent(ip)}?fields=status,message,country,countryCode,region,regionName,city,zip,lat,lon,timezone,isp,org,as,query`);
+                // Using ipapi.co (free with HTTPS, 1000 req/day)
+                const response = await fetch(`${IP_LOOKUP_API}${encodeURIComponent(ip)}/json/`);
                 const data = await response.json();
                 
                 document.getElementById('loading').classList.remove('active');
                 
-                if (data.status === 'fail') {
-                    throw new Error(data.message || 'Invalid IP address or lookup failed');
+                if (data.error) {
+                    throw new Error(data.reason || 'Invalid IP address or lookup failed');
                 }
                 
                 currentData = data;
@@ -614,48 +614,47 @@
             document.getElementById('ipResult').style.display = 'block';
             
             // Main display
-            document.getElementById('resultIP').textContent = data.query || '—';
+            document.getElementById('resultIP').textContent = data.ip || '—';
             
             // Location text
             const locationParts = [];
             if (data.city) locationParts.push(data.city);
-            if (data.regionName) locationParts.push(data.regionName);
-            if (data.country) locationParts.push(data.country);
+            if (data.region) locationParts.push(data.region);
+            if (data.country_name) locationParts.push(data.country_name);
             document.getElementById('locationText').textContent = locationParts.join(', ') || 'Unknown';
             
             // Flag
-            document.getElementById('countryFlag').textContent = countryToFlag(data.countryCode);
+            document.getElementById('countryFlag').textContent = countryToFlag(data.country_code);
             
             // Info cards
             document.getElementById('city').textContent = data.city || '—';
-            document.getElementById('region').textContent = data.regionName || '—';
-            document.getElementById('country').textContent = data.country || '—';
+            document.getElementById('region').textContent = data.region || '—';
+            document.getElementById('country').textContent = data.country_name || '—';
             document.getElementById('timezone').textContent = data.timezone || '—';
-            document.getElementById('isp').textContent = data.isp || data.org || '—';
-            document.getElementById('asn').textContent = data.as || '—';
-            document.getElementById('latitude').textContent = data.lat || '—';
-            document.getElementById('longitude').textContent = data.lon || '—';
+            document.getElementById('isp').textContent = data.org || '—';
+            document.getElementById('asn').textContent = data.asn || '—';
+            document.getElementById('latitude').textContent = data.latitude || '—';
+            document.getElementById('longitude').textContent = data.longitude || '—';
             
             // Map
-            if (data.lat && data.lon) {
-                const mapUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${data.lon - 0.15},${data.lat - 0.1},${data.lon + 0.15},${data.lat + 0.1}&layer=mapnik&marker=${data.lat},${data.lon}`;
+            if (data.latitude && data.longitude) {
+                const mapUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${data.longitude - 0.15},${data.latitude - 0.1},${data.longitude + 0.15},${data.latitude + 0.1}&layer=mapnik&marker=${data.latitude},${data.longitude}`;
                 document.getElementById('mapContainer').innerHTML = `<iframe src="${mapUrl}" loading="lazy"></iframe>`;
             } else {
                 document.getElementById('mapContainer').innerHTML = '<div class="map-placeholder">Map unavailable</div>';
             }
             
             // Full details
-            const details = `IP Address: ${data.query || '—'}
+            const details = `IP Address: ${data.ip || '—'}
 City: ${data.city || '—'}
-Region: ${data.regionName || '—'}
-Country: ${data.country || '—'}
+Region: ${data.region || '—'}
+Country: ${data.country_name || '—'}
 Timezone: ${data.timezone || '—'}
-ISP: ${data.isp || '—'}
-Organization: ${data.org || '—'}
-ASN: ${data.as || '—'}
-Latitude: ${data.lat || '—'}
-Longitude: ${data.lon || '—'}
-Coordinates: ${data.lat && data.lon ? `${data.lat}, ${data.lon}` : '—'}
+ISP: ${data.org || '—'}
+ASN: ${data.asn || '—'}
+Latitude: ${data.latitude || '—'}
+Longitude: ${data.longitude || '—'}
+Coordinates: ${data.latitude && data.longitude ? `${data.latitude}, ${data.longitude}` : '—'}
 
 Looked up with OPS-BOX.net`;
             
@@ -691,8 +690,8 @@ Looked up with OPS-BOX.net`;
                 return;
             }
             
-            if (ips.length > 20) {
-                alert('Maximum 20 IP addresses allowed');
+            if (ips.length > 10) {
+                alert('Maximum 10 IP addresses allowed (API rate limit)');
                 return;
             }
             
@@ -708,28 +707,28 @@ Looked up with OPS-BOX.net`;
                 tbody.appendChild(row);
                 
                 try {
-                    const response = await fetch(`${IP_LOOKUP_API}${encodeURIComponent(ip)}?fields=status,message,country,countryCode,regionName,city,isp,as,query`);
+                    const response = await fetch(`${IP_LOOKUP_API}${encodeURIComponent(ip)}/json/`);
                     const data = await response.json();
                     
-                    if (data.status === 'fail') {
-                        row.innerHTML = `<td>${ip}</td><td colspan="4" style="color: #ef4444;">${data.message || 'Lookup failed'}</td>`;
-                        bulkData.push({ ip, error: data.message || 'Failed' });
+                    if (data.error) {
+                        row.innerHTML = `<td>${ip}</td><td colspan="4" style="color: #ef4444;">${data.reason || 'Lookup failed'}</td>`;
+                        bulkData.push({ ip, error: data.reason || 'Failed' });
                     } else {
                         row.innerHTML = `
-                            <td>${data.query}</td>
+                            <td>${data.ip}</td>
                             <td>${data.city || '—'}</td>
-                            <td>${countryToFlag(data.countryCode)} ${data.country || '—'}</td>
-                            <td>${data.isp || '—'}</td>
-                            <td>${data.as || '—'}</td>
+                            <td>${countryToFlag(data.country_code)} ${data.country_name || '—'}</td>
+                            <td>${data.org || '—'}</td>
+                            <td>${data.asn || '—'}</td>
                         `;
                         bulkData.push({
-                            ip: data.query,
+                            ip: data.ip,
                             city: data.city,
-                            region: data.regionName,
-                            country: data.country,
-                            countryCode: data.countryCode,
-                            isp: data.isp,
-                            asn: data.as
+                            region: data.region,
+                            country: data.country_name,
+                            countryCode: data.country_code,
+                            isp: data.org,
+                            asn: data.asn
                         });
                     }
                 } catch (e) {
@@ -737,8 +736,8 @@ Looked up with OPS-BOX.net`;
                     bulkData.push({ ip, error: 'Network error' });
                 }
                 
-                // Rate limit: ip-api allows 45/minute, so add small delay
-                await new Promise(r => setTimeout(r, 150));
+                // Rate limit: ipapi.co allows ~1000/day, add delay between requests
+                await new Promise(r => setTimeout(r, 500));
             }
             
             document.getElementById('exportBtn').style.display = 'inline-flex';
