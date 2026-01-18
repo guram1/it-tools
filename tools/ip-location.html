@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IP Location Detector — Find Your IP Address & Geolocation | OPS-BOX</title>
+    <meta name="description" content="Free IP location detector. Find your public IP address, city, country, ISP, ASN, and timezone instantly. No tracking, 100% privacy-focused IP lookup tool.">
+    <meta name="keywords" content="IP location, what is my IP, IP address lookup, IP geolocation, find my IP, IP checker, ASN lookup, ISP lookup">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://ops-box.net/tools/ip-location.html">
+    
+    <meta property="og:title" content="IP Location Detector — Find Your IP Address & Geolocation">
+    <meta property="og:description" content="Find your public IP address, location, ISP, and ASN instantly.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ops-box.net/tools/ip-location.html">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "IP Location Detector",
+        "url": "https://ops-box.net/tools/ip-location.html",
+        "description": "Find your public IP address, geolocation, ISP, and ASN",
+        "applicationCategory": "NetworkingApplication",
+        "operatingSystem": "Any",
+        "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
+        "featureList": [
+            "Public IP detection",
+            "City and country lookup",
+            "ISP identification",
+            "ASN lookup",
+            "Timezone detection",
+            "GPS coordinates"
+        ]
+    }
+    </script>
+    
+    <style>
+        .ip-hero {
+            text-align: center;
+            padding: 2rem;
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-card) 100%);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .ip-address {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: var(--accent);
+            margin: 1rem 0;
+            word-break: break-all;
+        }
+        
+        .ip-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+        
+        .ip-location-text {
+            font-size: 1.25rem;
+            color: var(--text-primary);
+            margin-top: 0.5rem;
+        }
+        
+        .ip-location-text .flag {
+            font-size: 1.5rem;
+            margin-right: 0.5rem;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .info-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1.25rem;
+            position: relative;
+        }
+        
+        .info-card .icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .info-card .label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+        
+        .info-card .value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            word-break: break-all;
+        }
+        
+        .info-card .copy-btn {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 0.25rem;
+            opacity: 0;
+            transition: opacity 0.2s;
+            font-size: 0.9rem;
+        }
+        
+        .info-card:hover .copy-btn {
+            opacity: 1;
+        }
+        
+        .info-card .copy-btn:hover {
+            color: var(--accent);
+        }
+        
+        .map-container {
+            margin-top: 1.5rem;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            background: var(--bg-secondary);
+        }
+        
+        .map-container iframe {
+            width: 100%;
+            height: 300px;
+            border: none;
+        }
+        
+        .map-placeholder {
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+        }
+        
+        .loading-state {
+            text-align: center;
+            padding: 3rem;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .error-state {
+            text-align: center;
+            padding: 2rem;
+            color: #ef4444;
+        }
+        
+        .refresh-btn {
+            margin-top: 1rem;
+        }
+        
+        .copy-all-section {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+        
+        .copy-all-section textarea {
+            width: 100%;
+            min-height: 120px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.75rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--text-primary);
+            resize: vertical;
+            margin-top: 0.75rem;
+        }
+        
+        .privacy-note {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            border-radius: 8px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        
+        .privacy-note strong {
+            color: var(--accent);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <a href="/" class="logo">
+                <div class="logo-icon">⚡</div>
+                <div class="logo-text">OPS<span>-BOX</span></div>
+            </a>
+            <nav class="header-nav">
+                <a href="/tools/subnet-calculator.html">Subnet</a>
+                <a href="/tools/mac-vendor-lookup.html">MAC Lookup</a>
+                <a href="/tools/ssl-checker.html">SSL Check</a>
+                <a href="/tools/ip-location.html">IP Location</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <nav class="breadcrumb">
+            <a href="/">Home</a><span>›</span><span class="breadcrumb-current">IP Location Detector</span>
+        </nav>
+
+        <div class="tool-container">
+            <div class="tool-header">
+                <h1 class="tool-title">IP Location Detector</h1>
+                <p class="tool-description">Instantly detect your public IP address, geographic location, ISP, and network information.</p>
+            </div>
+            
+            <div class="tool-content">
+                <!-- Loading State -->
+                <div class="loading-state" id="loadingState">
+                    <div class="loading-spinner"></div>
+                    <p>Detecting your IP address...</p>
+                </div>
+                
+                <!-- Error State -->
+                <div class="error-state" id="errorState" style="display: none;">
+                    <p>⚠️ Could not detect your IP address</p>
+                    <button class="btn btn-primary refresh-btn" onclick="detectIP()">Try Again</button>
+                </div>
+                
+                <!-- Results -->
+                <div id="resultsContainer" style="display: none;">
+                    <div class="ip-hero">
+                        <div class="ip-label">Your Public IP Address</div>
+                        <div class="ip-address" id="ipAddress">—</div>
+                        <div class="ip-location-text">
+                            <span class="flag" id="countryFlag"></span>
+                            <span id="locationText">—</span>
+                        </div>
+                    </div>
+                    
+                    <div class="info-grid">
+                        <div class="info-card">
+                            <button class="copy-btn" onclick="copyField('city')">📋</button>
+                            <div class="icon">🏙️</div>
+                            <div class="label">City</div>
+                            <div class="value" id="city">—</div>
+                        </div>
+                        <div class="info-card">
+                            <button class="copy-btn" onclick="copyField('region')">📋</button>
+                            <div class="icon">📍</div>
+                            <div class="label">Region / State</div>
+                            <div class="value" id="region">—</div>
+                        </div>
+                        <div class="info-card">
+                            <button class="copy-btn" onclick="copyField('country')">📋</button>
+                            <div class="icon">🌍</div>
+                            <div class="label">Country</div>
+                            <div class="value" id="country">—</div>
+                        </div>
+                        <div class="info-card">
+                            <button class="copy-btn" onclick="copyField('timezone')">📋</button>
+                            <div class="icon">🕐</div>
+                            <div class="label">Timezone</div>
+                            <div class="value" id="timezone">—</div>
+                        </div>
+                        <div class="info-card">
+                            <button class="copy-btn" onclick="copyField('isp')">📋</button>
+                            <div class="icon">🌐</div>
+                            <div class="label">ISP / Organization</div>
+                            <div class="value" id="isp">—</div>
+                        </div>
+                        <div class="info-card">
+                            <button class="copy-btn" onclick="copyField('asn')">📋</button>
+                            <div class="icon">🔢</div>
+                            <div class="label">ASN</div>
+                            <div class="value" id="asn">—</div>
+                        </div>
+                        <div class="info-card">
+                            <button class="copy-btn" onclick="copyField('latitude')">📋</button>
+                            <div class="icon">📐</div>
+                            <div class="label">Latitude</div>
+                            <div class="value" id="latitude">—</div>
+                        </div>
+                        <div class="info-card">
+                            <button class="copy-btn" onclick="copyField('longitude')">📋</button>
+                            <div class="icon">📐</div>
+                            <div class="label">Longitude</div>
+                            <div class="value" id="longitude">—</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Map -->
+                    <div class="map-container" id="mapContainer">
+                        <div class="map-placeholder">Loading map...</div>
+                    </div>
+                    
+                    <!-- Copy All Section -->
+                    <div class="copy-all-section">
+                        <div class="label" style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Full Details (Click to copy)</div>
+                        <textarea id="fullDetails" readonly onclick="copyFullDetails()"></textarea>
+                        <div class="btn-group" style="margin-top: 0.75rem;">
+                            <button class="btn btn-secondary" onclick="copyFullDetails()">Copy All Details</button>
+                            <button class="btn btn-secondary" onclick="detectIP()">🔄 Refresh</button>
+                        </div>
+                    </div>
+                    
+                    <div class="privacy-note">
+                        <strong>🔒 Privacy Note:</strong> This tool detects your IP address using Cloudflare's edge network. We do not store, log, or track your IP address or location data. All processing happens in real-time with no data retention.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <section class="seo-content">
+            <h2>About IP Location Detection</h2>
+            <p>Your IP address is a unique identifier assigned to your device by your Internet Service Provider (ISP). It reveals information about your approximate location, network provider, and can be used to customize content and services.</p>
+            
+            <h3>What Information Does Your IP Reveal?</h3>
+            <ul>
+                <li><strong>Geographic Location</strong> — City, region, and country (approximate, not exact address)</li>
+                <li><strong>Internet Service Provider</strong> — The company providing your internet connection</li>
+                <li><strong>ASN (Autonomous System Number)</strong> — Identifies the network your connection routes through</li>
+                <li><strong>Timezone</strong> — Based on your geographic location</li>
+                <li><strong>Connection Type</strong> — Whether you're on residential, business, or mobile network</li>
+            </ul>
+            
+            <h3>Common Use Cases</h3>
+            <ul>
+                <li><strong>Network Troubleshooting</strong> — Verify your public IP for firewall rules and port forwarding</li>
+                <li><strong>VPN Verification</strong> — Confirm your VPN is working and showing the correct exit location</li>
+                <li><strong>Remote Access</strong> — Find your IP to set up remote desktop or SSH access</li>
+                <li><strong>Geolocation Testing</strong> — Test location-based services and content delivery</li>
+                <li><strong>Security Audits</strong> — Verify what information is exposed about your network</li>
+            </ul>
+            
+            <h3>IPv4 vs IPv6</h3>
+            <p>This tool shows your public IPv4 or IPv6 address depending on your network configuration. IPv6 addresses are longer (e.g., 2001:0db8:85a3:0000:0000:8a2e:0370:7334) and are becoming more common as IPv4 addresses become scarce.</p>
+            
+            <h3>Privacy Considerations</h3>
+            <p>While your IP address reveals approximate location, it does not reveal your exact street address, name, or other personal information. However, your ISP can connect your IP to your account. Using a VPN can mask your real IP address.</p>
+        </section>
+
+        <section class="related-tools">
+            <h2>Related Tools</h2>
+            <div class="related-grid">
+                <a href="/tools/subnet-calculator.html" class="related-card">
+                    <h3>Subnet Calculator</h3>
+                    <p>Calculate network addresses, VLSM, and plan IP allocations.</p>
+                </a>
+                <a href="/tools/mac-vendor-lookup.html" class="related-card">
+                    <h3>MAC Vendor Lookup</h3>
+                    <p>Identify device manufacturers from MAC addresses.</p>
+                </a>
+                <a href="/tools/ssl-checker.html" class="related-card">
+                    <h3>SSL Certificate Checker</h3>
+                    <p>Check SSL certificate expiry dates for your domains.</p>
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Network Tools</h3>
+                <a href="/tools/subnet-calculator.html">Subnet Calculator</a>
+                <a href="/tools/mac-vendor-lookup.html">MAC Vendor Lookup</a>
+                <a href="/tools/ssl-checker.html">SSL Checker</a>
+                <a href="/tools/ip-location.html">IP Location</a>
+            </div>
+            <div class="footer-section">
+                <h3>Security Tools</h3>
+                <a href="/tools/password-generator.html">Password Generator</a>
+                <a href="/tools/hash-generator.html">Hash Generator</a>
+                <a href="/tools/uuid-generator.html">UUID Generator</a>
+            </div>
+            <div class="footer-section">
+                <h3>Developer Tools</h3>
+                <a href="/tools/json-formatter.html">JSON Formatter</a>
+                <a href="/tools/base64-encoder.html">Base64 Encoder</a>
+                <a href="/tools/wifi-qr-generator.html">WiFi QR Generator</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals.</p>
+        </div>
+    </footer>
+
+    <div class="toast" id="toast">Copied to clipboard!</div>
+
+    <script src="../js/common.js"></script>
+    <script>
+        const API_URL = 'https://api.ops-box.net/ip';
+        let ipData = null;
+        
+        // Country code to flag emoji
+        function countryToFlag(countryCode) {
+            if (!countryCode || countryCode.length !== 2) return '🌍';
+            const codePoints = countryCode
+                .toUpperCase()
+                .split('')
+                .map(char => 127397 + char.charCodeAt(0));
+            return String.fromCodePoint(...codePoints);
+        }
+        
+        async function detectIP() {
+            document.getElementById('loadingState').style.display = 'block';
+            document.getElementById('errorState').style.display = 'none';
+            document.getElementById('resultsContainer').style.display = 'none';
+            
+            try {
+                const response = await fetch(API_URL);
+                if (!response.ok) throw new Error('API request failed');
+                
+                ipData = await response.json();
+                displayResults(ipData);
+                
+            } catch (error) {
+                console.error('Error detecting IP:', error);
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('errorState').style.display = 'block';
+            }
+        }
+        
+        function displayResults(data) {
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('resultsContainer').style.display = 'block';
+            
+            // Main IP display
+            document.getElementById('ipAddress').textContent = data.ip || '—';
+            
+            // Location text
+            const locationParts = [];
+            if (data.city) locationParts.push(data.city);
+            if (data.region) locationParts.push(data.region);
+            if (data.country) locationParts.push(data.country);
+            document.getElementById('locationText').textContent = locationParts.join(', ') || 'Unknown Location';
+            
+            // Country flag
+            document.getElementById('countryFlag').textContent = countryToFlag(data.country);
+            
+            // Info cards
+            document.getElementById('city').textContent = data.city || '—';
+            document.getElementById('region').textContent = data.region || '—';
+            document.getElementById('country').textContent = data.country || '—';
+            document.getElementById('timezone').textContent = data.timezone || '—';
+            document.getElementById('isp').textContent = data.org || '—';
+            document.getElementById('asn').textContent = data.asn ? `AS${data.asn}` : '—';
+            document.getElementById('latitude').textContent = data.latitude || '—';
+            document.getElementById('longitude').textContent = data.longitude || '—';
+            
+            // Map
+            if (data.latitude && data.longitude) {
+                const mapUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${data.longitude - 0.1},${data.latitude - 0.1},${data.longitude + 0.1},${data.latitude + 0.1}&layer=mapnik&marker=${data.latitude},${data.longitude}`;
+                document.getElementById('mapContainer').innerHTML = `<iframe src="${mapUrl}" loading="lazy"></iframe>`;
+            } else {
+                document.getElementById('mapContainer').innerHTML = '<div class="map-placeholder">Map unavailable - coordinates not found</div>';
+            }
+            
+            // Full details textarea
+            const details = `IP Address: ${data.ip || '—'}
+City: ${data.city || '—'}
+Region: ${data.region || '—'}
+Country: ${data.country || '—'}
+Timezone: ${data.timezone || '—'}
+ISP: ${data.org || '—'}
+ASN: ${data.asn ? 'AS' + data.asn : '—'}
+Latitude: ${data.latitude || '—'}
+Longitude: ${data.longitude || '—'}
+Coordinates: ${data.latitude && data.longitude ? `${data.latitude}, ${data.longitude}` : '—'}
+
+Detected by OPS-BOX.net`;
+            
+            document.getElementById('fullDetails').value = details;
+        }
+        
+        function copyField(fieldId) {
+            const value = document.getElementById(fieldId).textContent;
+            if (value && value !== '—') {
+                navigator.clipboard.writeText(value);
+                showToast('Copied: ' + value);
+            }
+        }
+        
+        function copyFullDetails() {
+            const textarea = document.getElementById('fullDetails');
+            navigator.clipboard.writeText(textarea.value);
+            showToast('All details copied!');
+        }
+        
+        // Auto-detect on page load
+        document.addEventListener('DOMContentLoaded', detectIP);
+    </script>
+</body>
+</html>
