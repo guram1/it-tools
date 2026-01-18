@@ -335,6 +335,12 @@
                         </div>
                     </div>
                     
+                    <!-- Data Sources -->
+                    <div class="sources-section" id="sourcesSection" style="margin-bottom: 1rem; padding: 0.75rem; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; display: none;">
+                        <span style="font-size: 0.75rem; color: var(--text-muted); margin-right: 0.5rem;">Data sources:</span>
+                        <span id="sourcesList" style="font-size: 0.75rem; color: var(--accent);"></span>
+                    </div>
+                    
                     <!-- Hosting Providers -->
                     <div class="hosting-section" id="hostingSection">
                         <h3>Hosting / Networks</h3>
@@ -546,6 +552,12 @@
             document.getElementById('statMX').textContent = data.mx_records?.length || 0;
             document.getElementById('statNS').textContent = data.ns_records?.length || 0;
             document.getElementById('statProviders').textContent = Object.keys(data.hosting_providers || {}).length;
+            
+            // Show sources used
+            if (data.sources_used && data.sources_used.length > 0) {
+                document.getElementById('sourcesSection').style.display = 'block';
+                document.getElementById('sourcesList').textContent = data.sources_used.join(', ') + ', common-wordlist';
+            }
             
             // Tab counts
             document.getElementById('tabHostsCount').textContent = data.hosts?.length || 0;
