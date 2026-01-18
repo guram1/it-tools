@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DNS Dumpster — Subdomain Finder & DNS Recon Tool | OPS-BOX</title>
-    <meta name="description" content="Free DNS reconnaissance tool. Discover subdomains, DNS records, mail servers, and hosts for any domain using Certificate Transparency logs. Alternative to DNSDumpster.">
-    <meta name="keywords" content="DNS dumpster, subdomain finder, subdomain enumeration, DNS recon, certificate transparency, subdomain discovery, DNS reconnaissance, find subdomains">
+    <meta name="description" content="Free DNS reconnaissance tool. Discover subdomains, DNS records, mail servers, and hosts for any domain using Certificate Transparency logs. Shows ASN, reverse DNS, hosting providers.">
+    <meta name="keywords" content="DNS dumpster, subdomain finder, subdomain enumeration, DNS recon, certificate transparency, subdomain discovery, ASN lookup, reverse DNS">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://ops-box.net/tools/dns-dumpster.html">
     
     <meta property="og:title" content="DNS Dumpster — Subdomain Finder & DNS Recon">
-    <meta property="og:description" content="Discover subdomains and DNS records for any domain using CT logs.">
+    <meta property="og:description" content="Discover subdomains, ASN info, and DNS records for any domain.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://ops-box.net/tools/dns-dumpster.html">
     
@@ -18,20 +18,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/style.css">
-    
-    <script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "WebApplication",
-        "name": "DNS Dumpster",
-        "url": "https://ops-box.net/tools/dns-dumpster.html",
-        "description": "Discover subdomains and perform DNS reconnaissance for any domain",
-        "applicationCategory": "SecurityApplication",
-        "operatingSystem": "Any",
-        "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
-        "featureList": ["Subdomain discovery", "Certificate Transparency lookup", "DNS record enumeration", "Host resolution", "Export results"]
-    }
-    </script>
     
     <style>
         .search-section {
@@ -47,50 +33,78 @@
             padding: 1rem;
         }
         
-        .search-section .btn {
-            padding: 1rem 2rem;
-            font-size: 1rem;
-        }
-        
-        .results-container {
-            display: none;
-        }
+        .results-container { display: none; }
         
         .stats-bar {
-            display: flex;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
             gap: 1rem;
             margin-bottom: 1.5rem;
-            padding: 1rem;
+        }
+        
+        .stat-card {
             background: var(--bg-secondary);
             border: 1px solid var(--border);
             border-radius: 10px;
-        }
-        
-        .stat-item {
+            padding: 1rem;
             text-align: center;
-            padding: 0.5rem 1.5rem;
-            border-right: 1px solid var(--border);
         }
         
-        .stat-item:last-child {
-            border-right: none;
-        }
-        
-        .stat-item .number {
-            font-size: 1.75rem;
+        .stat-card .number {
+            font-size: 2rem;
             font-weight: 700;
             color: var(--accent);
             font-family: 'JetBrains Mono', monospace;
         }
         
-        .stat-item .label {
-            font-size: 0.75rem;
+        .stat-card .label {
+            font-size: 0.7rem;
             color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-top: 0.25rem;
+        }
+        
+        /* Hosting Providers Section */
+        .hosting-section {
+            margin-bottom: 1.5rem;
+        }
+        
+        .hosting-section h3 {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
         }
         
+        .hosting-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        
+        .hosting-tag {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 0.4rem 0.75rem;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .hosting-tag .count {
+            background: var(--accent);
+            color: #000;
+            padding: 0.1rem 0.4rem;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        
+        /* Tabs */
         .results-tabs {
             display: flex;
             gap: 0.5rem;
@@ -112,80 +126,66 @@
             transition: all 0.2s ease;
         }
         
-        .results-tab:hover {
-            background: var(--bg-card);
-            color: var(--text-primary);
-        }
+        .results-tab:hover { background: var(--bg-card); color: var(--text-primary); }
+        .results-tab.active { background: var(--accent); color: #000; border-color: var(--accent); }
+        .results-tab .count { background: rgba(0,0,0,0.2); padding: 0.15rem 0.5rem; border-radius: 10px; font-size: 0.75rem; margin-left: 0.5rem; }
         
-        .results-tab.active {
-            background: var(--accent);
-            color: #000;
-            border-color: var(--accent);
-        }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
         
-        .results-tab .count {
-            background: rgba(0,0,0,0.2);
-            padding: 0.15rem 0.5rem;
-            border-radius: 10px;
-            font-size: 0.75rem;
-            margin-left: 0.5rem;
-        }
-        
-        .tab-panel {
-            display: none;
-        }
-        
-        .tab-panel.active {
-            display: block;
+        /* Enhanced Hosts Table */
+        .hosts-table-container {
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            border-radius: 8px;
         }
         
         .hosts-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
+            min-width: 800px;
         }
         
-        .hosts-table th,
-        .hosts-table td {
-            padding: 0.75rem 1rem;
+        .hosts-table th, .hosts-table td {
+            padding: 0.6rem 0.75rem;
             text-align: left;
             border-bottom: 1px solid var(--border);
+            vertical-align: top;
         }
         
         .hosts-table th {
             background: var(--bg-secondary);
             color: var(--text-muted);
-            font-weight: 500;
+            font-weight: 600;
             font-size: 0.7rem;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.03em;
             position: sticky;
             top: 0;
+            white-space: nowrap;
         }
         
-        .hosts-table td {
-            font-family: 'JetBrains Mono', monospace;
-        }
+        .hosts-table td { font-family: 'JetBrains Mono', monospace; }
+        .hosts-table tr:hover { background: var(--bg-secondary); }
         
-        .hosts-table tr:hover {
-            background: var(--bg-secondary);
-        }
+        .hosts-table .host-cell { color: var(--accent); font-weight: 500; }
+        .hosts-table .ip-cell { color: var(--text-primary); }
+        .hosts-table .reverse-cell { color: var(--text-muted); font-size: 0.75rem; }
+        .hosts-table .asn-cell { font-size: 0.75rem; }
+        .hosts-table .asn-cell .asn-number { color: var(--accent); }
+        .hosts-table .asn-cell .asn-name { color: var(--text-secondary); display: block; }
+        .hosts-table .country-cell { white-space: nowrap; }
+        .hosts-table .country-cell .flag { font-size: 1rem; margin-right: 0.25rem; }
         
-        .hosts-table .subdomain {
-            color: var(--accent);
-        }
-        
-        .hosts-table .ip {
-            color: var(--text-primary);
-        }
-        
+        /* Subdomains Grid */
         .subdomain-list {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 0.5rem;
-            max-height: 500px;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 0.4rem;
+            max-height: 450px;
             overflow-y: auto;
-            padding: 1rem;
+            padding: 0.5rem;
             background: var(--bg-secondary);
             border: 1px solid var(--border);
             border-radius: 8px;
@@ -193,143 +193,77 @@
         
         .subdomain-item {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 0.8rem;
-            padding: 0.5rem 0.75rem;
+            font-size: 0.75rem;
+            padding: 0.4rem 0.6rem;
             background: var(--bg-card);
             border-radius: 4px;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.4rem;
+            cursor: pointer;
         }
         
-        .subdomain-item .status {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            flex-shrink: 0;
-        }
+        .subdomain-item:hover { background: var(--border); }
+        .subdomain-item .status { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+        .subdomain-item .status.active { background: var(--accent); }
+        .subdomain-item .status.unknown { background: var(--text-muted); }
         
-        .subdomain-item .status.active {
-            background: var(--accent);
-        }
-        
-        .subdomain-item .status.unknown {
-            background: var(--text-muted);
-        }
-        
-        .subdomain-item:hover {
-            background: var(--border);
-        }
-        
-        .dns-records-section {
-            margin-bottom: 1rem;
-        }
-        
-        .dns-record-group {
-            margin-bottom: 1rem;
-        }
-        
-        .dns-record-group h4 {
-            font-size: 0.85rem;
-            color: var(--accent);
-            margin-bottom: 0.5rem;
-            font-family: 'JetBrains Mono', monospace;
-        }
-        
+        /* DNS Records */
+        .dns-record-group { margin-bottom: 1rem; }
+        .dns-record-group h4 { font-size: 0.85rem; color: var(--accent); margin-bottom: 0.5rem; font-family: 'JetBrains Mono', monospace; }
         .dns-record-item {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             padding: 0.5rem 0.75rem;
             background: var(--bg-secondary);
             border: 1px solid var(--border);
             border-radius: 4px;
             margin-bottom: 0.25rem;
             word-break: break-all;
+            cursor: pointer;
         }
+        .dns-record-item:hover { background: var(--bg-card); }
         
-        .loading-section {
-            display: none;
-            text-align: center;
-            padding: 3rem;
-        }
-        
-        .loading-section.active {
-            display: block;
-        }
-        
-        .spinner-large {
-            width: 60px;
-            height: 60px;
-            border: 4px solid var(--border);
-            border-top-color: var(--accent);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 1.5rem;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        .loading-section .status {
-            color: var(--text-muted);
-            font-size: 0.9rem;
-        }
-        
-        .loading-section .status-detail {
-            color: var(--accent);
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.85rem;
-            margin-top: 0.5rem;
-        }
-        
-        .error-box {
-            display: none;
-            padding: 1rem;
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            border-radius: 8px;
-            color: #ef4444;
+        /* MX/NS Tables */
+        .record-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
             margin-bottom: 1rem;
         }
         
-        .export-section {
-            margin-top: 1.5rem;
-            padding: 1rem;
+        .record-table th, .record-table td {
+            padding: 0.5rem 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .record-table th {
             background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-        }
-        
-        .export-section h4 {
-            font-size: 0.9rem;
-            margin-bottom: 0.75rem;
-        }
-        
-        .table-container {
-            max-height: 500px;
-            overflow-y: auto;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-        }
-        
-        .filter-bar {
-            display: flex;
-            gap: 0.75rem;
-            margin-bottom: 1rem;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-        
-        .filter-bar input {
-            flex: 1;
-            min-width: 200px;
-        }
-        
-        .filter-bar .count {
             color: var(--text-muted);
-            font-size: 0.85rem;
+            font-size: 0.7rem;
+            text-transform: uppercase;
         }
+        
+        .record-table td { font-family: 'JetBrains Mono', monospace; }
+        .record-table .priority { color: var(--accent); font-weight: 600; }
+        
+        /* Loading */
+        .loading-section { display: none; text-align: center; padding: 3rem; }
+        .loading-section.active { display: block; }
+        .spinner-large { width: 60px; height: 60px; border: 4px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1.5rem; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-section .status { color: var(--text-muted); }
+        .loading-section .status-detail { color: var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; margin-top: 0.5rem; }
+        
+        .error-box { display: none; padding: 1rem; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; color: #ef4444; margin-bottom: 1rem; }
+        
+        .filter-bar { display: flex; gap: 0.75rem; margin-bottom: 1rem; flex-wrap: wrap; align-items: center; }
+        .filter-bar input { flex: 1; min-width: 200px; }
+        .filter-bar .count { color: var(--text-muted); font-size: 0.85rem; }
+        
+        .export-section { margin-top: 1.5rem; padding: 1rem; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; }
+        .export-section h4 { font-size: 0.9rem; margin-bottom: 0.75rem; }
     </style>
 </head>
 <body>
@@ -377,61 +311,87 @@
                 </div>
                 
                 <div class="results-container" id="resultsContainer">
-                    <!-- Stats Bar -->
+                    <!-- Stats -->
                     <div class="stats-bar">
-                        <div class="stat-item">
+                        <div class="stat-card">
                             <div class="number" id="statSubdomains">0</div>
-                            <div class="label">Subdomains</div>
+                            <div class="label">Subdomains Found</div>
                         </div>
-                        <div class="stat-item">
+                        <div class="stat-card">
                             <div class="number" id="statHosts">0</div>
                             <div class="label">Active Hosts</div>
                         </div>
-                        <div class="stat-item">
+                        <div class="stat-card">
                             <div class="number" id="statMX">0</div>
                             <div class="label">Mail Servers</div>
                         </div>
-                        <div class="stat-item">
+                        <div class="stat-card">
                             <div class="number" id="statNS">0</div>
                             <div class="label">Name Servers</div>
                         </div>
+                        <div class="stat-card">
+                            <div class="number" id="statProviders">0</div>
+                            <div class="label">Hosting Providers</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Hosting Providers -->
+                    <div class="hosting-section" id="hostingSection">
+                        <h3>Hosting / Networks</h3>
+                        <div class="hosting-grid" id="hostingGrid"></div>
                     </div>
                     
                     <!-- Tabs -->
                     <div class="results-tabs">
-                        <button class="results-tab active" onclick="switchResultsTab('hosts')">
-                            Active Hosts <span class="count" id="tabHostsCount">0</span>
-                        </button>
-                        <button class="results-tab" onclick="switchResultsTab('subdomains')">
-                            All Subdomains <span class="count" id="tabSubdomainsCount">0</span>
-                        </button>
-                        <button class="results-tab" onclick="switchResultsTab('dns')">
-                            DNS Records
-                        </button>
-                        <button class="results-tab" onclick="switchResultsTab('export')">
-                            Export
-                        </button>
+                        <button class="results-tab active" onclick="switchTab('hosts')">A Records <span class="count" id="tabHostsCount">0</span></button>
+                        <button class="results-tab" onclick="switchTab('mx')">MX Records <span class="count" id="tabMXCount">0</span></button>
+                        <button class="results-tab" onclick="switchTab('ns')">NS Records <span class="count" id="tabNSCount">0</span></button>
+                        <button class="results-tab" onclick="switchTab('txt')">TXT Records <span class="count" id="tabTXTCount">0</span></button>
+                        <button class="results-tab" onclick="switchTab('subdomains')">All Subdomains <span class="count" id="tabSubdomainsCount">0</span></button>
+                        <button class="results-tab" onclick="switchTab('export')">Export</button>
                     </div>
                     
-                    <!-- Hosts Tab -->
+                    <!-- A Records Tab -->
                     <div class="tab-panel active" id="panel-hosts">
                         <div class="filter-bar">
                             <input type="text" class="form-input" id="hostsFilter" placeholder="Filter hosts..." oninput="filterHosts()">
                             <span class="count" id="hostsFilterCount"></span>
                         </div>
-                        <div class="table-container">
+                        <div class="hosts-table-container" style="max-height: 500px; overflow-y: auto;">
                             <table class="hosts-table">
                                 <thead>
                                     <tr>
-                                        <th>Subdomain</th>
-                                        <th>IP Address(es)</th>
-                                        <th>Actions</th>
+                                        <th>Host</th>
+                                        <th>IP</th>
+                                        <th>Reverse DNS</th>
+                                        <th>ASN</th>
+                                        <th>Country</th>
                                     </tr>
                                 </thead>
-                                <tbody id="hostsTableBody">
-                                </tbody>
+                                <tbody id="hostsTableBody"></tbody>
                             </table>
                         </div>
+                    </div>
+                    
+                    <!-- MX Records Tab -->
+                    <div class="tab-panel" id="panel-mx">
+                        <table class="record-table">
+                            <thead><tr><th>Priority</th><th>Mail Server</th></tr></thead>
+                            <tbody id="mxTableBody"></tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- NS Records Tab -->
+                    <div class="tab-panel" id="panel-ns">
+                        <table class="record-table">
+                            <thead><tr><th>Name Server</th></tr></thead>
+                            <tbody id="nsTableBody"></tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- TXT Records Tab -->
+                    <div class="tab-panel" id="panel-txt">
+                        <div id="txtRecordsList"></div>
                     </div>
                     
                     <!-- Subdomains Tab -->
@@ -440,27 +400,20 @@
                             <input type="text" class="form-input" id="subdomainsFilter" placeholder="Filter subdomains..." oninput="filterSubdomains()">
                             <span class="count" id="subdomainsFilterCount"></span>
                         </div>
-                        <div class="subdomain-list" id="subdomainsList">
-                        </div>
-                    </div>
-                    
-                    <!-- DNS Tab -->
-                    <div class="tab-panel" id="panel-dns">
-                        <div class="dns-records-section" id="dnsRecordsSection">
-                        </div>
+                        <div class="subdomain-list" id="subdomainsList"></div>
                     </div>
                     
                     <!-- Export Tab -->
                     <div class="tab-panel" id="panel-export">
                         <div class="export-section">
-                            <h4>Export Format</h4>
+                            <h4>Export Results</h4>
                             <div class="btn-group" style="margin-bottom: 1rem;">
                                 <button class="btn btn-secondary" onclick="exportAs('txt')">Download TXT</button>
                                 <button class="btn btn-secondary" onclick="exportAs('csv')">Download CSV</button>
                                 <button class="btn btn-secondary" onclick="exportAs('json')">Download JSON</button>
                             </div>
-                            <label class="form-label">Preview (Subdomains)</label>
-                            <textarea class="form-textarea" id="exportPreview" style="min-height: 200px; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;" readonly></textarea>
+                            <label class="form-label">Preview</label>
+                            <textarea class="form-textarea" id="exportPreview" style="min-height: 250px; font-family: 'JetBrains Mono', monospace; font-size: 0.75rem;" readonly></textarea>
                         </div>
                     </div>
                 </div>
@@ -476,20 +429,20 @@
                 <li><strong>Certificate Transparency Logs</strong> — Searches public CT logs (crt.sh) for SSL certificates issued to subdomains</li>
                 <li><strong>Common Subdomain Checks</strong> — Tests common subdomain names like www, mail, api, dev, staging</li>
                 <li><strong>DNS Resolution</strong> — Resolves discovered subdomains to find active hosts</li>
-                <li><strong>DNS Records</strong> — Queries all DNS record types (A, MX, TXT, NS, etc.)</li>
+                <li><strong>Reverse DNS</strong> — Looks up PTR records to find hostnames for IPs</li>
+                <li><strong>ASN Lookup</strong> — Identifies the hosting provider and network for each IP</li>
             </ul>
             
-            <h3>Use Cases</h3>
+            <h3>Information Gathered</h3>
             <ul>
-                <li><strong>Security Assessment</strong> — Discover forgotten or misconfigured subdomains</li>
-                <li><strong>Penetration Testing</strong> — Map the attack surface before testing</li>
-                <li><strong>Asset Inventory</strong> — Document all public-facing hosts</li>
-                <li><strong>Competitive Analysis</strong> — Understand competitor infrastructure</li>
-                <li><strong>Migration Planning</strong> — Identify all services before domain migration</li>
+                <li><strong>A Records</strong> — IP addresses for each subdomain</li>
+                <li><strong>Reverse DNS</strong> — Hostname associated with each IP</li>
+                <li><strong>ASN</strong> — Autonomous System Number and organization name</li>
+                <li><strong>Country</strong> — Geographic location of the server</li>
+                <li><strong>MX Records</strong> — Mail servers for the domain</li>
+                <li><strong>NS Records</strong> — Authoritative name servers</li>
+                <li><strong>TXT Records</strong> — SPF, DKIM, DMARC, and other text records</li>
             </ul>
-            
-            <h3>What is Certificate Transparency?</h3>
-            <p>Certificate Transparency (CT) is a public logging system for SSL/TLS certificates. When a Certificate Authority issues a certificate, it's logged publicly. This allows us to discover subdomains that have had certificates issued, even if they're not publicly linked.</p>
         </section>
 
         <section class="related-tools">
@@ -546,20 +499,18 @@
         let currentResults = null;
         let currentDomain = '';
         
+        function countryToFlag(code) {
+            if (!code || code.length !== 2) return '🌍';
+            return String.fromCodePoint(...code.toUpperCase().split('').map(c => 127397 + c.charCodeAt(0)));
+        }
+        
         function cleanDomain(input) {
-            let domain = input.trim().toLowerCase();
-            domain = domain.replace(/^https?:\/\//, '');
-            domain = domain.replace(/\/.*$/, '');
-            domain = domain.replace(/^www\./, '');
-            return domain;
+            return input.trim().toLowerCase().replace(/^https?:\/\//, '').replace(/\/.*$/, '').replace(/^www\./, '');
         }
         
         async function startDumpster() {
             const input = document.getElementById('domainInput').value.trim();
-            if (!input) {
-                alert('Please enter a domain name');
-                return;
-            }
+            if (!input) { alert('Please enter a domain name'); return; }
             
             const domain = cleanDomain(input);
             currentDomain = domain;
@@ -567,35 +518,22 @@
             document.getElementById('loadingSection').classList.add('active');
             document.getElementById('resultsContainer').style.display = 'none';
             document.getElementById('errorBox').style.display = 'none';
+            document.getElementById('loadingDetail').textContent = 'Querying Certificate Transparency logs...';
             
             try {
-                // Update loading status
-                updateLoadingStatus('Querying Certificate Transparency logs...');
-                
                 const response = await fetch(`${API_URL}?domain=${encodeURIComponent(domain)}`);
-                
-                if (!response.ok) {
-                    throw new Error('API request failed');
-                }
+                if (!response.ok) throw new Error('API request failed');
                 
                 const data = await response.json();
-                
-                if (data.error) {
-                    throw new Error(data.error);
-                }
+                if (data.error) throw new Error(data.error);
                 
                 currentResults = data;
                 displayResults(data);
-                
             } catch (error) {
                 document.getElementById('loadingSection').classList.remove('active');
                 document.getElementById('errorBox').textContent = 'Error: ' + error.message;
                 document.getElementById('errorBox').style.display = 'block';
             }
-        }
-        
-        function updateLoadingStatus(text) {
-            document.getElementById('loadingDetail').textContent = text;
         }
         
         function displayResults(data) {
@@ -607,22 +545,41 @@
             document.getElementById('statHosts').textContent = data.hosts?.length || 0;
             document.getElementById('statMX').textContent = data.mx_records?.length || 0;
             document.getElementById('statNS').textContent = data.ns_records?.length || 0;
+            document.getElementById('statProviders').textContent = Object.keys(data.hosting_providers || {}).length;
             
             // Tab counts
             document.getElementById('tabHostsCount').textContent = data.hosts?.length || 0;
+            document.getElementById('tabMXCount').textContent = data.mx_records?.length || 0;
+            document.getElementById('tabNSCount').textContent = data.ns_records?.length || 0;
+            document.getElementById('tabTXTCount').textContent = data.txt_records?.length || 0;
             document.getElementById('tabSubdomainsCount').textContent = data.subdomains?.length || 0;
             
-            // Hosts table
-            displayHosts(data.hosts || []);
+            // Hosting providers
+            displayHostingProviders(data.hosting_providers || {});
             
-            // Subdomains list
+            // Tables
+            displayHosts(data.hosts || []);
+            displayMXRecords(data.mx_records || []);
+            displayNSRecords(data.ns_records || []);
+            displayTXTRecords(data.txt_records || []);
             displaySubdomains(data.subdomains || [], data.hosts || []);
             
-            // DNS records
-            displayDNSRecords(data.dns_records || {});
-            
-            // Export preview
             updateExportPreview();
+        }
+        
+        function displayHostingProviders(providers) {
+            const grid = document.getElementById('hostingGrid');
+            grid.innerHTML = '';
+            
+            const sorted = Object.values(providers).sort((a, b) => b.count - a.count);
+            sorted.forEach(p => {
+                const tag = document.createElement('div');
+                tag.className = 'hosting-tag';
+                tag.innerHTML = `<span class="count">${p.count}</span> ${p.name}`;
+                grid.appendChild(tag);
+            });
+            
+            document.getElementById('hostingSection').style.display = sorted.length > 0 ? 'block' : 'none';
         }
         
         function displayHosts(hosts) {
@@ -630,149 +587,179 @@
             tbody.innerHTML = '';
             
             if (hosts.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: var(--text-muted);">No active hosts found</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No active hosts found</td></tr>';
                 return;
             }
             
-            hosts.forEach(host => {
+            hosts.forEach(h => {
                 const row = document.createElement('tr');
+                row.dataset.subdomain = h.subdomain.toLowerCase();
                 row.innerHTML = `
-                    <td class="subdomain">${host.subdomain}</td>
-                    <td class="ip">${host.ips.join(', ')}</td>
-                    <td>
-                        <button class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" onclick="lookupIP('${host.ips[0]}')">IP Lookup</button>
-                        <button class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" onclick="copyToClipboard('${host.subdomain}')">Copy</button>
+                    <td class="host-cell">${h.subdomain}</td>
+                    <td class="ip-cell">${h.ip}${h.ips && h.ips.length > 1 ? `<br><span style="color: var(--text-muted); font-size: 0.7rem;">(+${h.ips.length - 1} more)</span>` : ''}</td>
+                    <td class="reverse-cell">${h.reverse_dns || '—'}</td>
+                    <td class="asn-cell">
+                        ${h.asn ? `<span class="asn-number">${h.asn}</span>` : ''}
+                        <span class="asn-name">${h.asn_name || h.org || '—'}</span>
+                    </td>
+                    <td class="country-cell">
+                        ${h.country_code ? `<span class="flag">${countryToFlag(h.country_code)}</span>` : ''}
+                        ${h.country || '—'}
                     </td>
                 `;
-                row.dataset.subdomain = host.subdomain.toLowerCase();
                 tbody.appendChild(row);
             });
             
             document.getElementById('hostsFilterCount').textContent = `${hosts.length} hosts`;
         }
         
+        function displayMXRecords(records) {
+            const tbody = document.getElementById('mxTableBody');
+            tbody.innerHTML = '';
+            
+            if (records.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="2" style="color: var(--text-muted);">No MX records found</td></tr>';
+                return;
+            }
+            
+            records.forEach(r => {
+                const parts = (r.data || '').split(' ');
+                const priority = parts[0] || '—';
+                const server = parts.slice(1).join(' ') || r.data;
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `<td class="priority">${priority}</td><td>${server}</td>`;
+                tbody.appendChild(row);
+            });
+        }
+        
+        function displayNSRecords(records) {
+            const tbody = document.getElementById('nsTableBody');
+            tbody.innerHTML = '';
+            
+            if (records.length === 0) {
+                tbody.innerHTML = '<tr><td style="color: var(--text-muted);">No NS records found</td></tr>';
+                return;
+            }
+            
+            records.forEach(r => {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td>${r.data || '—'}</td>`;
+                tbody.appendChild(row);
+            });
+        }
+        
+        function displayTXTRecords(records) {
+            const container = document.getElementById('txtRecordsList');
+            container.innerHTML = '';
+            
+            if (records.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-muted);">No TXT records found</p>';
+                return;
+            }
+            
+            records.forEach(r => {
+                const item = document.createElement('div');
+                item.className = 'dns-record-item';
+                item.textContent = (r.data || '').replace(/^"|"$/g, '');
+                item.onclick = () => { navigator.clipboard.writeText(item.textContent); showToast('Copied!'); };
+                container.appendChild(item);
+            });
+        }
+        
         function displaySubdomains(subdomains, hosts) {
             const container = document.getElementById('subdomainsList');
             container.innerHTML = '';
             
-            const activeHosts = new Set(hosts.map(h => h.subdomain.toLowerCase()));
+            const activeSet = new Set(hosts.map(h => h.subdomain.toLowerCase()));
             
             subdomains.forEach(sub => {
-                const isActive = activeHosts.has(sub.toLowerCase());
+                const isActive = activeSet.has(sub.toLowerCase());
                 const item = document.createElement('div');
                 item.className = 'subdomain-item';
                 item.dataset.subdomain = sub.toLowerCase();
-                item.innerHTML = `
-                    <span class="status ${isActive ? 'active' : 'unknown'}"></span>
-                    <span>${sub}</span>
-                `;
-                item.onclick = () => copyToClipboard(sub);
+                item.innerHTML = `<span class="status ${isActive ? 'active' : 'unknown'}"></span><span>${sub}</span>`;
+                item.onclick = () => { navigator.clipboard.writeText(sub); showToast('Copied: ' + sub); };
                 container.appendChild(item);
             });
             
             document.getElementById('subdomainsFilterCount').textContent = `${subdomains.length} subdomains`;
         }
         
-        function displayDNSRecords(records) {
-            const container = document.getElementById('dnsRecordsSection');
-            container.innerHTML = '';
-            
-            const typeOrder = ['A', 'AAAA', 'CNAME', 'MX', 'TXT', 'DMARC', 'NS', 'SOA', 'CAA'];
-            
-            typeOrder.forEach(type => {
-                if (records[type] && records[type].length > 0) {
-                    const group = document.createElement('div');
-                    group.className = 'dns-record-group';
-                    group.innerHTML = `<h4>${type} Records (${records[type].length})</h4>`;
-                    
-                    records[type].forEach(record => {
-                        const item = document.createElement('div');
-                        item.className = 'dns-record-item';
-                        item.textContent = record.data || JSON.stringify(record);
-                        item.onclick = () => copyToClipboard(record.data);
-                        item.style.cursor = 'pointer';
-                        group.appendChild(item);
-                    });
-                    
-                    container.appendChild(group);
-                }
-            });
-            
-            if (container.children.length === 0) {
-                container.innerHTML = '<p style="color: var(--text-muted);">No DNS records found</p>';
-            }
-        }
-        
-        function switchResultsTab(tabName) {
+        function switchTab(name) {
             document.querySelectorAll('.results-tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-            
-            document.querySelector(`.results-tab[onclick="switchResultsTab('${tabName}')"]`).classList.add('active');
-            document.getElementById(`panel-${tabName}`).classList.add('active');
+            document.querySelector(`.results-tab[onclick="switchTab('${name}')"]`).classList.add('active');
+            document.getElementById(`panel-${name}`).classList.add('active');
         }
         
         function filterHosts() {
             const filter = document.getElementById('hostsFilter').value.toLowerCase();
-            const rows = document.querySelectorAll('#hostsTableBody tr');
             let visible = 0;
-            
-            rows.forEach(row => {
+            document.querySelectorAll('#hostsTableBody tr').forEach(row => {
                 if (row.dataset.subdomain) {
                     const match = row.dataset.subdomain.includes(filter);
                     row.style.display = match ? '' : 'none';
                     if (match) visible++;
                 }
             });
-            
             document.getElementById('hostsFilterCount').textContent = `${visible} hosts`;
         }
         
         function filterSubdomains() {
             const filter = document.getElementById('subdomainsFilter').value.toLowerCase();
-            const items = document.querySelectorAll('.subdomain-item');
             let visible = 0;
-            
-            items.forEach(item => {
+            document.querySelectorAll('.subdomain-item').forEach(item => {
                 const match = item.dataset.subdomain.includes(filter);
                 item.style.display = match ? '' : 'none';
                 if (match) visible++;
             });
-            
             document.getElementById('subdomainsFilterCount').textContent = `${visible} subdomains`;
         }
         
         function updateExportPreview() {
             if (!currentResults) return;
+            let text = `DNS Dumpster Results for ${currentDomain}\n`;
+            text += `Generated: ${currentResults.timestamp}\n`;
+            text += '='.repeat(60) + '\n\n';
             
-            const preview = currentResults.subdomains?.join('\n') || '';
-            document.getElementById('exportPreview').value = preview;
+            text += `[A RECORDS - ${currentResults.hosts?.length || 0} hosts]\n`;
+            text += 'Host\tIP\tReverse DNS\tASN\tCountry\n';
+            (currentResults.hosts || []).forEach(h => {
+                text += `${h.subdomain}\t${h.ip}\t${h.reverse_dns || '-'}\t${h.asn || '-'} ${h.asn_name || ''}\t${h.country || '-'}\n`;
+            });
+            
+            text += `\n[MX RECORDS]\n`;
+            (currentResults.mx_records || []).forEach(r => text += `${r.data}\n`);
+            
+            text += `\n[NS RECORDS]\n`;
+            (currentResults.ns_records || []).forEach(r => text += `${r.data}\n`);
+            
+            text += `\n[TXT RECORDS]\n`;
+            (currentResults.txt_records || []).forEach(r => text += `${(r.data || '').replace(/^"|"$/g, '')}\n`);
+            
+            text += `\n[ALL SUBDOMAINS - ${currentResults.subdomains?.length || 0}]\n`;
+            text += (currentResults.subdomains || []).join('\n');
+            
+            document.getElementById('exportPreview').value = text;
         }
         
         function exportAs(format) {
             if (!currentResults) return;
-            
             let content, filename, type;
             
             if (format === 'txt') {
-                content = `DNS Dumpster Results for ${currentDomain}\n`;
-                content += `Generated: ${new Date().toISOString()}\n`;
-                content += '='.repeat(50) + '\n\n';
-                content += `[SUBDOMAINS (${currentResults.subdomains?.length || 0})]\n`;
-                content += (currentResults.subdomains || []).join('\n');
-                content += '\n\n[ACTIVE HOSTS]\n';
-                (currentResults.hosts || []).forEach(h => {
-                    content += `${h.subdomain} -> ${h.ips.join(', ')}\n`;
-                });
+                content = document.getElementById('exportPreview').value;
                 filename = `dns-dumpster-${currentDomain}.txt`;
                 type = 'text/plain';
             } else if (format === 'csv') {
-                content = 'Subdomain,IP Addresses,Status\n';
+                content = 'Host,IP,Reverse DNS,ASN,ASN Name,Country\n';
                 (currentResults.hosts || []).forEach(h => {
-                    content += `"${h.subdomain}","${h.ips.join('; ')}","active"\n`;
+                    content += `"${h.subdomain}","${h.ip}","${h.reverse_dns || ''}","${h.asn || ''}","${h.asn_name || ''}","${h.country || ''}"\n`;
                 });
                 filename = `dns-dumpster-${currentDomain}.csv`;
                 type = 'text/csv';
-            } else if (format === 'json') {
+            } else {
                 content = JSON.stringify(currentResults, null, 2);
                 filename = `dns-dumpster-${currentDomain}.json`;
                 type = 'application/json';
@@ -783,25 +770,11 @@
             link.href = URL.createObjectURL(blob);
             link.download = filename;
             link.click();
-            
             showToast(`Downloaded ${filename}`);
         }
         
-        function lookupIP(ip) {
-            window.open(`/tools/ip-location.html?ip=${ip}`, '_blank');
-        }
+        document.getElementById('domainInput').addEventListener('keypress', e => { if (e.key === 'Enter') startDumpster(); });
         
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text);
-            showToast('Copied: ' + text);
-        }
-        
-        // Enter key support
-        document.getElementById('domainInput').addEventListener('keypress', e => {
-            if (e.key === 'Enter') startDumpster();
-        });
-        
-        // Check URL params for pre-fill
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('domain')) {
             document.getElementById('domainInput').value = urlParams.get('domain');
