@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IP Location Detector — Find Your IP Address & Geolocation | OPS-BOX</title>
-    <meta name="description" content="Free IP location detector. Find your public IP address, city, country, ISP, ASN, and timezone instantly. No tracking, 100% privacy-focused IP lookup tool.">
-    <meta name="keywords" content="IP location, what is my IP, IP address lookup, IP geolocation, find my IP, IP checker, ASN lookup, ISP lookup">
+    <title>IP Location Lookup — Find Any IP Address Geolocation | OPS-BOX</title>
+    <meta name="description" content="Free IP geolocation lookup tool. Find the location, ISP, ASN, and timezone of any IP address. Supports IPv4 and IPv6. Bulk IP lookup available.">
+    <meta name="keywords" content="IP location lookup, IP geolocation, IP address lookup, find IP location, IP to location, ASN lookup, ISP lookup, IP tracker">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://ops-box.net/tools/ip-location.html">
     
-    <meta property="og:title" content="IP Location Detector — Find Your IP Address & Geolocation">
-    <meta property="og:description" content="Find your public IP address, location, ISP, and ASN instantly.">
+    <meta property="og:title" content="IP Location Lookup — Find Any IP Address Geolocation">
+    <meta property="og:description" content="Look up the geographic location, ISP, and ASN of any IP address.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://ops-box.net/tools/ip-location.html">
     
@@ -23,27 +23,73 @@
     {
         "@context": "https://schema.org",
         "@type": "WebApplication",
-        "name": "IP Location Detector",
+        "name": "IP Location Lookup",
         "url": "https://ops-box.net/tools/ip-location.html",
-        "description": "Find your public IP address, geolocation, ISP, and ASN",
+        "description": "Look up the geographic location, ISP, and ASN of any IP address",
         "applicationCategory": "NetworkingApplication",
         "operatingSystem": "Any",
         "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
         "featureList": [
-            "Public IP detection",
-            "City and country lookup",
+            "IP geolocation lookup",
+            "City and country detection",
             "ISP identification",
             "ASN lookup",
-            "Timezone detection",
-            "GPS coordinates"
+            "Bulk IP lookup",
+            "My IP detection"
         ]
     }
     </script>
     
     <style>
+        .my-ip-banner {
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-card) 100%);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .my-ip-banner .label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        
+        .my-ip-banner .ip {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.1rem;
+            color: var(--accent);
+            font-weight: 500;
+        }
+        
+        .my-ip-banner .btn {
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+        }
+        
+        .ip-input-section {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .ip-input-section .form-input {
+            flex: 1;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .ip-result {
+            display: none;
+            margin-top: 1.5rem;
+        }
+        
         .ip-hero {
             text-align: center;
-            padding: 2rem;
+            padding: 1.5rem;
             background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-card) 100%);
             border: 1px solid var(--border);
             border-radius: 12px;
@@ -52,70 +98,70 @@
         
         .ip-address {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 2.5rem;
+            font-size: 2rem;
             font-weight: 600;
             color: var(--accent);
-            margin: 1rem 0;
+            margin: 0.75rem 0;
             word-break: break-all;
         }
         
         .ip-label {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 0.1em;
         }
         
         .ip-location-text {
-            font-size: 1.25rem;
+            font-size: 1.2rem;
             color: var(--text-primary);
             margin-top: 0.5rem;
         }
         
         .ip-location-text .flag {
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             margin-right: 0.5rem;
         }
         
         .info-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-top: 1.5rem;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 0.75rem;
+            margin-top: 1rem;
         }
         
         .info-card {
             background: var(--bg-secondary);
             border: 1px solid var(--border);
             border-radius: 10px;
-            padding: 1.25rem;
+            padding: 1rem;
             position: relative;
         }
         
         .info-card .icon {
-            font-size: 1.5rem;
-            margin-bottom: 0.75rem;
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
         }
         
         .info-card .label {
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             color: var(--text-muted);
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.4rem;
         }
         
         .info-card .value {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 0.95rem;
+            font-size: 0.85rem;
             color: var(--text-primary);
             word-break: break-all;
         }
         
         .info-card .copy-btn {
             position: absolute;
-            top: 0.75rem;
-            right: 0.75rem;
+            top: 0.5rem;
+            right: 0.5rem;
             background: none;
             border: none;
             color: var(--text-muted);
@@ -123,7 +169,7 @@
             padding: 0.25rem;
             opacity: 0;
             transition: opacity 0.2s;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
         
         .info-card:hover .copy-btn {
@@ -144,45 +190,94 @@
         
         .map-container iframe {
             width: 100%;
-            height: 300px;
+            height: 280px;
             border: none;
         }
         
         .map-placeholder {
-            height: 300px;
+            height: 280px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: var(--text-muted);
         }
         
-        .loading-state {
-            text-align: center;
-            padding: 3rem;
+        .loading-inline {
+            display: none;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem;
+            color: var(--text-muted);
         }
         
-        .loading-spinner {
-            width: 50px;
-            height: 50px;
-            border: 3px solid var(--border);
+        .loading-inline.active {
+            display: flex;
+        }
+        
+        .spinner-small {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border);
             border-top-color: var(--accent);
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin: 0 auto 1rem;
         }
         
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
         
-        .error-state {
-            text-align: center;
-            padding: 2rem;
+        .error-box {
+            display: none;
+            padding: 1rem;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 8px;
             color: #ef4444;
+            margin-top: 1rem;
         }
         
-        .refresh-btn {
+        .bulk-section {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+        }
+        
+        .bulk-section h3 {
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .bulk-results {
+            display: none;
             margin-top: 1rem;
+            overflow-x: auto;
+        }
+        
+        .bulk-results table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+        
+        .bulk-results th,
+        .bulk-results td {
+            padding: 0.6rem 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .bulk-results th {
+            color: var(--text-muted);
+            font-weight: 500;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            background: var(--bg-secondary);
+        }
+        
+        .bulk-results td {
+            font-family: 'JetBrains Mono', monospace;
         }
         
         .copy-all-section {
@@ -195,30 +290,16 @@
         
         .copy-all-section textarea {
             width: 100%;
-            min-height: 120px;
+            min-height: 100px;
             background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: 6px;
             padding: 0.75rem;
             font-family: 'JetBrains Mono', monospace;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: var(--text-primary);
             resize: vertical;
-            margin-top: 0.75rem;
-        }
-        
-        .privacy-note {
-            margin-top: 1.5rem;
-            padding: 1rem;
-            background: rgba(34, 197, 94, 0.1);
-            border: 1px solid rgba(34, 197, 94, 0.2);
-            border-radius: 8px;
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-        }
-        
-        .privacy-note strong {
-            color: var(--accent);
+            margin-top: 0.5rem;
         }
     </style>
 </head>
@@ -240,33 +321,46 @@
 
     <main>
         <nav class="breadcrumb">
-            <a href="/">Home</a><span>›</span><span class="breadcrumb-current">IP Location Detector</span>
+            <a href="/">Home</a><span>›</span><span class="breadcrumb-current">IP Location Lookup</span>
         </nav>
 
         <div class="tool-container">
             <div class="tool-header">
-                <h1 class="tool-title">IP Location Detector</h1>
-                <p class="tool-description">Instantly detect your public IP address, geographic location, ISP, and network information.</p>
+                <h1 class="tool-title">IP Location Lookup</h1>
+                <p class="tool-description">Look up the geographic location, ISP, ASN, and timezone of any public IP address.</p>
             </div>
             
             <div class="tool-content">
-                <!-- Loading State -->
-                <div class="loading-state" id="loadingState">
-                    <div class="loading-spinner"></div>
-                    <p>Detecting your IP address...</p>
+                <!-- Your IP Banner -->
+                <div class="my-ip-banner">
+                    <div>
+                        <div class="label">Your IP Address</div>
+                        <div class="ip" id="myIP">Detecting...</div>
+                    </div>
+                    <button class="btn btn-secondary" onclick="lookupMyIP()">Look Up My IP</button>
                 </div>
                 
-                <!-- Error State -->
-                <div class="error-state" id="errorState" style="display: none;">
-                    <p>⚠️ Could not detect your IP address</p>
-                    <button class="btn btn-primary refresh-btn" onclick="detectIP()">Try Again</button>
+                <!-- IP Input -->
+                <div class="form-group">
+                    <label class="form-label">Enter IP Address to Look Up</label>
+                    <div class="ip-input-section">
+                        <input type="text" class="form-input" id="ipInput" placeholder="8.8.8.8 or 2001:4860:4860::8888">
+                        <button class="btn btn-primary" onclick="lookupIP()">Look Up</button>
+                    </div>
                 </div>
                 
-                <!-- Results -->
-                <div id="resultsContainer" style="display: none;">
+                <div class="loading-inline" id="loading">
+                    <div class="spinner-small"></div>
+                    <span>Looking up IP address...</span>
+                </div>
+                
+                <div class="error-box" id="errorBox"></div>
+                
+                <!-- Single IP Result -->
+                <div class="ip-result" id="ipResult">
                     <div class="ip-hero">
-                        <div class="ip-label">Your Public IP Address</div>
-                        <div class="ip-address" id="ipAddress">—</div>
+                        <div class="ip-label">IP Address</div>
+                        <div class="ip-address" id="resultIP">—</div>
                         <div class="ip-location-text">
                             <span class="flag" id="countryFlag"></span>
                             <span id="locationText">—</span>
@@ -326,53 +420,76 @@
                     
                     <!-- Map -->
                     <div class="map-container" id="mapContainer">
-                        <div class="map-placeholder">Loading map...</div>
+                        <div class="map-placeholder">Map will appear here</div>
                     </div>
                     
                     <!-- Copy All Section -->
                     <div class="copy-all-section">
-                        <div class="label" style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Full Details (Click to copy)</div>
+                        <div class="label" style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Full Details</div>
                         <textarea id="fullDetails" readonly onclick="copyFullDetails()"></textarea>
-                        <div class="btn-group" style="margin-top: 0.75rem;">
-                            <button class="btn btn-secondary" onclick="copyFullDetails()">Copy All Details</button>
-                            <button class="btn btn-secondary" onclick="detectIP()">🔄 Refresh</button>
+                        <div class="btn-group" style="margin-top: 0.5rem;">
+                            <button class="btn btn-secondary" onclick="copyFullDetails()">Copy All</button>
                         </div>
                     </div>
+                </div>
+                
+                <!-- Bulk Lookup Section -->
+                <div class="bulk-section">
+                    <h3>Bulk IP Lookup</h3>
+                    <div class="form-group">
+                        <label class="form-label">Multiple IP Addresses (one per line, max 20)</label>
+                        <textarea class="form-textarea" id="bulkIPs" placeholder="8.8.8.8
+1.1.1.1
+208.67.222.222"></textarea>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-secondary" onclick="bulkLookup()">Look Up All</button>
+                        <button class="btn btn-secondary" onclick="exportBulkCSV()" id="exportBtn" style="display:none;">Export CSV</button>
+                    </div>
                     
-                    <div class="privacy-note">
-                        <strong>🔒 Privacy Note:</strong> This tool detects your IP address using Cloudflare's edge network. We do not store, log, or track your IP address or location data. All processing happens in real-time with no data retention.
+                    <div class="bulk-results" id="bulkResults">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>IP Address</th>
+                                    <th>City</th>
+                                    <th>Country</th>
+                                    <th>ISP</th>
+                                    <th>ASN</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bulkResultsBody">
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
         </div>
 
         <section class="seo-content">
-            <h2>About IP Location Detection</h2>
-            <p>Your IP address is a unique identifier assigned to your device by your Internet Service Provider (ISP). It reveals information about your approximate location, network provider, and can be used to customize content and services.</p>
+            <h2>About IP Geolocation Lookup</h2>
+            <p>IP geolocation allows you to determine the approximate physical location of any public IP address. This tool uses multiple data sources to provide accurate information about IP addresses worldwide.</p>
             
-            <h3>What Information Does Your IP Reveal?</h3>
+            <h3>What Information Can You Find?</h3>
             <ul>
-                <li><strong>Geographic Location</strong> — City, region, and country (approximate, not exact address)</li>
-                <li><strong>Internet Service Provider</strong> — The company providing your internet connection</li>
-                <li><strong>ASN (Autonomous System Number)</strong> — Identifies the network your connection routes through</li>
-                <li><strong>Timezone</strong> — Based on your geographic location</li>
-                <li><strong>Connection Type</strong> — Whether you're on residential, business, or mobile network</li>
+                <li><strong>Geographic Location</strong> — City, region/state, and country</li>
+                <li><strong>Internet Service Provider (ISP)</strong> — The company that owns the IP</li>
+                <li><strong>ASN (Autonomous System Number)</strong> — Network identifier for routing</li>
+                <li><strong>Timezone</strong> — Based on geographic location</li>
+                <li><strong>Coordinates</strong> — Approximate latitude and longitude</li>
             </ul>
             
             <h3>Common Use Cases</h3>
             <ul>
-                <li><strong>Network Troubleshooting</strong> — Verify your public IP for firewall rules and port forwarding</li>
-                <li><strong>VPN Verification</strong> — Confirm your VPN is working and showing the correct exit location</li>
-                <li><strong>Remote Access</strong> — Find your IP to set up remote desktop or SSH access</li>
-                <li><strong>Geolocation Testing</strong> — Test location-based services and content delivery</li>
-                <li><strong>Security Audits</strong> — Verify what information is exposed about your network</li>
+                <li><strong>Security Analysis</strong> — Identify the origin of suspicious traffic or attacks</li>
+                <li><strong>Fraud Prevention</strong> — Verify if user locations match claimed locations</li>
+                <li><strong>Network Troubleshooting</strong> — Trace routing issues and identify network paths</li>
+                <li><strong>Compliance</strong> — Verify geographic restrictions and data residency</li>
+                <li><strong>Marketing</strong> — Understand visitor demographics and locations</li>
             </ul>
             
-            <h3>IPv4 vs IPv6</h3>
-            <p>This tool shows your public IPv4 or IPv6 address depending on your network configuration. IPv6 addresses are longer (e.g., 2001:0db8:85a3:0000:0000:8a2e:0370:7334) and are becoming more common as IPv4 addresses become scarce.</p>
-            
-            <h3>Privacy Considerations</h3>
-            <p>While your IP address reveals approximate location, it does not reveal your exact street address, name, or other personal information. However, your ISP can connect your IP to your account. Using a VPN can mask your real IP address.</p>
+            <h3>Accuracy Notes</h3>
+            <p>IP geolocation is accurate to the city level in most cases, but may only be accurate to country or region level for some IPs. VPNs, proxies, and mobile networks can affect accuracy. The location represents where the IP is registered, not necessarily the user's exact location.</p>
         </section>
 
         <section class="related-tools">
@@ -425,8 +542,10 @@
 
     <script src="../js/common.js"></script>
     <script>
-        const API_URL = 'https://api.ops-box.net/ip';
-        let ipData = null;
+        const MY_IP_API = 'https://api.ipify.org?format=json';
+        const IP_LOOKUP_API = 'https://ip-api.com/json/'; // Free IP geolocation API
+        let currentData = null;
+        let bulkData = [];
         
         // Country code to flag emoji
         function countryToFlag(countryCode) {
@@ -438,73 +557,107 @@
             return String.fromCodePoint(...codePoints);
         }
         
-        async function detectIP() {
-            document.getElementById('loadingState').style.display = 'block';
-            document.getElementById('errorState').style.display = 'none';
-            document.getElementById('resultsContainer').style.display = 'none';
-            
+        // Detect user's own IP on page load
+        async function detectMyIP() {
             try {
-                const response = await fetch(API_URL);
-                if (!response.ok) throw new Error('API request failed');
-                
-                ipData = await response.json();
-                displayResults(ipData);
-                
-            } catch (error) {
-                console.error('Error detecting IP:', error);
-                document.getElementById('loadingState').style.display = 'none';
-                document.getElementById('errorState').style.display = 'block';
+                const response = await fetch(MY_IP_API);
+                const data = await response.json();
+                document.getElementById('myIP').textContent = data.ip || 'Unknown';
+            } catch (e) {
+                document.getElementById('myIP').textContent = 'Could not detect';
             }
         }
         
-        function displayResults(data) {
-            document.getElementById('loadingState').style.display = 'none';
-            document.getElementById('resultsContainer').style.display = 'block';
+        // Look up user's own IP
+        function lookupMyIP() {
+            const myIP = document.getElementById('myIP').textContent;
+            if (myIP && myIP !== 'Detecting...' && myIP !== 'Could not detect' && myIP !== 'Unknown') {
+                document.getElementById('ipInput').value = myIP;
+                lookupIP();
+            }
+        }
+        
+        // Look up any IP
+        async function lookupIP() {
+            const ip = document.getElementById('ipInput').value.trim();
+            if (!ip) {
+                alert('Please enter an IP address');
+                return;
+            }
             
-            // Main IP display
-            document.getElementById('ipAddress').textContent = data.ip || '—';
+            document.getElementById('loading').classList.add('active');
+            document.getElementById('ipResult').style.display = 'none';
+            document.getElementById('errorBox').style.display = 'none';
+            
+            try {
+                // Using ip-api.com (free, no API key needed, 45 requests/minute)
+                const response = await fetch(`${IP_LOOKUP_API}${encodeURIComponent(ip)}?fields=status,message,country,countryCode,region,regionName,city,zip,lat,lon,timezone,isp,org,as,query`);
+                const data = await response.json();
+                
+                document.getElementById('loading').classList.remove('active');
+                
+                if (data.status === 'fail') {
+                    throw new Error(data.message || 'Invalid IP address or lookup failed');
+                }
+                
+                currentData = data;
+                displayResult(data);
+                
+            } catch (error) {
+                document.getElementById('loading').classList.remove('active');
+                document.getElementById('errorBox').textContent = 'Error: ' + error.message;
+                document.getElementById('errorBox').style.display = 'block';
+            }
+        }
+        
+        function displayResult(data) {
+            document.getElementById('ipResult').style.display = 'block';
+            
+            // Main display
+            document.getElementById('resultIP').textContent = data.query || '—';
             
             // Location text
             const locationParts = [];
             if (data.city) locationParts.push(data.city);
-            if (data.region) locationParts.push(data.region);
+            if (data.regionName) locationParts.push(data.regionName);
             if (data.country) locationParts.push(data.country);
-            document.getElementById('locationText').textContent = locationParts.join(', ') || 'Unknown Location';
+            document.getElementById('locationText').textContent = locationParts.join(', ') || 'Unknown';
             
-            // Country flag
-            document.getElementById('countryFlag').textContent = countryToFlag(data.country);
+            // Flag
+            document.getElementById('countryFlag').textContent = countryToFlag(data.countryCode);
             
             // Info cards
             document.getElementById('city').textContent = data.city || '—';
-            document.getElementById('region').textContent = data.region || '—';
+            document.getElementById('region').textContent = data.regionName || '—';
             document.getElementById('country').textContent = data.country || '—';
             document.getElementById('timezone').textContent = data.timezone || '—';
-            document.getElementById('isp').textContent = data.org || '—';
-            document.getElementById('asn').textContent = data.asn ? `AS${data.asn}` : '—';
-            document.getElementById('latitude').textContent = data.latitude || '—';
-            document.getElementById('longitude').textContent = data.longitude || '—';
+            document.getElementById('isp').textContent = data.isp || data.org || '—';
+            document.getElementById('asn').textContent = data.as || '—';
+            document.getElementById('latitude').textContent = data.lat || '—';
+            document.getElementById('longitude').textContent = data.lon || '—';
             
             // Map
-            if (data.latitude && data.longitude) {
-                const mapUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${data.longitude - 0.1},${data.latitude - 0.1},${data.longitude + 0.1},${data.latitude + 0.1}&layer=mapnik&marker=${data.latitude},${data.longitude}`;
+            if (data.lat && data.lon) {
+                const mapUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${data.lon - 0.15},${data.lat - 0.1},${data.lon + 0.15},${data.lat + 0.1}&layer=mapnik&marker=${data.lat},${data.lon}`;
                 document.getElementById('mapContainer').innerHTML = `<iframe src="${mapUrl}" loading="lazy"></iframe>`;
             } else {
-                document.getElementById('mapContainer').innerHTML = '<div class="map-placeholder">Map unavailable - coordinates not found</div>';
+                document.getElementById('mapContainer').innerHTML = '<div class="map-placeholder">Map unavailable</div>';
             }
             
-            // Full details textarea
-            const details = `IP Address: ${data.ip || '—'}
+            // Full details
+            const details = `IP Address: ${data.query || '—'}
 City: ${data.city || '—'}
-Region: ${data.region || '—'}
+Region: ${data.regionName || '—'}
 Country: ${data.country || '—'}
 Timezone: ${data.timezone || '—'}
-ISP: ${data.org || '—'}
-ASN: ${data.asn ? 'AS' + data.asn : '—'}
-Latitude: ${data.latitude || '—'}
-Longitude: ${data.longitude || '—'}
-Coordinates: ${data.latitude && data.longitude ? `${data.latitude}, ${data.longitude}` : '—'}
+ISP: ${data.isp || '—'}
+Organization: ${data.org || '—'}
+ASN: ${data.as || '—'}
+Latitude: ${data.lat || '—'}
+Longitude: ${data.lon || '—'}
+Coordinates: ${data.lat && data.lon ? `${data.lat}, ${data.lon}` : '—'}
 
-Detected by OPS-BOX.net`;
+Looked up with OPS-BOX.net`;
             
             document.getElementById('fullDetails').value = details;
         }
@@ -523,8 +676,102 @@ Detected by OPS-BOX.net`;
             showToast('All details copied!');
         }
         
-        // Auto-detect on page load
-        document.addEventListener('DOMContentLoaded', detectIP);
+        // Bulk lookup
+        async function bulkLookup() {
+            const input = document.getElementById('bulkIPs').value.trim();
+            if (!input) {
+                alert('Please enter at least one IP address');
+                return;
+            }
+            
+            const ips = input.split('\n').map(ip => ip.trim()).filter(ip => ip);
+            
+            if (ips.length === 0) {
+                alert('No valid IP addresses found');
+                return;
+            }
+            
+            if (ips.length > 20) {
+                alert('Maximum 20 IP addresses allowed');
+                return;
+            }
+            
+            bulkData = [];
+            const tbody = document.getElementById('bulkResultsBody');
+            tbody.innerHTML = '';
+            document.getElementById('bulkResults').style.display = 'block';
+            document.getElementById('exportBtn').style.display = 'none';
+            
+            for (const ip of ips) {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td>${ip}</td><td colspan="4">Looking up...</td>`;
+                tbody.appendChild(row);
+                
+                try {
+                    const response = await fetch(`${IP_LOOKUP_API}${encodeURIComponent(ip)}?fields=status,message,country,countryCode,regionName,city,isp,as,query`);
+                    const data = await response.json();
+                    
+                    if (data.status === 'fail') {
+                        row.innerHTML = `<td>${ip}</td><td colspan="4" style="color: #ef4444;">${data.message || 'Lookup failed'}</td>`;
+                        bulkData.push({ ip, error: data.message || 'Failed' });
+                    } else {
+                        row.innerHTML = `
+                            <td>${data.query}</td>
+                            <td>${data.city || '—'}</td>
+                            <td>${countryToFlag(data.countryCode)} ${data.country || '—'}</td>
+                            <td>${data.isp || '—'}</td>
+                            <td>${data.as || '—'}</td>
+                        `;
+                        bulkData.push({
+                            ip: data.query,
+                            city: data.city,
+                            region: data.regionName,
+                            country: data.country,
+                            countryCode: data.countryCode,
+                            isp: data.isp,
+                            asn: data.as
+                        });
+                    }
+                } catch (e) {
+                    row.innerHTML = `<td>${ip}</td><td colspan="4" style="color: #ef4444;">Network error</td>`;
+                    bulkData.push({ ip, error: 'Network error' });
+                }
+                
+                // Rate limit: ip-api allows 45/minute, so add small delay
+                await new Promise(r => setTimeout(r, 150));
+            }
+            
+            document.getElementById('exportBtn').style.display = 'inline-flex';
+        }
+        
+        function exportBulkCSV() {
+            if (bulkData.length === 0) return;
+            
+            let csv = 'IP Address,City,Region,Country,ISP,ASN\n';
+            bulkData.forEach(r => {
+                if (r.error) {
+                    csv += `"${r.ip}","Error","","","",""\n`;
+                } else {
+                    csv += `"${r.ip}","${r.city || ''}","${r.region || ''}","${r.country || ''}","${r.isp || ''}","${r.asn || ''}"\n`;
+                }
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'ip-locations.csv';
+            link.click();
+            
+            showToast('CSV exported!');
+        }
+        
+        // Enter key support
+        document.getElementById('ipInput').addEventListener('keypress', e => {
+            if (e.key === 'Enter') lookupIP();
+        });
+        
+        // Detect IP on load
+        document.addEventListener('DOMContentLoaded', detectMyIP);
     </script>
 </body>
 </html>
