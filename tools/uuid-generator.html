@@ -102,27 +102,59 @@
 
         <section class="seo-content">
             <h2>What is a UUID?</h2>
-            <p>A UUID (Universally Unique Identifier) is a 128-bit identifier that is unique across space and time. Also known as GUID (Globally Unique Identifier), UUIDs are used to identify information without requiring a central authority.</p>
-            
-            <h3>UUID Format</h3>
-            <p>A standard UUID looks like: <code>550e8400-e29b-41d4-a716-446655440000</code></p>
-            <p>It consists of 32 hexadecimal digits displayed in 5 groups separated by hyphens (8-4-4-4-12).</p>
-            
-            <h3>UUID Versions</h3>
+            <p>A UUID (Universally Unique Identifier), also called GUID (Globally Unique Identifier), is a 128-bit label used to uniquely identify information in computer systems. It is formatted as 32 hexadecimal digits displayed in five groups: <code>xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</code> (8-4-4-4-12).</p>
+            <p>UUIDs are designed to be unique without requiring a central authority to coordinate assignments. The v4 variant (used by this tool) is randomly generated using a cryptographically secure random number generator, making collisions astronomically unlikely — there are 2^122 possible v4 UUIDs (about 5.3 × 10^36).</p>
+            <p>All UUIDs are generated locally in your browser using <code>crypto.randomUUID()</code> — the Web Crypto API. Nothing is sent to any server.</p>
+
+            <h3>How to Use This Tool</h3>
+            <ol style="color:var(--text-secondary);margin-left:1.5rem;margin-bottom:1rem;line-height:1.8;">
+                <li>Set the <strong>number of UUIDs</strong> you want to generate (1–100).</li>
+                <li>Choose format options: uppercase, no dashes, or with curly braces.</li>
+                <li>Click <strong>Generate</strong>.</li>
+                <li>Click <strong>Copy</strong> to copy all UUIDs to your clipboard.</li>
+            </ol>
+
+            <h3>UUID Versions Explained</h3>
             <ul>
-                <li><strong>UUID v1</strong> — Based on timestamp and MAC address</li>
-                <li><strong>UUID v4</strong> — Random (this tool generates v4)</li>
-                <li><strong>UUID v5</strong> — Name-based using SHA-1 hash</li>
-                <li><strong>UUID v7</strong> — Time-ordered for database performance</li>
+                <li><strong>v1</strong> — Generated from current timestamp + MAC address. Exposes hardware identity and creation time. Rarely used today.</li>
+                <li><strong>v3</strong> — Name-based using MD5 hash. Deterministic: same input always produces same UUID. Used for stable identifiers from known names.</li>
+                <li><strong>v4 (this tool)</strong> — Randomly generated. Most widely used version. No information encoded in the UUID.</li>
+                <li><strong>v5</strong> — Like v3 but uses SHA-1 instead of MD5. Preferred over v3 for new implementations.</li>
+                <li><strong>v7</strong> — Time-ordered random UUID. Monotonically increasing, which makes it much more efficient as a database primary key than v4.</li>
             </ul>
-            
+
             <h3>Common Use Cases</h3>
             <ul>
-                <li><strong>Database Primary Keys</strong> — Unique IDs without auto-increment</li>
-                <li><strong>API Request IDs</strong> — Track requests across services</li>
-                <li><strong>Session Tokens</strong> — Unique session identifiers</li>
-                <li><strong>File Names</strong> — Avoid naming collisions</li>
+                <li><strong>Database Primary Keys</strong> — Enables distributed systems to generate IDs without a central sequence</li>
+                <li><strong>API Resource Identifiers</strong> — Expose UUIDs in URLs instead of sequential IDs to prevent enumeration attacks</li>
+                <li><strong>Idempotency Keys</strong> — Attach a UUID to API requests to prevent duplicate processing on retry</li>
+                <li><strong>Session and Correlation IDs</strong> — Track requests across microservices for distributed tracing</li>
+                <li><strong>File and Object Names</strong> — Generate unique filenames for uploaded content to avoid collisions</li>
             </ul>
+
+            <div class="faq">
+                <h3>Frequently Asked Questions</h3>
+                <div class="faq-item">
+                    <button class="faq-question">Can two UUIDs ever be the same?</button>
+                    <div class="faq-answer">Theoretically yes, but the probability is so small it's practically impossible. A UUID v4 has 122 bits of randomness (2^122 possible values). If you generated 1 billion UUIDs per second for 100 years, the probability of a single collision would still be less than 1 in a trillion. For all practical purposes, UUID v4 collisions don't happen.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">Should I use UUID or auto-increment for database primary keys?</button>
+                    <div class="faq-answer">It depends on your use case. Auto-increment integers are smaller (4–8 bytes vs 16 bytes), create better index locality, and are simpler. UUIDs allow distributed ID generation without coordination, prevent ID enumeration in public APIs, and make data merging from multiple databases trivial. UUID v7 (time-ordered) reduces the index fragmentation problem of random v4 UUIDs, making it a good compromise.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">What is the difference between UUID and ULID?</button>
+                    <div class="faq-answer">ULID (Universally Unique Lexicographically Sortable Identifier) is an alternative to UUID that encodes a millisecond timestamp in the first 48 bits, making ULIDs sortable by creation time. ULIDs use a base32 encoding, making them 26 characters vs UUID's 36 characters. They are useful as database primary keys where you want both uniqueness and sortability without a central sequence.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">Is UUID v4 cryptographically secure?</button>
+                    <div class="faq-answer">Yes, when generated with a cryptographically secure random number generator (CSPRNG) like the Web Crypto API used by this tool. However, UUIDs are identifiers, not secrets — they're not designed to be unguessable tokens for authentication. For security tokens (like password reset links or API keys), use a purpose-built secure random token generator rather than a UUID.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">Are uppercase and lowercase UUIDs the same?</button>
+                    <div class="faq-answer">Yes. UUIDs are case-insensitive. <code>550e8400-E29B-41d4-A716-446655440000</code> and <code>550e8400-e29b-41d4-a716-446655440000</code> represent the same identifier. The RFC 4122 standard recommends lowercase, but you should use whatever case your system requires. Some databases and ORMs normalize to one case automatically.</div>
+                </div>
+            </div>
         </section>
 
         <section class="related-tools">
@@ -192,6 +224,15 @@
         }
         
         generateUUIDs();
+    </script>
+
+    <script>
+    document.querySelectorAll('.faq-question').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var item = btn.parentElement;
+            item.classList.toggle('open');
+        });
+    });
     </script>
 </body>
 </html>

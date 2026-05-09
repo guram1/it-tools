@@ -89,23 +89,57 @@
         </div>
 
         <section class="seo-content">
-            <h2>About Cryptographic Hash Functions</h2>
-            <p>A cryptographic hash function takes an input and produces a fixed-size string of characters. The same input always produces the same hash, but even a tiny change in input creates a completely different hash.</p>
-            
+            <h2>What is a Cryptographic Hash Function?</h2>
+            <p>A cryptographic hash function takes an input of any size and produces a fixed-length output called a hash, digest, or checksum. The same input always produces the same hash, but even a single character change completely transforms the output — a property called the avalanche effect.</p>
+            <p>Hash functions are one-way: given a hash, it's computationally infeasible to recover the original input. This makes them ideal for verifying data integrity without storing the original data.</p>
+            <p>All hashing in this tool happens locally in your browser using the Web Crypto API. Your input is never sent to any server.</p>
+
+            <h3>How to Use This Tool</h3>
+            <ol style="color:var(--text-secondary);margin-left:1.5rem;margin-bottom:1rem;line-height:1.8;">
+                <li>Type or paste any text into the input field.</li>
+                <li>Click <strong>Generate Hashes</strong> to compute SHA-1, SHA-256, and SHA-512 simultaneously.</li>
+                <li>Click the copy icon next to any hash to copy it to your clipboard.</li>
+            </ol>
+
             <h3>Hash Algorithms Compared</h3>
             <ul>
-                <li><strong>SHA-1 (160-bit)</strong> — Legacy algorithm, not recommended for security-critical applications</li>
-                <li><strong>SHA-256 (256-bit)</strong> — Widely used, excellent security, standard for most applications</li>
-                <li><strong>SHA-512 (512-bit)</strong> — Highest security, used when maximum protection is needed</li>
+                <li><strong>SHA-1 (160-bit / 40 hex chars)</strong> — Legacy algorithm. Broken for collision resistance since 2017. Avoid for security-critical uses, but still used in git commit IDs.</li>
+                <li><strong>SHA-256 (256-bit / 64 hex chars)</strong> — Part of the SHA-2 family. The industry standard for most security applications, used in TLS certificates, Bitcoin, and code signing.</li>
+                <li><strong>SHA-512 (512-bit / 128 hex chars)</strong> — Larger output, theoretically stronger. Faster than SHA-256 on 64-bit systems. Used when maximum security margin is required.</li>
             </ul>
-            
+
             <h3>Common Use Cases</h3>
             <ul>
-                <li><strong>File Integrity</strong> — Verify downloads haven't been tampered with</li>
-                <li><strong>Password Storage</strong> — Store password hashes instead of plaintext</li>
-                <li><strong>Digital Signatures</strong> — Part of certificate and signature verification</li>
-                <li><strong>Data Deduplication</strong> — Identify identical files by their hash</li>
+                <li><strong>File Integrity Verification</strong> — Hash a downloaded file and compare to the publisher's checksum to detect tampering or corruption</li>
+                <li><strong>Password Storage</strong> — Databases store hashed passwords (with salt) instead of plaintext so breaches don't expose real passwords</li>
+                <li><strong>Digital Signatures</strong> — Sign the hash of a document rather than the document itself — faster and standardized</li>
+                <li><strong>Data Deduplication</strong> — Detect duplicate files by comparing hashes instead of byte-by-byte comparison</li>
+                <li><strong>API Request Signing</strong> — HMAC (Hash-based Message Authentication Code) uses a secret key + hash to authenticate API requests</li>
             </ul>
+
+            <div class="faq">
+                <h3>Frequently Asked Questions</h3>
+                <div class="faq-item">
+                    <button class="faq-question">Can I reverse a hash to get the original text?</button>
+                    <div class="faq-answer">Not mathematically. Hash functions are designed to be one-way — there's no algorithm to reverse them. However, weak or common inputs (like simple passwords) can be found using precomputed rainbow tables or dictionary attacks. This is why passwords must be hashed with a unique salt for each user.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">What's the difference between SHA-256 and MD5?</button>
+                    <div class="faq-answer">MD5 produces a 128-bit hash and is considered cryptographically broken — collisions (two different inputs producing the same hash) can be found quickly. SHA-256 produces a 256-bit hash and is currently considered secure. MD5 is still used for non-security checksums (like verifying file downloads where tampering isn't a concern), but should never be used for passwords or digital signatures.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">Is SHA-1 still safe to use?</button>
+                    <div class="faq-answer">Not for security-critical applications. In 2017, Google demonstrated the first SHA-1 collision (SHAttered attack). Major browsers and certificate authorities stopped accepting SHA-1 certificates. It's still used in non-security contexts like git object IDs, but you should use SHA-256 or better for anything security-related.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">Why does the same password hash to different values in my database?</button>
+                    <div class="faq-answer">Secure password hashing algorithms (like bcrypt, scrypt, Argon2) add a unique random value called a salt before hashing. This means the same password produces a different hash every time it's stored. This is intentional — it defeats precomputed rainbow table attacks. This tool computes plain SHA hashes without salting, so it's not suitable for password storage.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">What is HMAC and how does it differ from a regular hash?</button>
+                    <div class="faq-answer">HMAC (Hash-based Message Authentication Code) combines a hash function with a secret key: <code>HMAC = Hash(key + message)</code>. Unlike a plain hash, HMAC can verify both the data integrity AND the identity of the sender (since only someone with the key can produce the same HMAC). It's widely used in API authentication (AWS Signature, webhooks) and JWT token verification.</div>
+                </div>
+            </div>
         </section>
 
         <section class="related-tools">
@@ -171,6 +205,15 @@
                     </div>`;
             }
         }
+    </script>
+
+    <script>
+    document.querySelectorAll('.faq-question').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var item = btn.parentElement;
+            item.classList.toggle('open');
+        });
+    });
     </script>
 </body>
 </html>

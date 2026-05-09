@@ -125,35 +125,56 @@ aabb.ccdd.eeff
         </div>
 
         <section class="seo-content">
-            <h2>What is MAC Address Vendor Lookup?</h2>
-            <p>Every network interface card (NIC) has a unique MAC (Media Access Control) address. The first 6 characters (3 bytes) of a MAC address form the OUI (Organizationally Unique Identifier), which is assigned by the IEEE to device manufacturers. This tool looks up the OUI to identify which company manufactured the network device.</p>
-            
-            <h3>Common Use Cases</h3>
+            <h2>What is a MAC Vendor Lookup?</h2>
+            <p>The first three bytes (24 bits) of every globally administered MAC address form the OUI (Organizationally Unique Identifier), assigned by the IEEE to hardware manufacturers. By looking up the OUI, you can identify which company manufactured a network device — useful for network audits, intrusion detection, and troubleshooting unknown devices on your network.</p>
+            <p>The IEEE publishes the official OUI registry at standards.ieee.org. This tool queries that database to match the first 3 bytes of any MAC address to its registered manufacturer.</p>
+
+            <h3>How to Use This Tool</h3>
+            <ol style="color:var(--text-secondary);margin-left:1.5rem;margin-bottom:1rem;line-height:1.8;">
+                <li>Enter a MAC address in any format (colons, hyphens, dots, or no separator).</li>
+                <li>Click <strong>Lookup</strong> or press Enter.</li>
+                <li>The manufacturer name, OUI prefix, and additional details are displayed.</li>
+            </ol>
+
+            <h3>What You Can Learn from MAC Vendor Lookup</h3>
             <ul>
-                <li><strong>Network Auditing</strong> — Identify all devices on your network by manufacturer</li>
-                <li><strong>Security Analysis</strong> — Detect unauthorized or unknown devices</li>
-                <li><strong>Inventory Management</strong> — Categorize network equipment by vendor</li>
-                <li><strong>Troubleshooting</strong> — Identify device types from switch MAC tables</li>
-                <li><strong>CCTV/IoT Audits</strong> — Find all cameras (Hikvision, Dahua, Axis) on your network</li>
+                <li><strong>Unknown devices on your network</strong> — Identify whether an unfamiliar device is a phone (Apple, Samsung), router (Cisco, Ubiquiti), IoT device, or potential intruder</li>
+                <li><strong>Virtual machines</strong> — VMware (<code>00:50:56</code>), VirtualBox (<code>08:00:27</code>), and QEMU (<code>52:54:00</code>) have recognizable OUI prefixes</li>
+                <li><strong>Network inventory</strong> — Categorize devices by manufacturer for asset management</li>
+                <li><strong>Security auditing</strong> — Flag unexpected vendor types (e.g., consumer devices on a corporate network)</li>
+                <li><strong>Wireless surveys</strong> — Identify client device manufacturers from AP association tables</li>
             </ul>
-            
-            <h3>Supported Vendors</h3>
-            <p>Our database includes thousands of vendors including:</p>
+
+            <h3>Limitations of OUI Lookup</h3>
             <ul>
-                <li><strong>Network Equipment</strong> — Cisco, Juniper, Aruba, Fortinet, Palo Alto, H3C, MikroTik, Ubiquiti</li>
-                <li><strong>CCTV/Security</strong> — Hikvision, Dahua, Axis, Hanwha, Bosch</li>
-                <li><strong>Consumer Electronics</strong> — Apple, Samsung, Dell, HP, Intel, Realtek</li>
-                <li><strong>VoIP/Telephony</strong> — Polycom, Yealink, Cisco, Grandstream</li>
+                <li>Locally administered MACs (bit 2 of byte 1 set to 1) are not IEEE-assigned and won't return a vendor</li>
+                <li>MAC randomization (enabled by default on modern iOS and Android for Wi-Fi scanning) generates locally administered random MACs that cannot be traced to a manufacturer</li>
+                <li>The OUI tells you the NIC manufacturer, not the device brand — a Dell laptop might have an Intel NIC</li>
             </ul>
-            
-            <h3>MAC Address Formats</h3>
-            <p>This tool accepts MAC addresses in any common format:</p>
-            <ul>
-                <li><strong>Colon notation</strong> — AA:BB:CC:DD:EE:FF</li>
-                <li><strong>Hyphen notation</strong> — AA-BB-CC-DD-EE-FF</li>
-                <li><strong>Cisco notation</strong> — aabb.ccdd.eeff</li>
-                <li><strong>Raw format</strong> — AABBCCDDEEFF</li>
-            </ul>
+
+            <div class="faq">
+                <h3>Frequently Asked Questions</h3>
+                <div class="faq-item">
+                    <button class="faq-question">Why does a MAC address return "Unknown" or no vendor?</button>
+                    <div class="faq-answer">Several reasons: (1) The MAC is locally administered (bit 2 of byte 1 is set) — these aren't in the IEEE registry. (2) The device uses MAC randomization — modern phones randomize their MAC when scanning for Wi-Fi networks. (3) The OUI is registered but the registration is marked private in the IEEE database. (4) The OUI database hasn't been updated recently enough to include a very new manufacturer assignment.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">How often is the OUI database updated?</button>
+                    <div class="faq-answer">The IEEE updates their OUI registry continuously as new manufacturers register. Our database is regularly synchronized with the IEEE public registry. If you find a newly registered OUI that doesn't resolve, it may not be in the current snapshot yet.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">Can I identify a device's exact model from its MAC?</button>
+                    <div class="faq-answer">Not from the OUI alone — you can only identify the manufacturer. Some manufacturers use specific OUI blocks for product lines, and with additional context (network behavior, open ports, DHCP fingerprinting) you can narrow it down. Tools like Nmap's OS detection and Fingerbank provide more detailed device identification beyond OUI lookup.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">What is MAC randomization and why does it break OUI lookup?</button>
+                    <div class="faq-answer">MAC randomization is a privacy feature where devices generate a random MAC address for Wi-Fi scanning and (increasingly) connections. Apple enabled it by default in iOS 14, Android 10 added it, and Windows 10 includes it. Randomized MACs have bit 2 of byte 1 set (locally administered), so they return no vendor. This protects users from being tracked across locations via their hardware MAC address.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">What is the difference between OUI, MA-L, MA-M, and MA-S?</button>
+                    <div class="faq-answer">The IEEE offers three sizes of MAC address blocks: MA-L (OUI, /24 prefix — 16 million addresses), MA-M (medium, /28 prefix — 1 million addresses), and MA-S (small, /36 prefix — 4,096 addresses). Larger manufacturers buy MA-L blocks. Smaller companies or those needing fewer MACs use MA-M or MA-S. All are queryable by OUI prefix, though the lookup granularity differs.</div>
+                </div>
+            </div>
         </section>
 
         <section class="related-tools">
@@ -278,6 +299,15 @@ aabb.ccdd.eeff
             a.click();
             showToast('CSV exported!');
         }
+    </script>
+
+    <script>
+    document.querySelectorAll('.faq-question').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var item = btn.parentElement;
+            item.classList.toggle('open');
+        });
+    });
     </script>
 </body>
 </html>

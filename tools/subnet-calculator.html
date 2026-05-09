@@ -611,26 +611,61 @@
         </div>
 
         <section class="seo-content">
-            <h2>Advanced Subnet Calculator Features</h2>
-            <p>This comprehensive subnet calculator provides all the tools network engineers need for IP address planning and management.</p>
-            
-            <h3>Subnet Calculator</h3>
-            <p>Enter any IP address and CIDR notation or subnet mask to instantly calculate network address, broadcast address, host range, wildcard mask, and see a visual binary representation.</p>
-            
-            <h3>VLSM Planner</h3>
-            <p>Variable Length Subnet Masking (VLSM) allows you to divide a network into subnets of different sizes based on actual host requirements. This is more efficient than using equal-sized subnets.</p>
-            
-            <h3>Subnet Splitter</h3>
-            <p>Split any network into smaller subnets by specifying the number of subnets needed, hosts per subnet, or the target CIDR. Useful for planning new network segments.</p>
-            
-            <h3>IP Range to CIDR</h3>
-            <p>Convert a range of IP addresses to CIDR notation. The tool finds the minimum number of CIDR blocks needed to exactly cover the specified range.</p>
-            
-            <h3>Supernet Calculator</h3>
-            <p>Aggregate multiple contiguous networks into a single supernet (route summarization). This reduces routing table size and improves network efficiency.</p>
-            
-            <h3>CIDR Reference Table</h3>
-            <p>Quick reference for all CIDR notations from /0 to /32 showing subnet masks, wildcard masks, and host counts.</p>
+            <h2>What is IP Subnetting?</h2>
+            <p>Subnetting is the practice of dividing a larger IP network into smaller, more manageable sub-networks (subnets). It improves network efficiency, security, and organization by grouping related devices, reducing broadcast domains, and enabling routing between network segments. Every enterprise network, data center, and cloud environment relies on subnetting to organize its IP address space.</p>
+            <p>IPv4 addresses are 32 bits long, written as four octets (e.g., <code>192.168.1.0</code>). A subnet mask or CIDR prefix defines which bits belong to the network portion and which to the host portion. <code>/24</code> means the first 24 bits are the network address, leaving 8 bits for hosts (254 usable host addresses).</p>
+
+            <h3>How to Use This Tool</h3>
+            <ol style="color:var(--text-secondary);margin-left:1.5rem;margin-bottom:1rem;line-height:1.8;">
+                <li><strong>Basic Subnet Calculator</strong> — Enter an IP address and CIDR (e.g., <code>192.168.1.0/24</code>) to see network address, broadcast, host range, wildcard mask, and binary representation.</li>
+                <li><strong>VLSM Planner</strong> — Enter a parent network and required host counts per subnet. The tool allocates optimally sized subnets.</li>
+                <li><strong>Subnet Splitter</strong> — Divide any network into a specific number of equal subnets.</li>
+                <li><strong>IP Range to CIDR</strong> — Convert an arbitrary IP range to the minimum set of CIDR blocks covering that range.</li>
+                <li><strong>Supernet Calculator</strong> — Aggregate multiple contiguous subnets into a summary route.</li>
+            </ol>
+
+            <h3>CIDR Notation Quick Reference</h3>
+            <ul>
+                <li><code>/8</code> — 16,777,214 hosts (Class A, e.g., 10.0.0.0/8)</li>
+                <li><code>/16</code> — 65,534 hosts (Class B, e.g., 172.16.0.0/16)</li>
+                <li><code>/24</code> — 254 hosts (Class C, most common LAN size)</li>
+                <li><code>/25</code> — 126 hosts (split a /24 in half)</li>
+                <li><code>/28</code> — 14 hosts (small office segment)</li>
+                <li><code>/30</code> — 2 hosts (point-to-point link)</li>
+                <li><code>/31</code> — 2 hosts, no network/broadcast (RFC 3021 P2P links)</li>
+                <li><code>/32</code> — Single host route (loopback, virtual IPs)</li>
+            </ul>
+
+            <h3>Private IP Address Ranges (RFC 1918)</h3>
+            <ul>
+                <li><code>10.0.0.0/8</code> — Large enterprises, cloud VPCs</li>
+                <li><code>172.16.0.0/12</code> — Medium networks (172.16.0.0–172.31.255.255)</li>
+                <li><code>192.168.0.0/16</code> — Home and small office networks</li>
+            </ul>
+
+            <div class="faq">
+                <h3>Frequently Asked Questions</h3>
+                <div class="faq-item">
+                    <button class="faq-question">What is the difference between a subnet mask and CIDR notation?</button>
+                    <div class="faq-answer">They represent the same information in different formats. Subnet mask <code>255.255.255.0</code> equals CIDR <code>/24</code> — both mean the first 24 bits are the network address. CIDR (Classless Inter-Domain Routing) notation is more compact and is the modern standard. Subnet masks are still used in older equipment and some configuration interfaces. This tool accepts both formats.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">What is VLSM and why is it used?</button>
+                    <div class="faq-answer">VLSM (Variable Length Subnet Masking) allows a network to be divided into subnets of different sizes, each sized according to actual host requirements. Without VLSM, you'd waste addresses by giving every subnet the same size. With VLSM, you can give a /25 (126 hosts) to a large department and a /30 (2 hosts) to a point-to-point router link — minimizing wasted address space. VLSM is standard practice in modern network design.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">Why are there 254 usable hosts in a /24, not 256?</button>
+                    <div class="faq-answer">A /24 has 256 total addresses (2^8), but two are reserved: the <strong>network address</strong> (all host bits = 0, e.g., 192.168.1.0) and the <strong>broadcast address</strong> (all host bits = 1, e.g., 192.168.1.255). The formula for usable hosts is 2^(32-prefix) - 2. Exception: /31 networks (RFC 3021) use both addresses for point-to-point links, giving 2 usable hosts with no broadcast.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">What is a wildcard mask and how does it differ from a subnet mask?</button>
+                    <div class="faq-answer">A wildcard mask is the bitwise inverse of a subnet mask. Where a subnet mask has 1s in network bits, a wildcard mask has 0s (match these bits), and where subnet mask has 0s, wildcard has 1s (ignore these bits). Wildcard masks are used in Cisco ACLs and OSPF area statements: <code>access-list 10 permit 192.168.1.0 0.0.0.255</code> permits any address in the 192.168.1.0/24 range. The wildcard <code>0.0.0.255</code> corresponds to subnet mask <code>255.255.255.0</code>.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">What is route summarization (supernetting) and when should I use it?</button>
+                    <div class="faq-answer">Route summarization (or supernetting) aggregates multiple contiguous networks into a single route advertisement, reducing routing table size. For example, 192.168.0.0/24 through 192.168.3.0/24 can be summarized as 192.168.0.0/22. This reduces memory and CPU usage on routers and speeds up convergence. Use summarization at network boundaries: between distribution and core layers, or at AS boundaries in BGP. The networks must be contiguous and the summary must not inadvertently include unwanted address space.</div>
+                </div>
+            </div>
         </section>
 
         <section class="related-tools">
@@ -1277,6 +1312,15 @@
         document.addEventListener('DOMContentLoaded', function() {
             generateCIDRTable();
         });
+    </script>
+
+    <script>
+    document.querySelectorAll('.faq-question').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var item = btn.parentElement;
+            item.classList.toggle('open');
+        });
+    });
     </script>
 </body>
 </html>

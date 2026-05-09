@@ -109,28 +109,57 @@ aabb.ccdd.eeff
         </div>
 
         <section class="seo-content">
-            <h2>Bulk MAC Address Conversion</h2>
-            <p>This tool converts multiple MAC addresses at once, making it perfect for network administrators who need to standardize MAC address formats from different sources like switch exports, DHCP logs, or inventory spreadsheets.</p>
-            
-            <h3>Supported Input Formats</h3>
-            <p>Paste MAC addresses in any format — the tool automatically detects and converts them:</p>
+            <h2>Bulk MAC Address Formatting for Network Engineers</h2>
+            <p>Different network vendors and operating systems represent MAC addresses in different formats. Cisco devices use dot notation (<code>aabb.ccdd.eeff</code>), Linux uses colons (<code>aa:bb:cc:dd:ee:ff</code>), and Windows uses hyphens (<code>AA-BB-CC-DD-EE-FF</code>). When you're working with switch exports, DHCP logs, or inventory systems from multiple vendors, you often need to convert a large batch of MACs to a consistent format.</p>
+            <p>This tool processes an entire list in one pass — paste hundreds of MAC addresses in any format and convert them all simultaneously to your target format. Invalid entries are identified and marked rather than silently skipped.</p>
+
+            <h3>How to Use This Tool</h3>
+            <ol style="color:var(--text-secondary);margin-left:1.5rem;margin-bottom:1rem;line-height:1.8;">
+                <li>Paste your MAC addresses into the input field — one per line. Mixed formats are fine.</li>
+                <li>Select your desired output format from the dropdown.</li>
+                <li>Click <strong>Format All</strong>.</li>
+                <li>Review the statistics panel for invalid MAC count, then click <strong>Copy All</strong>.</li>
+            </ol>
+
+            <h3>Supported Input Formats (Auto-detected)</h3>
             <ul>
-                <li>AA:BB:CC:DD:EE:FF (colon separated)</li>
-                <li>AA-BB-CC-DD-EE-FF (hyphen separated)</li>
-                <li>aabb.ccdd.eeff (Cisco format)</li>
-                <li>AABBCCDDEEFF (no separator)</li>
+                <li><code>AA:BB:CC:DD:EE:FF</code> — Colon separated (Linux, macOS, most network devices)</li>
+                <li><code>AA-BB-CC-DD-EE-FF</code> — Hyphen separated (Windows, some printers)</li>
+                <li><code>aabb.ccdd.eeff</code> — Cisco dot notation (IOS switches, WLC)</li>
+                <li><code>AABBCCDDEEFF</code> — Raw hex, no separator (databases, some APIs)</li>
             </ul>
-            
-            <h3>Common Use Cases</h3>
+
+            <h3>Real-World Workflows</h3>
             <ul>
-                <li><strong>Switch MAC Table Export</strong> — Convert Cisco format to colon format for inventory</li>
-                <li><strong>DHCP Server Logs</strong> — Standardize formats for database import</li>
-                <li><strong>Network Inventory</strong> — Normalize MAC addresses across different vendors</li>
-                <li><strong>Access Control Lists</strong> — Format MACs for firewall or NAC rules</li>
+                <li><strong>Cisco switch MAC table</strong> — Export via <code>show mac address-table</code>, paste the output directly. Cisco dot-notation MACs are auto-detected and converted.</li>
+                <li><strong>DHCP server logs</strong> — Parse DHCP leases and normalize MACs for import into a CMDB or NAC system.</li>
+                <li><strong>802.1X / NAC whitelisting</strong> — Build MAC allow-lists in the exact format your network access controller requires.</li>
+                <li><strong>Wireless controller exports</strong> — Standardize client MAC addresses from different AP vendors into a unified format.</li>
             </ul>
-            
-            <h3>Invalid MAC Detection</h3>
-            <p>The tool identifies and marks invalid MAC addresses (those that don't have exactly 12 hex characters) so you can quickly spot data issues in your exports.</p>
+
+            <div class="faq">
+                <h3>Frequently Asked Questions</h3>
+                <div class="faq-item">
+                    <button class="faq-question">How many MAC addresses can I format at once?</button>
+                    <div class="faq-answer">There's no hard limit — the tool runs entirely in your browser and can handle thousands of MACs in a single pass. Performance remains smooth up to tens of thousands of entries. For truly massive datasets (millions of MACs), a command-line tool like <code>awk</code> or a Python script would be more appropriate.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">What happens if a line contains an invalid MAC?</button>
+                    <div class="faq-answer">Invalid entries are flagged with an [INVALID] marker in the output rather than silently removed. The statistics panel shows how many valid and invalid MACs were found. This way you can identify problematic entries in your source data without losing their position in the list.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">Can I paste directly from a Cisco show mac address-table output?</button>
+                    <div class="faq-answer">Yes. The tool automatically strips non-MAC content and detects the Cisco dot notation (<code>aabb.ccdd.eeff</code>). You can paste the raw output of <code>show mac address-table</code> or <code>show arp</code> and it will extract and convert the MACs while ignoring VLAN numbers, port names, and other surrounding text.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">Does the tool validate that a MAC address is actually registered?</button>
+                    <div class="faq-answer">This tool only validates the format (12 hex characters). It does not check whether the OUI (first 3 bytes) is a registered manufacturer prefix. For that, use our MAC Vendor Lookup tool which checks against the full IEEE OUI database. Note that locally administered and multicast MACs (bit 1 of byte 1 set) will pass format validation but won't return a vendor.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">What is the difference between globally and locally administered MAC addresses?</button>
+                    <div class="faq-answer">The second-least-significant bit of the first octet indicates whether the MAC is globally (0) or locally (1) administered. Globally administered MACs are assigned by the IEEE to manufacturers (the OUI prefix). Locally administered MACs are assigned by the network administrator or software — commonly seen in VMs, containers, and devices with MAC randomization enabled. Locally administered MACs won't match any vendor in the OUI database.</div>
+                </div>
+            </div>
         </section>
 
         <section class="related-tools">
@@ -219,6 +248,15 @@ aabb.ccdd.eeff
             document.getElementById('bulkMacResult').textContent = results.join('\n');
             document.getElementById('bulkMacStats').textContent = 'Total: ' + lines.length + ' | Valid: ' + valid + ' | Invalid: ' + invalid;
         }
+    </script>
+
+    <script>
+    document.querySelectorAll('.faq-question').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var item = btn.parentElement;
+            item.classList.toggle('open');
+        });
+    });
     </script>
 </body>
 </html>

@@ -358,30 +358,58 @@ guest2024-03
         </div>
 
         <section class="seo-content">
-            <h2>About WiFi QR Codes</h2>
-            <p>WiFi QR codes allow users to connect to your wireless network instantly by scanning the code with their smartphone camera. No need to manually type long passwords or share credentials insecurely.</p>
-            
-            <h3>Use Cases</h3>
+            <h2>What is a WiFi QR Code?</h2>
+            <p>A WiFi QR code encodes your network's credentials in a standardized format that smartphones can scan to join the network automatically — no manual password entry required. The QR code contains your SSID (network name), password, and security type in a format defined by the Wi-Fi Alliance and ZXing library standard.</p>
+            <p>The encoded string format is: <code>WIFI:T:WPA;S:NetworkName;P:Password;H:false;;</code> — where T is the security type, S is the SSID, P is the password, and H indicates whether the network is hidden. All modern Android and iOS devices can scan this format natively.</p>
+
+            <h3>How to Use This Tool</h3>
+            <ol style="color:var(--text-secondary);margin-left:1.5rem;margin-bottom:1rem;line-height:1.8;">
+                <li>Enter your WiFi <strong>network name (SSID)</strong> exactly as it appears.</li>
+                <li>Enter your <strong>WiFi password</strong>.</li>
+                <li>Select your <strong>security type</strong> (WPA2/WPA3 for most modern routers; WEP for older equipment).</li>
+                <li>Click <strong>Generate QR Code</strong>.</li>
+                <li>Print or display the QR code so guests can scan it with their phone camera.</li>
+            </ol>
+
+            <h3>Security Considerations</h3>
             <ul>
-                <li><strong>Hotels & Hospitality</strong> — Generate unique QR codes for each room or guest</li>
-                <li><strong>Offices</strong> — Create visitor WiFi cards with rotating passwords</li>
-                <li><strong>Events & Conferences</strong> — Print QR codes on badges or signage</li>
-                <li><strong>Cafes & Restaurants</strong> — Display QR codes on tables or menus</li>
-                <li><strong>Airbnb & Rentals</strong> — Include WiFi QR in welcome packets</li>
+                <li><strong>Your password is encoded in the QR code</strong> — anyone who scans the QR code gets your WiFi password. Treat the QR code image with the same care as the password itself.</li>
+                <li><strong>All processing is local</strong> — your SSID and password never leave your browser. The QR code is generated client-side using JavaScript.</li>
+                <li><strong>Hidden networks</strong> — If your network doesn't broadcast its SSID, enable the "Hidden network" option so the device knows to use it as a hidden SSID.</li>
+                <li><strong>WPA3</strong> — Select WPA2/WPA3 for WPA3-compatible routers. Most devices will negotiate the best supported version automatically.</li>
             </ul>
-            
-            <h3>Features</h3>
+
+            <h3>Best Practices for Sharing WiFi</h3>
             <ul>
-                <li><strong>Batch Generation</strong> — Create up to 50 QR codes at once</li>
-                <li><strong>ZIP Download</strong> — All QR codes packaged with info file</li>
-                <li><strong>A4 Print Layout</strong> — 9 QR codes per page, ready to print and cut</li>
-                <li><strong>Custom Branding</strong> — Add your logo to QR cards</li>
-                <li><strong>100% Client-Side</strong> — Your passwords never leave your browser</li>
+                <li>Print the QR code and frame it near your router or in common areas</li>
+                <li>Use a separate guest network with its own QR code to isolate guests from your main network</li>
+                <li>Regenerate the QR code if you change your WiFi password</li>
+                <li>For businesses: set up a captive portal instead of sharing a static password</li>
             </ul>
-            
-            <h3>WiFi QR Code Format</h3>
-            <p>The standard WiFi QR code format is: <code>WIFI:T:WPA;S:NetworkName;P:Password;;</code></p>
-            <p>This format is supported by iOS (11+), Android, and most QR scanner apps.</p>
+
+            <div class="faq">
+                <h3>Frequently Asked Questions</h3>
+                <div class="faq-item">
+                    <button class="faq-question">Which devices can scan WiFi QR codes?</button>
+                    <div class="faq-answer">iOS 11+ (iPhone 7 and newer) — scan with the native Camera app. Android 10+ — scan with the Camera app or Google Lens. Older Android devices may need a QR scanner app. Most modern Android devices running Android 9 and earlier also support WiFi QR codes through specific camera apps or QR scanner apps. Samsung devices have supported it since One UI 1.0 (Android 9).</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">Is it safe to generate a WiFi QR code online?</button>
+                    <div class="faq-answer">With this tool, yes — the QR code is generated entirely in your browser using JavaScript. Your WiFi credentials are never sent to any server. You can verify this by disconnecting from the internet and using the tool — it still works. Be cautious with other online QR generators that may process your credentials server-side.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">What security type should I choose?</button>
+                    <div class="faq-answer">Choose WPA2 or WPA3 (combined) for all modern routers — this is the current standard. WPA2-only for compatibility with older devices. WEP is cryptographically broken (crackable in minutes) and should only be selected for legacy equipment that cannot support WPA. If your router is older than 2010, upgrading the hardware is strongly recommended over using WEP.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">Can I create a QR code for a network without a password (open WiFi)?</button>
+                    <div class="faq-answer">Yes — select "None" or "Open" as the security type and leave the password blank. The generated QR code will connect the device to the open network without authentication. This is appropriate for public hotspots or guest networks where no password is used, though open WiFi networks transmit data unencrypted.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">Why won't my QR code work for my hidden network?</button>
+                    <div class="faq-answer">For hidden networks (SSID not broadcast), you must enable the "Hidden network" checkbox before generating the QR code. This adds the <code>H:true</code> parameter to the encoded string, telling the scanning device to connect to the network as a hidden SSID rather than scanning for a broadcast SSID. Without this flag, the device may fail to connect even with the correct credentials.</div>
+                </div>
+            </div>
         </section>
 
         <section class="related-tools">
@@ -675,7 +703,16 @@ guest2024-03
                 printWindow.document.write('</div></div>');
             }
             
-            printWindow.document.write('</body></html>');
+            printWindow.document.write('
+    <script>
+    document.querySelectorAll('.faq-question').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var item = btn.parentElement;
+            item.classList.toggle('open');
+        });
+    });
+    </script>
+</body></html>');
             printWindow.document.close();
             
             printWindow.onload = async function() {

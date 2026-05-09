@@ -455,34 +455,57 @@ cloudflare.com"></textarea>
         </div>
 
         <section class="seo-content">
-            <h2>Why Monitor SSL Certificate Expiry?</h2>
-            <p>Expired SSL certificates cause browser security warnings that scare away visitors and damage your site's credibility. They can also break API integrations, email delivery, and other services that rely on valid certificates.</p>
-            
-            <h3>What This Tool Does</h3>
+            <h2>What Does an SSL Certificate Checker Do?</h2>
+            <p>An SSL/TLS certificate checker retrieves the digital certificate from a domain and analyzes its key properties: expiration date, issuing Certificate Authority, Subject Alternative Names (SANs), cipher suite support, and the full certificate chain. This lets you verify a certificate is valid, properly configured, and not about to expire — without needing command-line tools.</p>
+            <p>TLS certificates are how browsers verify that a website is actually operated by who it claims to be. They also enable encrypted HTTPS connections. An expired, mismatched, or misconfigured certificate causes browser security warnings that drive away users and break API integrations.</p>
+
+            <h3>How to Use This Tool</h3>
+            <ol style="color:var(--text-secondary);margin-left:1.5rem;margin-bottom:1rem;line-height:1.8;">
+                <li>Enter a domain name (e.g., <code>example.com</code>) — no need to include <code>https://</code>.</li>
+                <li>Click <strong>Check SSL</strong>.</li>
+                <li>Review the certificate details: expiry date, issuer, SANs, and chain validity.</li>
+            </ol>
+
+            <h3>Key Certificate Properties Explained</h3>
             <ul>
-                <li><strong>Checks certificate validity</strong> — See if the certificate is valid, expiring soon, or already expired</li>
-                <li><strong>Shows expiry date</strong> — Exact date and time when the certificate expires</li>
-                <li><strong>Calculates days remaining</strong> — Easy to understand countdown</li>
-                <li><strong>Creates calendar reminders</strong> — Google Calendar, Outlook, or ICS file for any calendar app</li>
-                <li><strong>Bulk checking</strong> — Check multiple domains at once and export to CSV</li>
+                <li><strong>Valid From / Valid To</strong> — The certificate's active period. Modern certificates are issued for 90 days (Let's Encrypt) to 1 year (commercial CAs).</li>
+                <li><strong>Subject Alternative Names (SANs)</strong> — The domains this certificate is valid for. A certificate for <code>example.com</code> must have <code>example.com</code> in its SAN list (or as the Common Name) to be trusted.</li>
+                <li><strong>Issuer / Certificate Authority</strong> — Who signed the certificate. Common CAs: Let's Encrypt (free, automated), DigiCert, Sectigo, GlobalSign.</li>
+                <li><strong>Certificate Chain</strong> — Certificates are verified through a chain from root CA → intermediate CA → end-entity certificate. A broken chain causes SSL errors.</li>
+                <li><strong>OCSP Stapling</strong> — Allows a server to include proof of certificate validity in the TLS handshake, improving performance and privacy over traditional OCSP checks.</li>
             </ul>
-            
-            <h3>Certificate Details Explained</h3>
+
+            <h3>Common SSL Certificate Errors</h3>
             <ul>
-                <li><strong>Common Name (CN)</strong> — The primary domain the certificate covers</li>
-                <li><strong>Issuer</strong> — The Certificate Authority (CA) that issued the certificate</li>
-                <li><strong>Valid From</strong> — When the certificate became valid</li>
-                <li><strong>Valid Until</strong> — When the certificate expires</li>
-                <li><strong>Serial Number</strong> — Unique identifier for the certificate</li>
+                <li><strong>ERR_CERT_DATE_INVALID</strong> — Certificate has expired. Renew immediately.</li>
+                <li><strong>ERR_CERT_COMMON_NAME_INVALID</strong> — Certificate hostname doesn't match. Check SANs.</li>
+                <li><strong>ERR_CERT_AUTHORITY_INVALID</strong> — Issuing CA not trusted. Usually a self-signed or intermediate chain issue.</li>
+                <li><strong>ERR_SSL_VERSION_OR_CIPHER_MISMATCH</strong> — Server using deprecated TLS version (TLS 1.0/1.1) or weak cipher suite.</li>
             </ul>
-            
-            <h3>Best Practices for SSL Management</h3>
-            <ul>
-                <li>Set reminders at least 30 days before expiry</li>
-                <li>Use automated certificate renewal (Let's Encrypt, certbot)</li>
-                <li>Monitor all your domains regularly</li>
-                <li>Keep track of certificates issued by different CAs</li>
-            </ul>
+
+            <div class="faq">
+                <h3>Frequently Asked Questions</h3>
+                <div class="faq-item">
+                    <button class="faq-question">What is the difference between SSL and TLS?</button>
+                    <div class="faq-answer">SSL (Secure Sockets Layer) is the predecessor to TLS (Transport Layer Security). SSL 2.0 and 3.0 are completely broken and disabled in all modern software. TLS 1.0 and 1.1 are deprecated and also disabled by most browsers. The current standards are TLS 1.2 and TLS 1.3. Despite this, "SSL certificate" and "SSL checker" remain the colloquial terms — the certificates themselves haven't changed, only the handshake protocol.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">What happens when an SSL certificate expires?</button>
+                    <div class="faq-answer">Browsers display a full-page security warning blocking access. API integrations throw SSL errors and fail. SEO rankings can drop. E-commerce transactions stop. Setting up automated renewal (Let's Encrypt + certbot/ACME, or a CDN with auto-renewal) eliminates this risk. Monitor expiry dates and set alerts at 30 and 7 days before expiration.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">What is a wildcard certificate?</button>
+                    <div class="faq-answer">A wildcard certificate covers a domain and all its immediate subdomains. A certificate for <code>*.example.com</code> is valid for <code>www.example.com</code>, <code>api.example.com</code>, <code>mail.example.com</code>, etc. It does NOT cover <code>example.com</code> itself (you need a SAN entry for that) or nested subdomains like <code>sub.api.example.com</code>.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">What is the difference between DV, OV, and EV certificates?</button>
+                    <div class="faq-answer">DV (Domain Validation) — CA only verifies domain ownership. Issued in minutes. Used by Let's Encrypt. No organization information in certificate. OV (Organization Validation) — CA verifies domain ownership + legal organization identity. Shows company name in certificate details. EV (Extended Validation) — Strictest verification, historically showed a green bar in browsers. Browsers removed EV visual indicators in 2019, making EV certificates largely obsolete for their primary differentiator.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">Why do I see a certificate for a CDN provider instead of my domain's CA?</button>
+                    <div class="faq-answer">CDN providers (Cloudflare, Fastly, AWS CloudFront) terminate TLS at their edge nodes and serve their own certificates. You'll see a Cloudflare or Amazon certificate instead of your origin certificate. This is normal — your connection to the CDN edge is encrypted with their cert, and the CDN-to-origin connection may use a separate certificate. Check your CDN's SSL settings if you want to ensure end-to-end encryption with your own certificate.</div>
+                </div>
+            </div>
         </section>
 
         <section class="related-tools">
@@ -884,6 +907,15 @@ END:VCALENDAR`;
         document.getElementById('urlInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') checkCertificate();
         });
+    </script>
+
+    <script>
+    document.querySelectorAll('.faq-question').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var item = btn.parentElement;
+            item.classList.toggle('open');
+        });
+    });
     </script>
 </body>
 </html>

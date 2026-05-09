@@ -468,36 +468,55 @@
         </div>
 
         <section class="seo-content">
-            <h2>About DNS Lookup</h2>
-            <p>DNS (Domain Name System) translates human-readable domain names into IP addresses. This tool queries DNS servers to retrieve all record types associated with a domain.</p>
-            
+            <h2>What is DNS and How Does a DNS Lookup Work?</h2>
+            <p>DNS (Domain Name System) is the internet's distributed directory service — it translates human-readable domain names like <code>example.com</code> into IP addresses that computers use to communicate. Every time you visit a website, send an email, or connect to a service, DNS lookups happen in the background to resolve names to addresses.</p>
+            <p>A DNS lookup works through a chain of queries: your device asks a recursive resolver (usually your ISP or Google/Cloudflare DNS), which in turn queries root nameservers, then TLD nameservers (.com, .net), and finally the authoritative nameserver for the domain — which returns the actual record.</p>
+
+            <h3>How to Use This Tool</h3>
+            <ol style="color:var(--text-secondary);margin-left:1.5rem;margin-bottom:1rem;line-height:1.8;">
+                <li>Enter a domain name (e.g., <code>example.com</code>) in the input field.</li>
+                <li>Select the record type you want to query, or choose <strong>ALL</strong> to see everything.</li>
+                <li>Click <strong>Lookup</strong>.</li>
+                <li>Results show the record values and TTL (Time To Live).</li>
+            </ol>
+
             <h3>DNS Record Types Explained</h3>
             <ul>
-                <li><strong>A Record</strong> — Maps domain to IPv4 address (e.g., 192.168.1.1)</li>
-                <li><strong>AAAA Record</strong> — Maps domain to IPv6 address</li>
-                <li><strong>MX Record</strong> — Mail exchange servers with priority</li>
-                <li><strong>TXT Record</strong> — Text data including SPF, DKIM, DMARC</li>
-                <li><strong>NS Record</strong> — Authoritative name servers for the domain</li>
-                <li><strong>CNAME Record</strong> — Canonical name (alias) pointing to another domain</li>
-                <li><strong>SOA Record</strong> — Start of Authority with zone information</li>
-                <li><strong>PTR Record</strong> — Reverse DNS lookup (IP to domain)</li>
-                <li><strong>CAA Record</strong> — Certificate Authority Authorization</li>
+                <li><strong>A</strong> — Maps a domain to an IPv4 address. The most fundamental record type.</li>
+                <li><strong>AAAA</strong> — Maps a domain to an IPv6 address (four A's = 4× the bits).</li>
+                <li><strong>CNAME</strong> — Canonical Name. Alias pointing one domain to another. Cannot coexist with other records at the zone apex.</li>
+                <li><strong>MX</strong> — Mail Exchange. Specifies which servers handle email for the domain, with priority values.</li>
+                <li><strong>TXT</strong> — Free-form text. Used for SPF (email authentication), DKIM public keys, domain verification, and DMARC policies.</li>
+                <li><strong>NS</strong> — Nameserver. Delegates authority for a zone to specific nameservers.</li>
+                <li><strong>SOA</strong> — Start of Authority. Contains zone metadata: primary nameserver, admin email, serial number, and cache timings.</li>
+                <li><strong>PTR</strong> — Pointer. Reverse DNS — maps an IP address back to a domain name.</li>
+                <li><strong>SRV</strong> — Service record. Specifies hostname and port for specific services (used by SIP, XMPP, Minecraft servers).</li>
+                <li><strong>CAA</strong> — Certification Authority Authorization. Restricts which CAs can issue TLS certificates for a domain.</li>
             </ul>
-            
-            <h3>Email Security Records</h3>
-            <ul>
-                <li><strong>SPF (Sender Policy Framework)</strong> — Specifies which servers can send email for your domain</li>
-                <li><strong>DKIM (DomainKeys Identified Mail)</strong> — Adds digital signature to verify email authenticity</li>
-                <li><strong>DMARC (Domain-based Message Authentication)</strong> — Policy for handling failed SPF/DKIM checks</li>
-            </ul>
-            
-            <h3>Common Use Cases</h3>
-            <ul>
-                <li><strong>Troubleshooting</strong> — Verify DNS propagation after changes</li>
-                <li><strong>Email Deliverability</strong> — Check SPF, DKIM, DMARC configuration</li>
-                <li><strong>Security Audits</strong> — Review CAA records and mail server setup</li>
-                <li><strong>Migration</strong> — Document existing DNS configuration</li>
-            </ul>
+
+            <div class="faq">
+                <h3>Frequently Asked Questions</h3>
+                <div class="faq-item">
+                    <button class="faq-question">What is TTL in DNS and why does it matter?</button>
+                    <div class="faq-answer">TTL (Time To Live) is the number of seconds a DNS record can be cached by resolvers before they must re-query the authoritative nameserver. A TTL of 3600 means records are cached for 1 hour. Lower TTL (60–300 seconds) allows faster propagation when you change records but increases DNS query load. Higher TTL (86400 = 24 hours) reduces load but means changes take longer to propagate globally. Best practice: lower your TTL 24–48 hours before planned DNS changes, then increase it again afterward.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">Why do DNS changes take so long to propagate?</button>
+                    <div class="faq-answer">DNS propagation delay is caused by caching at multiple levels: your OS DNS cache, your router's cache, your ISP's recursive resolver cache, and CDN edge caches. Each caches records until the TTL expires. Propagation "up to 48 hours" refers to worst-case scenarios where records were cached with high TTLs. With modern low-TTL records, changes typically propagate globally within minutes to a few hours.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">What is the difference between an A record and a CNAME?</button>
+                    <div class="faq-answer">An A record maps a name directly to an IP address: <code>example.com → 93.184.216.34</code>. A CNAME maps a name to another name: <code>www.example.com → example.com</code>. CNAMEs require an additional lookup to resolve the target name. You cannot use a CNAME at a zone apex (bare domain like <code>example.com</code>) — only at subdomains. For apex domains pointing to load balancers or CDNs, use ALIAS or ANAME records (provider-specific flattening).</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">How do I verify my SPF, DKIM, and DMARC records are correct?</button>
+                    <div class="faq-answer">SPF is a TXT record starting with <code>v=spf1</code> at your root domain. DKIM is a TXT record at <code>selector._domainkey.yourdomain.com</code>. DMARC is a TXT record at <code>_dmarc.yourdomain.com</code>. Use this DNS Lookup tool to query TXT records for your domain and verify these records exist. For full email authentication testing, tools like mail-tester.com and MXToolbox validate the full chain.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">What is DNSSEC and should I enable it?</button>
+                    <div class="faq-answer">DNSSEC (DNS Security Extensions) adds cryptographic signatures to DNS records, allowing resolvers to verify that records haven't been tampered with (DNS cache poisoning attacks). It doesn't encrypt DNS traffic — for that, use DNS-over-HTTPS (DoH) or DNS-over-TLS (DoT). DNSSEC is recommended for domains, especially high-value ones, but requires both your domain registrar and DNS hosting provider to support it. Misconfigured DNSSEC can make your domain unreachable, so test carefully before deploying.</div>
+                </div>
+            </div>
         </section>
 
         <section class="related-tools">

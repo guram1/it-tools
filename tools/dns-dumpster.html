@@ -445,28 +445,59 @@
         </div>
 
         <section class="seo-content">
-            <h2>About DNS Dumpster</h2>
-            <p>DNS Dumpster is a subdomain discovery and DNS reconnaissance tool that helps you map the attack surface of a domain. It uses multiple techniques to find related hosts and subdomains.</p>
-            
-            <h3>Discovery Methods</h3>
+            <h2>What is DNS Reconnaissance?</h2>
+            <p>DNS reconnaissance (or DNS enumeration) is the process of collecting all publicly available DNS information about a domain — subdomains, mail servers, nameservers, IP addresses, and associated services. It is a standard first step in security assessments, penetration tests, and infrastructure mapping because DNS records are public by design and reveal significant information about an organization's infrastructure.</p>
+            <p>Unlike port scanning or active probing, DNS enumeration is passive — it queries public DNS infrastructure and doesn't directly touch the target's systems. All information returned by this tool is publicly available in the global DNS.</p>
+
+            <h3>How to Use This Tool</h3>
+            <ol style="color:var(--text-secondary);margin-left:1.5rem;margin-bottom:1rem;line-height:1.8;">
+                <li>Enter a root domain (e.g., <code>example.com</code>) — no subdomain prefix.</li>
+                <li>Click <strong>Enumerate</strong> to start the discovery process.</li>
+                <li>Results show discovered subdomains, their IP addresses, and associated services.</li>
+                <li>Use the results to map out the organization's public-facing infrastructure.</li>
+            </ol>
+
+            <h3>What DNS Dumpster Reveals</h3>
             <ul>
-                <li><strong>Certificate Transparency Logs</strong> — Searches public CT logs (crt.sh) for SSL certificates issued to subdomains</li>
-                <li><strong>Common Subdomain Checks</strong> — Tests common subdomain names like www, mail, api, dev, staging</li>
-                <li><strong>DNS Resolution</strong> — Resolves discovered subdomains to find active hosts</li>
-                <li><strong>Reverse DNS</strong> — Looks up PTR records to find hostnames for IPs</li>
-                <li><strong>ASN Lookup</strong> — Identifies the hosting provider and network for each IP</li>
+                <li><strong>Subdomains</strong> — dev, staging, api, mail, vpn, admin subdomains that might expose less-hardened infrastructure</li>
+                <li><strong>Mail infrastructure</strong> — MX records reveal the email provider and associated SPF/DKIM configuration</li>
+                <li><strong>IP address ranges</strong> — Multiple subdomains may resolve to IP ranges that indicate hosting providers or data centers</li>
+                <li><strong>Hosting providers</strong> — IP blocks reveal whether the organization uses AWS, Cloudflare, Azure, or on-premises infrastructure</li>
+                <li><strong>Technology stack hints</strong> — Subdomains like <code>jenkins.example.com</code> or <code>grafana.example.com</code> reveal internal tooling exposed to the internet</li>
             </ul>
-            
-            <h3>Information Gathered</h3>
+
+            <h3>Legitimate Use Cases</h3>
             <ul>
-                <li><strong>A Records</strong> — IP addresses for each subdomain</li>
-                <li><strong>Reverse DNS</strong> — Hostname associated with each IP</li>
-                <li><strong>ASN</strong> — Autonomous System Number and organization name</li>
-                <li><strong>Country</strong> — Geographic location of the server</li>
-                <li><strong>MX Records</strong> — Mail servers for the domain</li>
-                <li><strong>NS Records</strong> — Authoritative name servers</li>
-                <li><strong>TXT Records</strong> — SPF, DKIM, DMARC, and other text records</li>
+                <li>Penetration testing and authorized security assessments</li>
+                <li>Mapping your own organization's public attack surface</li>
+                <li>Competitive research (public information only)</li>
+                <li>Bug bounty reconnaissance</li>
+                <li>Verifying DNS configuration after migrations</li>
             </ul>
+
+            <div class="faq">
+                <h3>Frequently Asked Questions</h3>
+                <div class="faq-item">
+                    <button class="faq-question">Is DNS enumeration legal?</button>
+                    <div class="faq-answer">Querying public DNS records is legal — DNS is a public system by design. However, using this information to attack systems without authorization is illegal under computer fraud laws in most jurisdictions (CFAA in the US, Computer Misuse Act in the UK, etc.). DNS Dumpster is a research and reconnaissance tool. Always ensure you have explicit authorization before conducting any security testing against systems you don't own.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">How does subdomain enumeration work?</button>
+                    <div class="faq-answer">Several techniques are combined: (1) DNS brute force — testing common subdomain names against the domain's nameservers; (2) Certificate Transparency logs — SSL certificates must be logged publicly and often include subdomains; (3) Search engine dorking — searching for subdomains indexed by Google; (4) DNS zone transfers — if the target's nameserver is misconfigured, it may return all zone records at once (increasingly rare). CT logs are particularly powerful as they're comprehensive and passive.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">What is a DNS zone transfer and how can I prevent it?</button>
+                    <div class="faq-answer">A zone transfer (AXFR) is a DNS operation that replicates all records from a primary nameserver to secondary nameservers. Misconfigured nameservers allow any host to request a zone transfer, exposing the complete DNS record set. Prevent this by restricting AXFR requests to your secondary nameserver IPs only: in BIND, use <code>allow-transfer { secondaryIP; };</code> in your zone configuration. Test your nameservers with <code>dig axfr yourdomain.com @yourns1.com</code>.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">How can I reduce my organization's DNS attack surface?</button>
+                    <div class="faq-answer">Key measures: (1) Remove DNS records for decommissioned services immediately — dangling DNS entries are a common hijacking vector; (2) Avoid descriptive subdomain names that hint at technology (prefer <code>ci.example.com</code> over <code>jenkins.example.com</code>); (3) Put internal services behind VPN instead of exposing them publicly; (4) Enable CAA records to restrict certificate issuance; (5) Regularly audit your own external DNS footprint using tools like this one.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">What are dangling DNS records and why are they dangerous?</button>
+                    <div class="faq-answer">A dangling DNS record points to a resource that no longer exists — for example, a CNAME pointing to a deprovisioned cloud service hostname. Attackers can register that hostname on the same cloud provider and take over the subdomain, serving malicious content under your domain. This is called subdomain takeover. Regularly audit DNS records and delete entries for decommissioned services. Tools like subjack and nuclei have templates specifically for subdomain takeover detection.</div>
+                </div>
+            </div>
         </section>
 
         <section class="related-tools">
@@ -809,6 +840,15 @@
         if (urlParams.get('domain')) {
             document.getElementById('domainInput').value = urlParams.get('domain');
         }
+    </script>
+
+    <script>
+    document.querySelectorAll('.faq-question').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var item = btn.parentElement;
+            item.classList.toggle('open');
+        });
+    });
     </script>
 </body>
 </html>

@@ -485,29 +485,59 @@
         </div>
 
         <section class="seo-content">
-            <h2>About IP Geolocation Lookup</h2>
-            <p>IP geolocation allows you to determine the approximate physical location of any public IP address. This tool uses multiple data sources to provide accurate information about IP addresses worldwide.</p>
-            
-            <h3>What Information Can You Find?</h3>
+            <h2>What is IP Geolocation?</h2>
+            <p>IP geolocation is the process of determining the physical location associated with an IP address. Every IP address block is registered with a Regional Internet Registry (RIR) and assigned to an organization. By querying geolocation databases that map IP ranges to locations, you can determine the country, region, city, and ISP associated with any public IP address.</p>
+            <p>IP geolocation is an estimation, not a precise measurement. The location returned is typically where the ISP's network infrastructure is located — which may not match the user's actual physical location, especially for mobile networks, VPNs, or corporate networks with centralized routing.</p>
+
+            <h3>How to Use This Tool</h3>
+            <ol style="color:var(--text-secondary);margin-left:1.5rem;margin-bottom:1rem;line-height:1.8;">
+                <li>Enter a public IP address (IPv4 or IPv6) in the input field, or leave it blank to look up your own IP.</li>
+                <li>Click <strong>Lookup</strong>.</li>
+                <li>Results show country, region, city, ISP, ASN, and coordinates.</li>
+            </ol>
+
+            <h3>Information Returned</h3>
             <ul>
-                <li><strong>Geographic Location</strong> — City, region/state, and country</li>
-                <li><strong>Internet Service Provider (ISP)</strong> — The company that owns the IP</li>
-                <li><strong>ASN (Autonomous System Number)</strong> — Network identifier for routing</li>
-                <li><strong>Timezone</strong> — Based on geographic location</li>
-                <li><strong>Coordinates</strong> — Approximate latitude and longitude</li>
+                <li><strong>Country / Region / City</strong> — Geographic location of the IP's registered network block</li>
+                <li><strong>ISP (Internet Service Provider)</strong> — The organization that owns or operates the IP range</li>
+                <li><strong>ASN (Autonomous System Number)</strong> — A unique number identifying a network on the internet (e.g., AS15169 = Google)</li>
+                <li><strong>Latitude / Longitude</strong> — Approximate coordinates, useful for mapping but not precise</li>
+                <li><strong>Timezone</strong> — The timezone associated with the location</li>
+                <li><strong>Proxy / VPN / Tor detection</strong> — Whether the IP is a known exit node or hosting provider</li>
             </ul>
-            
+
             <h3>Common Use Cases</h3>
             <ul>
-                <li><strong>Security Analysis</strong> — Identify the origin of suspicious traffic or attacks</li>
-                <li><strong>Fraud Prevention</strong> — Verify if user locations match claimed locations</li>
-                <li><strong>Network Troubleshooting</strong> — Trace routing issues and identify network paths</li>
-                <li><strong>Compliance</strong> — Verify geographic restrictions and data residency</li>
-                <li><strong>Marketing</strong> — Understand visitor demographics and locations</li>
+                <li><strong>Security logging</strong> — Enrich server logs with location context for anomaly detection</li>
+                <li><strong>Fraud prevention</strong> — Flag transactions from unexpected countries or known proxy IP ranges</li>
+                <li><strong>Content geo-restriction</strong> — Serve region-appropriate content or comply with licensing restrictions</li>
+                <li><strong>Network troubleshooting</strong> — Verify which ISP or data center an IP belongs to</li>
+                <li><strong>OSINT investigations</strong> — Gather context about an IP involved in suspicious activity</li>
             </ul>
-            
-            <h3>Accuracy Notes</h3>
-            <p>IP geolocation is accurate to the city level in most cases, but may only be accurate to country or region level for some IPs. VPNs, proxies, and mobile networks can affect accuracy. The location represents where the IP is registered, not necessarily the user's exact location.</p>
+
+            <div class="faq">
+                <h3>Frequently Asked Questions</h3>
+                <div class="faq-item">
+                    <button class="faq-question">Why is the location shown incorrect?</button>
+                    <div class="faq-answer">IP geolocation accuracy varies significantly: country-level is ~95–99% accurate, city-level is 50–80% accurate. Common inaccuracies occur because: (1) Mobile networks route traffic through centralized locations far from the user; (2) Corporate VPNs make traffic appear to come from headquarters; (3) ISPs sometimes register IP blocks to a city or region center; (4) Satellite internet (Starlink) may show unexpected locations. The location is where the network infrastructure is registered, not necessarily where the device is.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">What is an ASN (Autonomous System Number)?</button>
+                    <div class="faq-answer">An Autonomous System (AS) is a collection of IP prefixes under the control of one or more network operators with a common routing policy. Each AS has a unique ASN. BGP (Border Gateway Protocol) uses ASNs to exchange routing information between ASes. Examples: AS15169 (Google), AS16509 (Amazon AWS), AS13335 (Cloudflare). Knowing the ASN of an IP tells you exactly which organization controls that IP range.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">Can a VPN completely hide my real location?</button>
+                    <div class="faq-answer">VPNs replace your real IP with the VPN server's IP, so geolocation shows the VPN server's location instead of yours. However: (1) WebRTC leaks can expose your real IP in browsers; (2) DNS leaks can reveal your real ISP; (3) Known VPN IP ranges are flagged by many geolocation services; (4) Your VPN provider knows your real IP. For strong anonymity, Tor is more robust (though slower), but even Tor has known weaknesses against traffic correlation attacks.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">What is the difference between IPv4 and IPv6 geolocation?</button>
+                    <div class="faq-answer">IPv4 geolocation databases are mature and well-populated — most IPv4 ranges have accurate location data. IPv6 geolocation is less precise because IPv6 adoption is newer and prefix allocations are handled differently. ISPs receive large IPv6 blocks (/32 or larger) and sub-allocate them, making it harder to map individual ranges to specific locations. IPv6 geolocation accuracy is improving but generally less reliable than IPv4 at city level.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">Can I geolocate a private IP address (192.168.x.x, 10.x.x.x)?</button>
+                    <div class="faq-answer">No. Private IP addresses (RFC 1918: <code>10.0.0.0/8</code>, <code>172.16.0.0/12</code>, <code>192.168.0.0/16</code>) are not routed on the public internet and have no geolocation data. They're used inside local networks. Similarly, loopback (<code>127.0.0.1</code>), link-local (<code>169.254.x.x</code>), and other reserved ranges can't be geolocated. Only public (globally routable) IP addresses can be looked up.</div>
+                </div>
+            </div>
         </section>
 
         <section class="related-tools">
@@ -789,6 +819,15 @@ Looked up with OPS-BOX.net`;
         
         // Detect IP on load
         document.addEventListener('DOMContentLoaded', detectMyIP);
+    </script>
+
+    <script>
+    document.querySelectorAll('.faq-question').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var item = btn.parentElement;
+            item.classList.toggle('open');
+        });
+    });
     </script>
 </body>
 </html>

@@ -103,24 +103,60 @@
         </div>
 
         <section class="seo-content">
-            <h2>How to Use the JSON Formatter</h2>
-            <p>Paste your JSON data into the input field and click Format to beautify it with proper indentation, Minify to compress it, or Validate to check for syntax errors.</p>
-            
-            <h3>Features</h3>
+            <h2>What is JSON?</h2>
+            <p>JSON (JavaScript Object Notation) is a lightweight, human-readable data interchange format. Originally derived from JavaScript, it has become the universal standard for web APIs, configuration files, and data storage across virtually every programming language.</p>
+            <p>JSON supports six data types: strings, numbers, booleans (<code>true</code>/<code>false</code>), <code>null</code>, arrays (<code>[]</code>), and objects (<code>{}</code>). Its simplicity and readability make it far more common than alternatives like XML or YAML for REST APIs.</p>
+
+            <h3>How to Use This Tool</h3>
+            <ol style="color:var(--text-secondary);margin-left:1.5rem;margin-bottom:1rem;line-height:1.8;">
+                <li>Paste your JSON into the input field.</li>
+                <li>Click <strong>Format</strong> to beautify with proper indentation and line breaks.</li>
+                <li>Click <strong>Minify</strong> to remove all whitespace — useful for reducing payload size.</li>
+                <li>Click <strong>Validate</strong> to check for syntax errors — the tool will show the exact location of any error.</li>
+                <li>Copy the result with the <strong>Copy Result</strong> button.</li>
+            </ol>
+
+            <h3>Most Common JSON Errors</h3>
             <ul>
-                <li><strong>Format/Beautify</strong> — Adds indentation and line breaks for readability</li>
-                <li><strong>Minify</strong> — Removes whitespace to reduce file size</li>
-                <li><strong>Validate</strong> — Checks syntax and reports errors with details</li>
+                <li><strong>Trailing comma</strong> — <code>{"key": "value",}</code> — JSON does not allow a comma after the last item</li>
+                <li><strong>Single quotes</strong> — <code>{'key': 'value'}</code> — JSON requires double quotes for strings</li>
+                <li><strong>Unquoted keys</strong> — <code>{key: "value"}</code> — Object keys must always be quoted strings</li>
+                <li><strong>Undefined/NaN</strong> — JavaScript values like <code>undefined</code>, <code>NaN</code>, and <code>Infinity</code> are not valid JSON</li>
+                <li><strong>Unescaped characters</strong> — Newlines and tabs inside strings must be <code>
+</code> and <code>	</code></li>
+                <li><strong>Comments</strong> — Standard JSON does not support <code>//</code> or <code>/* */</code> comments</li>
             </ul>
-            
-            <h3>Common JSON Errors</h3>
+
+            <h3>JSON vs XML vs YAML</h3>
             <ul>
-                <li>Missing or extra commas</li>
-                <li>Unquoted property names</li>
-                <li>Single quotes instead of double quotes</li>
-                <li>Trailing commas after last element</li>
-                <li>Unescaped special characters in strings</li>
+                <li><strong>JSON</strong> — Compact, natively parsed by JavaScript, universal API standard. Verbose for deeply nested structures.</li>
+                <li><strong>XML</strong> — Supports attributes, namespaces, schemas. More verbose. Still common in enterprise/SOAP systems.</li>
+                <li><strong>YAML</strong> — More human-friendly, supports comments, used in config files (Docker, Kubernetes, GitHub Actions). Indentation-sensitive, which causes subtle bugs.</li>
             </ul>
+
+            <div class="faq">
+                <h3>Frequently Asked Questions</h3>
+                <div class="faq-item">
+                    <button class="faq-question">Can I use comments in JSON?</button>
+                    <div class="faq-answer">No — standard JSON does not support comments. This is a deliberate design choice to keep JSON simple and machine-parseable. If you need comments, use YAML or JSON5 (a superset of JSON that adds comments). Some tools like VS Code accept JSONC (JSON with Comments) for config files, but it's not valid JSON per the spec.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">What's the maximum size of JSON this tool handles?</button>
+                    <div class="faq-answer">This tool runs entirely in your browser, so the limit is your browser's available memory. It handles JSON files up to tens of megabytes without issues. For extremely large files (100MB+), a command-line tool like <code>jq</code> would be more appropriate.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">What is the difference between JSON.parse and JSON.stringify?</button>
+                    <div class="faq-answer"><code>JSON.parse(string)</code> converts a JSON string into a JavaScript object. <code>JSON.stringify(object)</code> converts a JavaScript object back into a JSON string. This tool uses <code>JSON.stringify(JSON.parse(input), null, 2)</code> to format (the <code>2</code> is the indentation level), and <code>JSON.stringify(JSON.parse(input))</code> to minify.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">Why does my JSON lose precision on large numbers?</button>
+                    <div class="faq-answer">JavaScript uses 64-bit floating-point (IEEE 754) for all numbers, which can only safely represent integers up to 2^53 - 1 (about 9 quadrillion). Numbers larger than this lose precision when parsed. This is a known JavaScript limitation. Languages like Python handle arbitrary precision integers natively, so this issue may only appear in browser-based JSON tools.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">Is my JSON data sent to any server?</button>
+                    <div class="faq-answer">No. All formatting, validation, and minification happens entirely in your browser using JavaScript. Your JSON data never leaves your machine. This is important when working with sensitive data like API keys, database records, or personal information.</div>
+                </div>
+            </div>
         </section>
 
         <section class="related-tools">
@@ -187,6 +223,15 @@
                 document.getElementById('jsonResult').textContent = '✗ Invalid: ' + e.message; 
             }
         }
+    </script>
+
+    <script>
+    document.querySelectorAll('.faq-question').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var item = btn.parentElement;
+            item.classList.toggle('open');
+        });
+    });
     </script>
 </body>
 </html>

@@ -97,19 +97,53 @@
 
         <section class="seo-content">
             <h2>What is Base64 Encoding?</h2>
-            <p>Base64 is a binary-to-text encoding scheme that converts binary data into ASCII characters. It uses 64 characters (A-Z, a-z, 0-9, +, /) to represent data, making it safe to transmit through text-based protocols.</p>
-            
+            <p>Base64 is a binary-to-text encoding scheme that represents binary data using only 64 printable ASCII characters: A–Z, a–z, 0–9, <code>+</code>, and <code>/</code>. It was designed to safely transmit binary data over channels that only support text, such as email (SMTP) or HTTP headers.</p>
+            <p>Base64 does not encrypt your data — it simply transforms it into a different representation. Anyone who sees a Base64-encoded string can decode it instantly. It exists to ensure safe transport, not secrecy.</p>
+            <p>Every 3 bytes of input become 4 characters of Base64 output, meaning Base64-encoded data is approximately 33% larger than the original.</p>
+
+            <h3>How to Use This Tool</h3>
+            <ol style="color:var(--text-secondary);margin-left:1.5rem;margin-bottom:1rem;line-height:1.8;">
+                <li>Paste your text or Base64 string into the input field.</li>
+                <li>Click <strong>Encode</strong> to convert plain text → Base64, or <strong>Decode</strong> to convert Base64 → plain text.</li>
+                <li>Click <strong>Copy Result</strong> to copy the output to your clipboard.</li>
+            </ol>
+
             <h3>Common Use Cases</h3>
             <ul>
-                <li><strong>HTTP Basic Authentication</strong> — Encoding username:password credentials</li>
-                <li><strong>Data URLs</strong> — Embedding images in HTML/CSS</li>
-                <li><strong>Email Attachments</strong> — MIME encoding for email</li>
-                <li><strong>API Payloads</strong> — Sending binary data in JSON</li>
-                <li><strong>JWT Tokens</strong> — JSON Web Tokens use Base64URL encoding</li>
+                <li><strong>HTTP Basic Authentication</strong> — Credentials are sent as <code>Authorization: Basic base64(username:password)</code></li>
+                <li><strong>Data URLs</strong> — Embed images directly in HTML/CSS: <code>src="data:image/png;base64,..."</code></li>
+                <li><strong>Email Attachments</strong> — MIME encoding converts binary attachments to Base64 for safe email transport</li>
+                <li><strong>JWT Tokens</strong> — JSON Web Tokens use Base64URL encoding for their header and payload sections</li>
+                <li><strong>API Payloads</strong> — Send binary data (images, files) inside JSON fields which only support text</li>
+                <li><strong>Config Files</strong> — Store binary certificates or keys as Base64 strings in YAML/JSON configs</li>
             </ul>
-            
+
             <h3>Base64 vs Base64URL</h3>
-            <p>Standard Base64 uses + and / characters which are not URL-safe. Base64URL replaces + with - and / with _ for use in URLs and filenames.</p>
+            <p>Standard Base64 uses <code>+</code> and <code>/</code> which are special characters in URLs. Base64URL replaces <code>+</code> with <code>-</code> and <code>/</code> with <code>_</code>, making it safe for use in URLs, filenames, and JWT tokens without percent-encoding.</p>
+
+            <div class="faq">
+                <h3>Frequently Asked Questions</h3>
+                <div class="faq-item">
+                    <button class="faq-question">Is Base64 the same as encryption?</button>
+                    <div class="faq-answer">No. Base64 is encoding, not encryption. It is completely reversible by anyone and provides zero security. Use AES or RSA encryption if you need to protect sensitive data. Base64 only ensures safe transport of binary data over text-based channels.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">Does Base64 compress data?</button>
+                    <div class="faq-answer">No — it does the opposite. Base64 expands data by approximately 33%. Every 3 bytes of input become 4 Base64 characters. If file size matters, compress with gzip first, then Base64 encode.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">What are the = padding characters at the end?</button>
+                    <div class="faq-answer">Base64 works in groups of 3 bytes (24 bits). If the input length isn't divisible by 3, padding characters (<code>=</code>) are added to make the output length a multiple of 4. One <code>=</code> means 1 byte of padding was needed; <code>==</code> means 2 bytes. Padding is required by the standard but some implementations omit it.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">Can Base64 handle binary files like images or PDFs?</button>
+                    <div class="faq-answer">Yes, but this tool processes text input. For binary files, you'd need to read the raw bytes first. In a browser, you can use the FileReader API with <code>readAsDataURL()</code> which returns a Base64 data URL suitable for embedding images directly in HTML.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">Why does my decoded Base64 show garbled characters?</button>
+                    <div class="faq-answer">This usually happens when the original data was binary (not text), or when the encoding used a different character set. This tool uses UTF-8 encoding/decoding. If your Base64 represents binary data rather than text, the decoded output will not be human-readable.</div>
+                </div>
+            </div>
         </section>
 
         <section class="related-tools">
@@ -170,6 +204,15 @@
                 document.getElementById('base64Result').textContent = 'Invalid Base64 string'; 
             }
         }
+    </script>
+
+    <script>
+    document.querySelectorAll('.faq-question').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var item = btn.parentElement;
+            item.classList.toggle('open');
+        });
+    });
     </script>
 </body>
 </html>
