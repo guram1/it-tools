@@ -455,7 +455,7 @@
                 <div class="bulk-section">
                     <h3>Bulk IP Lookup</h3>
                     <div class="form-group">
-                        <label class="form-label">Multiple IP Addresses (one per line, max 100)</label>
+                        <label class="form-label">Multiple IP Addresses (one per line, max 1000)</label>
                         <textarea class="form-textarea" id="bulkIPs" placeholder="8.8.8.8
 1.1.1.1
 208.67.222.222"></textarea>
@@ -758,8 +758,8 @@ Looked up with OPS-BOX.net`;
                 return;
             }
             
-            if (ips.length > 100) {
-                alert('Maximum 100 IP addresses per batch');
+            if (ips.length > 1000) {
+                alert('Maximum 1000 IP addresses per batch');
                 return;
             }
 
@@ -778,12 +778,17 @@ Looked up with OPS-BOX.net`;
                 rowMap[ip] = row;
             });
 
-            // geojs.io batch: GET https://get.geojs.io/v1/ip/geo.json?ip=a,b,c → array
+            // geojs.io batch endpoint: chunk to keep GET URLs under typical 8KB limits
+            const CHUNK = 100;
+            const chunks = [];
+            for (let i = 0; i < ips.length; i += CHUNK) chunks.push(ips.slice(i, i + CHUNK));
+
             try {
-                const url = `https://get.geojs.io/v1/ip/geo.json?ip=${encodeURIComponent(ips.join(','))}`;
-                const response = await fetch(url);
-                const arr = await response.json();
-                const results = Array.isArray(arr) ? arr : [arr];
+                const responses = await Promise.all(chunks.map(chunk => {
+                    const url = `https://get.geojs.io/v1/ip/geo.json?ip=${encodeURIComponent(chunk.join(','))}`;
+                    return fetch(url).then(r => r.json()).catch(() => []);
+                }));
+                const results = responses.flatMap(r => Array.isArray(r) ? r : [r]);
 
                 // Index results by IP for resilient matching
                 const byIp = {};
