@@ -591,9 +591,28 @@
     <script src="../js/common.js"></script>
     <script>
         const MY_IP_API = 'https://api.ipify.org?format=json';
-        const IP_LOOKUP_API = 'https://ipapi.co/'; // Free IP geolocation API with HTTPS
+        const IP_LOOKUP_API = 'https://ipwho.is/'; // Free, HTTPS, CORS-enabled, no key
         let currentData = null;
         let bulkData = [];
+
+        // Normalize ipwho.is response to a common shape used by the UI
+        function normalizeIPData(raw, fallbackIp) {
+            if (!raw || raw.success === false) {
+                return { error: true, reason: (raw && raw.message) || 'Lookup failed', ip: fallbackIp };
+            }
+            return {
+                ip: raw.ip || fallbackIp,
+                city: raw.city || '',
+                region: raw.region || '',
+                country_name: raw.country || '',
+                country_code: raw.country_code || '',
+                timezone: (raw.timezone && (raw.timezone.id || raw.timezone.utc)) || '',
+                org: (raw.connection && (raw.connection.isp || raw.connection.org)) || '',
+                asn: (raw.connection && raw.connection.asn) ? ('AS' + raw.connection.asn) : '',
+                latitude: raw.latitude,
+                longitude: raw.longitude
+            };
+        }
         
         // Country code to flag emoji
         function countryToFlag(countryCode) {
@@ -638,16 +657,16 @@
             document.getElementById('errorBox').style.display = 'none';
             
             try {
-                // Using ipapi.co (free with HTTPS, 1000 req/day)
-                const response = await fetch(`${IP_LOOKUP_API}${encodeURIComponent(ip)}/json/`);
-                const data = await response.json();
-                
+                const response = await fetch(`${IP_LOOKUP_API}${encodeURIComponent(ip)}`);
+                const raw = await response.json();
+                const data = normalizeIPData(raw, ip);
+
                 document.getElementById('loading').classList.remove('active');
-                
+
                 if (data.error) {
                     throw new Error(data.reason || 'Invalid IP address or lookup failed');
                 }
-                
+
                 currentData = data;
                 displayResult(data);
                 
@@ -755,9 +774,10 @@ Looked up with OPS-BOX.net`;
                 tbody.appendChild(row);
                 
                 try {
-                    const response = await fetch(`${IP_LOOKUP_API}${encodeURIComponent(ip)}/json/`);
-                    const data = await response.json();
-                    
+                    const response = await fetch(`${IP_LOOKUP_API}${encodeURIComponent(ip)}`);
+                    const raw = await response.json();
+                    const data = normalizeIPData(raw, ip);
+
                     if (data.error) {
                         row.innerHTML = `<td>${ip}</td><td colspan="4" style="color: #ef4444;">${data.reason || 'Lookup failed'}</td>`;
                         bulkData.push({ ip, error: data.reason || 'Failed' });
