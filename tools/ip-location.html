@@ -591,26 +591,27 @@
     <script src="../js/common.js"></script>
     <script>
         const MY_IP_API = 'https://api.ipify.org?format=json';
-        const IP_LOOKUP_API = 'https://ipwho.is/'; // Free, HTTPS, CORS-enabled, no key
+        const IP_LOOKUP_API = 'https://get.geojs.io/v1/ip/geo/'; // Free, HTTPS, CORS, no key
         let currentData = null;
         let bulkData = [];
 
-        // Normalize ipwho.is response to a common shape used by the UI
+        // Normalize geojs.io response to a common shape used by the UI
         function normalizeIPData(raw, fallbackIp) {
-            if (!raw || raw.success === false) {
-                return { error: true, reason: (raw && raw.message) || 'Lookup failed', ip: fallbackIp };
+            if (!raw || raw.error || (!raw.ip && !raw.country && !raw.latitude)) {
+                return { error: true, reason: (raw && (raw.error || raw.message)) || 'Lookup failed', ip: fallbackIp };
             }
+            const asnNum = raw.asn ? String(raw.asn).replace(/^AS/i, '') : '';
             return {
                 ip: raw.ip || fallbackIp,
                 city: raw.city || '',
                 region: raw.region || '',
                 country_name: raw.country || '',
                 country_code: raw.country_code || '',
-                timezone: (raw.timezone && (raw.timezone.id || raw.timezone.utc)) || '',
-                org: (raw.connection && (raw.connection.isp || raw.connection.org)) || '',
-                asn: (raw.connection && raw.connection.asn) ? ('AS' + raw.connection.asn) : '',
-                latitude: raw.latitude,
-                longitude: raw.longitude
+                timezone: raw.timezone || '',
+                org: raw.organization_name || raw.organization || '',
+                asn: asnNum ? ('AS' + asnNum) : '',
+                latitude: raw.latitude ? parseFloat(raw.latitude) : undefined,
+                longitude: raw.longitude ? parseFloat(raw.longitude) : undefined
             };
         }
         
