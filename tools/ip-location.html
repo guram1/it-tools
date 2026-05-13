@@ -455,7 +455,7 @@
                 <div class="bulk-section">
                     <h3>Bulk IP Lookup</h3>
                     <div class="form-group">
-                        <label class="form-label">Multiple IP Addresses (one per line, max 10)</label>
+                        <label class="form-label">Multiple IP Addresses (one per line, max 100)</label>
                         <textarea class="form-textarea" id="bulkIPs" placeholder="8.8.8.8
 1.1.1.1
 208.67.222.222"></textarea>
@@ -758,27 +758,41 @@ Looked up with OPS-BOX.net`;
                 return;
             }
             
-            if (ips.length > 10) {
-                alert('Maximum 10 IP addresses allowed (API rate limit)');
+            if (ips.length > 100) {
+                alert('Maximum 100 IP addresses per batch');
                 return;
             }
-            
+
             bulkData = [];
             const tbody = document.getElementById('bulkResultsBody');
             tbody.innerHTML = '';
             document.getElementById('bulkResults').style.display = 'block';
             document.getElementById('exportBtn').style.display = 'none';
-            
-            for (const ip of ips) {
+
+            // Placeholder rows so user sees progress
+            const rowMap = {};
+            ips.forEach(ip => {
                 const row = document.createElement('tr');
                 row.innerHTML = `<td>${ip}</td><td colspan="4">Looking up...</td>`;
                 tbody.appendChild(row);
-                
-                try {
-                    const response = await fetch(`${IP_LOOKUP_API}${encodeURIComponent(ip)}`);
-                    const raw = await response.json();
-                    const data = normalizeIPData(raw, ip);
+                rowMap[ip] = row;
+            });
 
+            // geojs.io batch: GET https://get.geojs.io/v1/ip/geo.json?ip=a,b,c → array
+            try {
+                const url = `https://get.geojs.io/v1/ip/geo.json?ip=${encodeURIComponent(ips.join(','))}`;
+                const response = await fetch(url);
+                const arr = await response.json();
+                const results = Array.isArray(arr) ? arr : [arr];
+
+                // Index results by IP for resilient matching
+                const byIp = {};
+                results.forEach(r => { if (r && r.ip) byIp[r.ip] = r; });
+
+                ips.forEach((ip, i) => {
+                    const raw = byIp[ip] || results[i];
+                    const data = normalizeIPData(raw, ip);
+                    const row = rowMap[ip];
                     if (data.error) {
                         row.innerHTML = `<td>${ip}</td><td colspan="4" style="color: #ef4444;">${data.reason || 'Lookup failed'}</td>`;
                         bulkData.push({ ip, error: data.reason || 'Failed' });
@@ -800,15 +814,15 @@ Looked up with OPS-BOX.net`;
                             asn: data.asn
                         });
                     }
-                } catch (e) {
+                });
+            } catch (e) {
+                ips.forEach(ip => {
+                    const row = rowMap[ip];
                     row.innerHTML = `<td>${ip}</td><td colspan="4" style="color: #ef4444;">Network error</td>`;
                     bulkData.push({ ip, error: 'Network error' });
-                }
-                
-                // Rate limit: ipapi.co allows ~1000/day, add delay between requests
-                await new Promise(r => setTimeout(r, 500));
+                });
             }
-            
+
             document.getElementById('exportBtn').style.display = 'inline-flex';
         }
         
