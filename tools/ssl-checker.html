@@ -351,6 +351,54 @@
         .status-dot.warning { background: #fbbf24; }
         .status-dot.expired { background: #ef4444; }
     </style>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+                {
+                        "@type": "Question",
+                        "name": "What is the difference between SSL and TLS?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "SSL (Secure Sockets Layer) is the predecessor to TLS (Transport Layer Security). SSL 2.0 and 3.0 are completely broken and disabled in all modern software. TLS 1.0 and 1.1 are deprecated and also disabled by most browsers. The current standards are TLS 1.2 and TLS 1.3. Despite this, \"SSL certificate\" and \"SSL checker\" remain the colloquial terms — the certificates themselves haven't changed, only the handshake protocol."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "What happens when an SSL certificate expires?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "Browsers display a full-page security warning blocking access. API integrations throw SSL errors and fail. SEO rankings can drop. E-commerce transactions stop. Setting up automated renewal (Let's Encrypt + certbot/ACME, or a CDN with auto-renewal) eliminates this risk. Monitor expiry dates and set alerts at 30 and 7 days before expiration."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "What is a wildcard certificate?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "A wildcard certificate covers a domain and all its immediate subdomains. A certificate for *.example.com is valid for www.example.com, api.example.com, mail.example.com, etc. It does NOT cover example.com itself (you need a SAN entry for that) or nested subdomains like sub.api.example.com."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "What is the difference between DV, OV, and EV certificates?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "DV (Domain Validation) — CA only verifies domain ownership. Issued in minutes. Used by Let's Encrypt. No organization information in certificate. OV (Organization Validation) — CA verifies domain ownership + legal organization identity. Shows company name in certificate details. EV (Extended Validation) — Strictest verification, historically showed a green bar in browsers. Browsers removed EV visual indicators in 2019, making EV certificates largely obsolete for their primary differentiator."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "Why do I see a certificate for a CDN provider instead of my domain's CA?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "CDN providers (Cloudflare, Fastly, AWS CloudFront) terminate TLS at their edge nodes and serve their own certificates. You'll see a Cloudflare or Amazon certificate instead of your origin certificate. This is normal — your connection to the CDN edge is encrypted with their cert, and the CDN-to-origin connection may use a separate certificate. Check your CDN's SSL settings if you want to ensure end-to-end encryption with your own certificate."
+                        }
+                }
+        ]
+}
+    </script>
     <!-- Google AdSense -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1924789684268835"
          crossorigin="anonymous"></script>
@@ -549,7 +597,7 @@ cloudflare.com"></textarea>
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals. | <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p>
+            <p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals. | <a href="/about.html" style="color:inherit;text-decoration:underline;">About</a> · <a href="/contact.html" style="color:inherit;text-decoration:underline;">Contact</a> · <a href="/terms-of-service.html" style="color:inherit;text-decoration:underline;">Terms</a> · <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p>
         </div>
     </footer>
 

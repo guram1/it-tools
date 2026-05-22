@@ -46,6 +46,54 @@
         "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}
     }
     </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+                {
+                        "@type": "Question",
+                        "name": "Can I change my MAC address?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "Yes. MAC addresses can be changed in software — this is called MAC spoofing. On Linux: ip link set dev eth0 address AA:BB:CC:DD:EE:FF. On macOS and Windows, you can change it via Network Adapter settings. The hardware-burned MAC (called the BIA, Burned-In Address) is permanent, but the active MAC can be overridden. Modern phones randomize their MAC for Wi-Fi scanning to protect privacy."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "Are MAC addresses truly globally unique?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "In theory yes, but in practice no. The IEEE assigns OUI prefixes to manufacturers who should ensure their devices have unique MACs, but counterfeiting and manufacturing errors occur. More importantly, MAC addresses are only locally significant — they don't route over the internet. Two devices with the same MAC on different networks causes no conflict, but two devices with the same MAC on the same Layer 2 segment will cause communication failures."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "What is a broadcast MAC address?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "FF:FF:FF:FF:FF:FF is the Layer 2 broadcast address. Frames sent to this address are delivered to every device on the local network segment. ARP requests use broadcast to ask \"who has IP x.x.x.x?\" before learning the target's MAC address."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "Why does my VM have a different MAC than my physical NIC?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "Hypervisors (VMware, VirtualBox, Hyper-V) generate virtual MAC addresses for VMs. VMware uses OUI prefix 00:50:56, VirtualBox uses 08:00:27, and QEMU/KVM uses 52:54:00. These are locally administered MACs assigned by the hypervisor, not IEEE-registered hardware MACs."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "How is a MAC address different from an IP address?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "MAC addresses operate at Layer 2 and identify hardware within a local network. They don't route across networks — a router replaces source and destination MACs at each hop. IP addresses operate at Layer 3 and provide global routing. ARP (Address Resolution Protocol) maps IP addresses to MAC addresses within a local subnet. Think of it this way: IP addresses are like postal addresses (for routing), MAC addresses are like names on a door (for local delivery)."
+                        }
+                }
+        ]
+}
+    </script>
     <!-- Google AdSense -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1924789684268835"
          crossorigin="anonymous"></script>
@@ -185,7 +233,7 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals. | <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p>
+            <p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals. | <a href="/about.html" style="color:inherit;text-decoration:underline;">About</a> · <a href="/contact.html" style="color:inherit;text-decoration:underline;">Contact</a> · <a href="/terms-of-service.html" style="color:inherit;text-decoration:underline;">Terms</a> · <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p>
         </div>
     </footer>
 

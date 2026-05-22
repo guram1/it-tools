@@ -46,6 +46,54 @@
         "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}
     }
     </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+                {
+                        "@type": "Question",
+                        "name": "Can two UUIDs ever be the same?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "Theoretically yes, but the probability is so small it's practically impossible. A UUID v4 has 122 bits of randomness (2^122 possible values). If you generated 1 billion UUIDs per second for 100 years, the probability of a single collision would still be less than 1 in a trillion. For all practical purposes, UUID v4 collisions don't happen."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "Should I use UUID or auto-increment for database primary keys?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "It depends on your use case. Auto-increment integers are smaller (4–8 bytes vs 16 bytes), create better index locality, and are simpler. UUIDs allow distributed ID generation without coordination, prevent ID enumeration in public APIs, and make data merging from multiple databases trivial. UUID v7 (time-ordered) reduces the index fragmentation problem of random v4 UUIDs, making it a good compromise."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "What is the difference between UUID and ULID?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "ULID (Universally Unique Lexicographically Sortable Identifier) is an alternative to UUID that encodes a millisecond timestamp in the first 48 bits, making ULIDs sortable by creation time. ULIDs use a base32 encoding, making them 26 characters vs UUID's 36 characters. They are useful as database primary keys where you want both uniqueness and sortability without a central sequence."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "Is UUID v4 cryptographically secure?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "Yes, when generated with a cryptographically secure random number generator (CSPRNG) like the Web Crypto API used by this tool. However, UUIDs are identifiers, not secrets — they're not designed to be unguessable tokens for authentication. For security tokens (like password reset links or API keys), use a purpose-built secure random token generator rather than a UUID."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "Are uppercase and lowercase UUIDs the same?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "Yes. UUIDs are case-insensitive. 550e8400-E29B-41d4-A716-446655440000 and 550e8400-e29b-41d4-a716-446655440000 represent the same identifier. The RFC 4122 standard recommends lowercase, but you should use whatever case your system requires. Some databases and ORMs normalize to one case automatically."
+                        }
+                }
+        ]
+}
+    </script>
     <!-- Google AdSense -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1924789684268835"
          crossorigin="anonymous"></script>
@@ -193,7 +241,7 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals. | <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p>
+            <p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals. | <a href="/about.html" style="color:inherit;text-decoration:underline;">About</a> · <a href="/contact.html" style="color:inherit;text-decoration:underline;">Contact</a> · <a href="/terms-of-service.html" style="color:inherit;text-decoration:underline;">Terms</a> · <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p>
         </div>
     </footer>
 

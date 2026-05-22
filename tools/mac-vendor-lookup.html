@@ -71,6 +71,54 @@
         ]
     }
     </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+                {
+                        "@type": "Question",
+                        "name": "Why does a MAC address return \"Unknown\" or no vendor?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "Several reasons: (1) The MAC is locally administered (bit 2 of byte 1 is set) — these aren't in the IEEE registry. (2) The device uses MAC randomization — modern phones randomize their MAC when scanning for Wi-Fi networks. (3) The OUI is registered but the registration is marked private in the IEEE database. (4) The OUI database hasn't been updated recently enough to include a very new manufacturer assignment."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "How often is the OUI database updated?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "The IEEE updates their OUI registry continuously as new manufacturers register. Our database is regularly synchronized with the IEEE public registry. If you find a newly registered OUI that doesn't resolve, it may not be in the current snapshot yet."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "Can I identify a device's exact model from its MAC?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "Not from the OUI alone — you can only identify the manufacturer. Some manufacturers use specific OUI blocks for product lines, and with additional context (network behavior, open ports, DHCP fingerprinting) you can narrow it down. Tools like Nmap's OS detection and Fingerbank provide more detailed device identification beyond OUI lookup."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "What is MAC randomization and why does it break OUI lookup?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "MAC randomization is a privacy feature where devices generate a random MAC address for Wi-Fi scanning and (increasingly) connections. Apple enabled it by default in iOS 14, Android 10 added it, and Windows 10 includes it. Randomized MACs have bit 2 of byte 1 set (locally administered), so they return no vendor. This protects users from being tracked across locations via their hardware MAC address."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "What is the difference between OUI, MA-L, MA-M, and MA-S?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "The IEEE offers three sizes of MAC address blocks: MA-L (OUI, /24 prefix — 16 million addresses), MA-M (medium, /28 prefix — 1 million addresses), and MA-S (small, /36 prefix — 4,096 addresses). Larger manufacturers buy MA-L blocks. Smaller companies or those needing fewer MACs use MA-M or MA-S. All are queryable by OUI prefix, though the lookup granularity differs."
+                        }
+                }
+        ]
+}
+    </script>
     <!-- Google AdSense -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1924789684268835"
          crossorigin="anonymous"></script>
@@ -212,7 +260,7 @@ aabb.ccdd.eeff
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals. | <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p>
+            <p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals. | <a href="/about.html" style="color:inherit;text-decoration:underline;">About</a> · <a href="/contact.html" style="color:inherit;text-decoration:underline;">Contact</a> · <a href="/terms-of-service.html" style="color:inherit;text-decoration:underline;">Terms</a> · <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p>
         </div>
     </footer>
 

@@ -46,6 +46,54 @@
         "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}
     }
     </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+                {
+                        "@type": "Question",
+                        "name": "How many MAC addresses can I format at once?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "There's no hard limit — the tool runs entirely in your browser and can handle thousands of MACs in a single pass. Performance remains smooth up to tens of thousands of entries. For truly massive datasets (millions of MACs), a command-line tool like awk or a Python script would be more appropriate."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "What happens if a line contains an invalid MAC?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "Invalid entries are flagged with an [INVALID] marker in the output rather than silently removed. The statistics panel shows how many valid and invalid MACs were found. This way you can identify problematic entries in your source data without losing their position in the list."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "Can I paste directly from a Cisco show mac address-table output?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "Yes. The tool automatically strips non-MAC content and detects the Cisco dot notation (aabb.ccdd.eeff). You can paste the raw output of show mac address-table or show arp and it will extract and convert the MACs while ignoring VLAN numbers, port names, and other surrounding text."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "Does the tool validate that a MAC address is actually registered?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "This tool only validates the format (12 hex characters). It does not check whether the OUI (first 3 bytes) is a registered manufacturer prefix. For that, use our MAC Vendor Lookup tool which checks against the full IEEE OUI database. Note that locally administered and multicast MACs (bit 1 of byte 1 set) will pass format validation but won't return a vendor."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "What is the difference between globally and locally administered MAC addresses?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "The second-least-significant bit of the first octet indicates whether the MAC is globally (0) or locally (1) administered. Globally administered MACs are assigned by the IEEE to manufacturers (the OUI prefix). Locally administered MACs are assigned by the network administrator or software — commonly seen in VMs, containers, and devices with MAC randomization enabled. Locally administered MACs won't match any vendor in the OUI database."
+                        }
+                }
+        ]
+}
+    </script>
     <!-- Google AdSense -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1924789684268835"
          crossorigin="anonymous"></script>
@@ -203,7 +251,7 @@ aabb.ccdd.eeff
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals. | <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p>
+            <p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals. | <a href="/about.html" style="color:inherit;text-decoration:underline;">About</a> · <a href="/contact.html" style="color:inherit;text-decoration:underline;">Contact</a> · <a href="/terms-of-service.html" style="color:inherit;text-decoration:underline;">Terms</a> · <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p>
         </div>
     </footer>
 

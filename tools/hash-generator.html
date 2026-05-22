@@ -46,6 +46,54 @@
         "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}
     }
     </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+                {
+                        "@type": "Question",
+                        "name": "Can I reverse a hash to get the original text?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "Not mathematically. Hash functions are designed to be one-way — there's no algorithm to reverse them. However, weak or common inputs (like simple passwords) can be found using precomputed rainbow tables or dictionary attacks. This is why passwords must be hashed with a unique salt for each user."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "What's the difference between SHA-256 and MD5?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "MD5 produces a 128-bit hash and is considered cryptographically broken — collisions (two different inputs producing the same hash) can be found quickly. SHA-256 produces a 256-bit hash and is currently considered secure. MD5 is still used for non-security checksums (like verifying file downloads where tampering isn't a concern), but should never be used for passwords or digital signatures."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "Is SHA-1 still safe to use?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "Not for security-critical applications. In 2017, Google demonstrated the first SHA-1 collision (SHAttered attack). Major browsers and certificate authorities stopped accepting SHA-1 certificates. It's still used in non-security contexts like git object IDs, but you should use SHA-256 or better for anything security-related."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "Why does the same password hash to different values in my database?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "Secure password hashing algorithms (like bcrypt, scrypt, Argon2) add a unique random value called a salt before hashing. This means the same password produces a different hash every time it's stored. This is intentional — it defeats precomputed rainbow table attacks. This tool computes plain SHA hashes without salting, so it's not suitable for password storage."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "What is HMAC and how does it differ from a regular hash?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "HMAC (Hash-based Message Authentication Code) combines a hash function with a secret key: HMAC = Hash(key + message). Unlike a plain hash, HMAC can verify both the data integrity AND the identity of the sender (since only someone with the key can produce the same HMAC). It's widely used in API authentication (AWS Signature, webhooks) and JWT token verification."
+                        }
+                }
+        ]
+}
+    </script>
     <!-- Google AdSense -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1924789684268835"
          crossorigin="anonymous"></script>
@@ -176,7 +224,7 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals. | <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p>
+            <p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals. | <a href="/about.html" style="color:inherit;text-decoration:underline;">About</a> · <a href="/contact.html" style="color:inherit;text-decoration:underline;">Contact</a> · <a href="/terms-of-service.html" style="color:inherit;text-decoration:underline;">Terms</a> · <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p>
         </div>
     </footer>
 

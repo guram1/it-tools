@@ -317,6 +317,54 @@
             margin-top: 0.5rem;
         }
     </style>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+                {
+                        "@type": "Question",
+                        "name": "Why is the location shown incorrect?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "IP geolocation accuracy varies significantly: country-level is ~95–99% accurate, city-level is 50–80% accurate. Common inaccuracies occur because: (1) Mobile networks route traffic through centralized locations far from the user; (2) Corporate VPNs make traffic appear to come from headquarters; (3) ISPs sometimes register IP blocks to a city or region center; (4) Satellite internet (Starlink) may show unexpected locations. The location is where the network infrastructure is registered, not necessarily where the device is."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "What is an ASN (Autonomous System Number)?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "An Autonomous System (AS) is a collection of IP prefixes under the control of one or more network operators with a common routing policy. Each AS has a unique ASN. BGP (Border Gateway Protocol) uses ASNs to exchange routing information between ASes. Examples: AS15169 (Google), AS16509 (Amazon AWS), AS13335 (Cloudflare). Knowing the ASN of an IP tells you exactly which organization controls that IP range."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "Can a VPN completely hide my real location?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "VPNs replace your real IP with the VPN server's IP, so geolocation shows the VPN server's location instead of yours. However: (1) WebRTC leaks can expose your real IP in browsers; (2) DNS leaks can reveal your real ISP; (3) Known VPN IP ranges are flagged by many geolocation services; (4) Your VPN provider knows your real IP. For strong anonymity, Tor is more robust (though slower), but even Tor has known weaknesses against traffic correlation attacks."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "What is the difference between IPv4 and IPv6 geolocation?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "IPv4 geolocation databases are mature and well-populated — most IPv4 ranges have accurate location data. IPv6 geolocation is less precise because IPv6 adoption is newer and prefix allocations are handled differently. ISPs receive large IPv6 blocks (/32 or larger) and sub-allocate them, making it harder to map individual ranges to specific locations. IPv6 geolocation accuracy is improving but generally less reliable than IPv4 at city level."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "Can I geolocate a private IP address (192.168.x.x, 10.x.x.x)?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "No. Private IP addresses (RFC 1918: 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16) are not routed on the public internet and have no geolocation data. They're used inside local networks. Similarly, loopback (127.0.0.1), link-local (169.254.x.x), and other reserved ranges can't be geolocated. Only public (globally routable) IP addresses can be looked up."
+                        }
+                }
+        ]
+}
+    </script>
     <!-- Google AdSense -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1924789684268835"
          crossorigin="anonymous"></script>
@@ -582,7 +630,7 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals. | <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p>
+            <p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals. | <a href="/about.html" style="color:inherit;text-decoration:underline;">About</a> · <a href="/contact.html" style="color:inherit;text-decoration:underline;">Contact</a> · <a href="/terms-of-service.html" style="color:inherit;text-decoration:underline;">Terms</a> · <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p>
         </div>
     </footer>
 

@@ -357,6 +357,54 @@
             padding: 0.4rem 0.75rem;
         }
     </style>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+                {
+                        "@type": "Question",
+                        "name": "What is TTL in DNS and why does it matter?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "TTL (Time To Live) is the number of seconds a DNS record can be cached by resolvers before they must re-query the authoritative nameserver. A TTL of 3600 means records are cached for 1 hour. Lower TTL (60–300 seconds) allows faster propagation when you change records but increases DNS query load. Higher TTL (86400 = 24 hours) reduces load but means changes take longer to propagate globally. Best practice: lower your TTL 24–48 hours before planned DNS changes, then increase it again afterward."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "Why do DNS changes take so long to propagate?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "DNS propagation delay is caused by caching at multiple levels: your OS DNS cache, your router's cache, your ISP's recursive resolver cache, and CDN edge caches. Each caches records until the TTL expires. Propagation \"up to 48 hours\" refers to worst-case scenarios where records were cached with high TTLs. With modern low-TTL records, changes typically propagate globally within minutes to a few hours."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "What is the difference between an A record and a CNAME?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "An A record maps a name directly to an IP address: example.com → 93.184.216.34. A CNAME maps a name to another name: www.example.com → example.com. CNAMEs require an additional lookup to resolve the target name. You cannot use a CNAME at a zone apex (bare domain like example.com) — only at subdomains. For apex domains pointing to load balancers or CDNs, use ALIAS or ANAME records (provider-specific flattening)."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "How do I verify my SPF, DKIM, and DMARC records are correct?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "SPF is a TXT record starting with v=spf1 at your root domain. DKIM is a TXT record at selector._domainkey.yourdomain.com. DMARC is a TXT record at _dmarc.yourdomain.com. Use this DNS Lookup tool to query TXT records for your domain and verify these records exist. For full email authentication testing, tools like mail-tester.com and MXToolbox validate the full chain."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "What is DNSSEC and should I enable it?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "DNSSEC (DNS Security Extensions) adds cryptographic signatures to DNS records, allowing resolvers to verify that records haven't been tampered with (DNS cache poisoning attacks). It doesn't encrypt DNS traffic — for that, use DNS-over-HTTPS (DoH) or DNS-over-TLS (DoT). DNSSEC is recommended for domains, especially high-value ones, but requires both your domain registrar and DNS hosting provider to support it. Misconfigured DNSSEC can make your domain unreachable, so test carefully before deploying."
+                        }
+                }
+        ]
+}
+    </script>
     <!-- Google AdSense -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1924789684268835"
          crossorigin="anonymous"></script>
@@ -561,7 +609,7 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals. | <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p>
+            <p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals. | <a href="/about.html" style="color:inherit;text-decoration:underline;">About</a> · <a href="/contact.html" style="color:inherit;text-decoration:underline;">Contact</a> · <a href="/terms-of-service.html" style="color:inherit;text-decoration:underline;">Terms</a> · <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p>
         </div>
     </footer>
 

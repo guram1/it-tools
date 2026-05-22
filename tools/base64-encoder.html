@@ -46,6 +46,54 @@
         "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}
     }
     </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+                {
+                        "@type": "Question",
+                        "name": "Is Base64 the same as encryption?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "No. Base64 is encoding, not encryption. It is completely reversible by anyone and provides zero security. Use AES or RSA encryption if you need to protect sensitive data. Base64 only ensures safe transport of binary data over text-based channels."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "Does Base64 compress data?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "No — it does the opposite. Base64 expands data by approximately 33%. Every 3 bytes of input become 4 Base64 characters. If file size matters, compress with gzip first, then Base64 encode."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "What are the = padding characters at the end?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "Base64 works in groups of 3 bytes (24 bits). If the input length isn't divisible by 3, padding characters (=) are added to make the output length a multiple of 4. One = means 1 byte of padding was needed; == means 2 bytes. Padding is required by the standard but some implementations omit it."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "Can Base64 handle binary files like images or PDFs?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "Yes, but this tool processes text input. For binary files, you'd need to read the raw bytes first. In a browser, you can use the FileReader API with readAsDataURL() which returns a Base64 data URL suitable for embedding images directly in HTML."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "Why does my decoded Base64 show garbled characters?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "This usually happens when the original data was binary (not text), or when the encoding used a different character set. This tool uses UTF-8 encoding/decoding. If your Base64 represents binary data rather than text, the decoded output will not be human-readable."
+                        }
+                }
+        ]
+}
+    </script>
     <!-- Google AdSense -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1924789684268835"
          crossorigin="anonymous"></script>
@@ -182,7 +230,7 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals. | <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p>
+            <p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals. | <a href="/about.html" style="color:inherit;text-decoration:underline;">About</a> · <a href="/contact.html" style="color:inherit;text-decoration:underline;">Contact</a> · <a href="/terms-of-service.html" style="color:inherit;text-decoration:underline;">Terms</a> · <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p>
         </div>
     </footer>
 

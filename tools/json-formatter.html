@@ -52,6 +52,54 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/style.css">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+                {
+                        "@type": "Question",
+                        "name": "Can I use comments in JSON?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "No — standard JSON does not support comments. This is a deliberate design choice to keep JSON simple and machine-parseable. If you need comments, use YAML or JSON5 (a superset of JSON that adds comments). Some tools like VS Code accept JSONC (JSON with Comments) for config files, but it's not valid JSON per the spec."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "What's the maximum size of JSON this tool handles?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "This tool runs entirely in your browser, so the limit is your browser's available memory. It handles JSON files up to tens of megabytes without issues. For extremely large files (100MB+), a command-line tool like jq would be more appropriate."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "What is the difference between JSON.parse and JSON.stringify?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "JSON.parse(string) converts a JSON string into a JavaScript object. JSON.stringify(object) converts a JavaScript object back into a JSON string. This tool uses JSON.stringify(JSON.parse(input), null, 2) to format (the 2 is the indentation level), and JSON.stringify(JSON.parse(input)) to minify."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "Why does my JSON lose precision on large numbers?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "JavaScript uses 64-bit floating-point (IEEE 754) for all numbers, which can only safely represent integers up to 2^53 - 1 (about 9 quadrillion). Numbers larger than this lose precision when parsed. This is a known JavaScript limitation. Languages like Python handle arbitrary precision integers natively, so this issue may only appear in browser-based JSON tools."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "Is my JSON data sent to any server?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "No. All formatting, validation, and minification happens entirely in your browser using JavaScript. Your JSON data never leaves your machine. This is important when working with sensitive data like API keys, database records, or personal information."
+                        }
+                }
+        ]
+}
+    </script>
     <!-- Google AdSense -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1924789684268835"
          crossorigin="anonymous"></script>
@@ -193,7 +241,7 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals. | <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p>
+            <p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals. | <a href="/about.html" style="color:inherit;text-decoration:underline;">About</a> · <a href="/contact.html" style="color:inherit;text-decoration:underline;">Contact</a> · <a href="/terms-of-service.html" style="color:inherit;text-decoration:underline;">Terms</a> · <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p>
         </div>
     </footer>
 

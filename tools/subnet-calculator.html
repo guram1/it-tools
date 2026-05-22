@@ -375,6 +375,54 @@
             }
         }
     </style>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+                {
+                        "@type": "Question",
+                        "name": "What is the difference between a subnet mask and CIDR notation?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "They represent the same information in different formats. Subnet mask 255.255.255.0 equals CIDR /24 — both mean the first 24 bits are the network address. CIDR (Classless Inter-Domain Routing) notation is more compact and is the modern standard. Subnet masks are still used in older equipment and some configuration interfaces. This tool accepts both formats."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "What is VLSM and why is it used?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "VLSM (Variable Length Subnet Masking) allows a network to be divided into subnets of different sizes, each sized according to actual host requirements. Without VLSM, you'd waste addresses by giving every subnet the same size. With VLSM, you can give a /25 (126 hosts) to a large department and a /30 (2 hosts) to a point-to-point router link — minimizing wasted address space. VLSM is standard practice in modern network design."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "Why are there 254 usable hosts in a /24, not 256?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "A /24 has 256 total addresses (2^8), but two are reserved: the network address (all host bits = 0, e.g., 192.168.1.0) and the broadcast address (all host bits = 1, e.g., 192.168.1.255). The formula for usable hosts is 2^(32-prefix) - 2. Exception: /31 networks (RFC 3021) use both addresses for point-to-point links, giving 2 usable hosts with no broadcast."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "What is a wildcard mask and how does it differ from a subnet mask?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "A wildcard mask is the bitwise inverse of a subnet mask. Where a subnet mask has 1s in network bits, a wildcard mask has 0s (match these bits), and where subnet mask has 0s, wildcard has 1s (ignore these bits). Wildcard masks are used in Cisco ACLs and OSPF area statements: access-list 10 permit 192.168.1.0 0.0.0.255 permits any address in the 192.168.1.0/24 range. The wildcard 0.0.0.255 corresponds to subnet mask 255.255.255.0."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "What is route summarization (supernetting) and when should I use it?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "Route summarization (or supernetting) aggregates multiple contiguous networks into a single route advertisement, reducing routing table size. For example, 192.168.0.0/24 through 192.168.3.0/24 can be summarized as 192.168.0.0/22. This reduces memory and CPU usage on routers and speeds up convergence. Use summarization at network boundaries: between distribution and core layers, or at AS boundaries in BGP. The networks must be contiguous and the summary must not inadvertently include unwanted address space."
+                        }
+                }
+        ]
+}
+    </script>
     <!-- Google AdSense -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1924789684268835"
          crossorigin="anonymous"></script>
@@ -709,7 +757,7 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals. | <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p>
+            <p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals. | <a href="/about.html" style="color:inherit;text-decoration:underline;">About</a> · <a href="/contact.html" style="color:inherit;text-decoration:underline;">Contact</a> · <a href="/terms-of-service.html" style="color:inherit;text-decoration:underline;">Terms</a> · <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p>
         </div>
     </footer>
 

@@ -223,6 +223,54 @@
             font-size: 0.9rem;
         }
     </style>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+                {
+                        "@type": "Question",
+                        "name": "Which devices can scan WiFi QR codes?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "iOS 11+ (iPhone 7 and newer) — scan with the native Camera app. Android 10+ — scan with the Camera app or Google Lens. Older Android devices may need a QR scanner app. Most modern Android devices running Android 9 and earlier also support WiFi QR codes through specific camera apps or QR scanner apps. Samsung devices have supported it since One UI 1.0 (Android 9)."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "Is it safe to generate a WiFi QR code online?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "With this tool, yes — the QR code is generated entirely in your browser using JavaScript. Your WiFi credentials are never sent to any server. You can verify this by disconnecting from the internet and using the tool — it still works. Be cautious with other online QR generators that may process your credentials server-side."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "What security type should I choose?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "Choose WPA2 or WPA3 (combined) for all modern routers — this is the current standard. WPA2-only for compatibility with older devices. WEP is cryptographically broken (crackable in minutes) and should only be selected for legacy equipment that cannot support WPA. If your router is older than 2010, upgrading the hardware is strongly recommended over using WEP."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "Can I create a QR code for a network without a password (open WiFi)?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "Yes — select \"None\" or \"Open\" as the security type and leave the password blank. The generated QR code will connect the device to the open network without authentication. This is appropriate for public hotspots or guest networks where no password is used, though open WiFi networks transmit data unencrypted."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "Why won't my QR code work for my hidden network?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "For hidden networks (SSID not broadcast), you must enable the \"Hidden network\" checkbox before generating the QR code. This adds the H:true parameter to the encoded string, telling the scanning device to connect to the network as a hidden SSID rather than scanning for a broadcast SSID. Without this flag, the device may fail to connect even with the correct credentials."
+                        }
+                }
+        ]
+}
+    </script>
     <!-- Google AdSense -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1924789684268835"
          crossorigin="anonymous"></script>
@@ -452,7 +500,7 @@ guest2024-03
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals. | <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p>
+            <p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals. | <a href="/about.html" style="color:inherit;text-decoration:underline;">About</a> · <a href="/contact.html" style="color:inherit;text-decoration:underline;">Contact</a> · <a href="/terms-of-service.html" style="color:inherit;text-decoration:underline;">Terms</a> · <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p>
         </div>
     </footer>
 

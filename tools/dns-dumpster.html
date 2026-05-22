@@ -280,6 +280,54 @@
         .export-section { margin-top: 1.5rem; padding: 1rem; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; }
         .export-section h4 { font-size: 0.9rem; margin-bottom: 0.75rem; }
     </style>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+                {
+                        "@type": "Question",
+                        "name": "Is DNS enumeration legal?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "Querying public DNS records is legal — DNS is a public system by design. However, using this information to attack systems without authorization is illegal under computer fraud laws in most jurisdictions (CFAA in the US, Computer Misuse Act in the UK, etc.). DNS Dumpster is a research and reconnaissance tool. Always ensure you have explicit authorization before conducting any security testing against systems you don't own."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "How does subdomain enumeration work?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "Several techniques are combined: (1) DNS brute force — testing common subdomain names against the domain's nameservers; (2) Certificate Transparency logs — SSL certificates must be logged publicly and often include subdomains; (3) Search engine dorking — searching for subdomains indexed by Google; (4) DNS zone transfers — if the target's nameserver is misconfigured, it may return all zone records at once (increasingly rare). CT logs are particularly powerful as they're comprehensive and passive."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "What is a DNS zone transfer and how can I prevent it?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "A zone transfer (AXFR) is a DNS operation that replicates all records from a primary nameserver to secondary nameservers. Misconfigured nameservers allow any host to request a zone transfer, exposing the complete DNS record set. Prevent this by restricting AXFR requests to your secondary nameserver IPs only: in BIND, use allow-transfer { secondaryIP; }; in your zone configuration. Test your nameservers with dig axfr yourdomain.com @yourns1.com."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "How can I reduce my organization's DNS attack surface?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "Key measures: (1) Remove DNS records for decommissioned services immediately — dangling DNS entries are a common hijacking vector; (2) Avoid descriptive subdomain names that hint at technology (prefer ci.example.com over jenkins.example.com); (3) Put internal services behind VPN instead of exposing them publicly; (4) Enable CAA records to restrict certificate issuance; (5) Regularly audit your own external DNS footprint using tools like this one."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "What are dangling DNS records and why are they dangerous?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "A dangling DNS record points to a resource that no longer exists — for example, a CNAME pointing to a deprovisioned cloud service hostname. Attackers can register that hostname on the same cloud provider and take over the subdomain, serving malicious content under your domain. This is called subdomain takeover. Regularly audit DNS records and delete entries for decommissioned services. Tools like subjack and nuclei have templates specifically for subdomain takeover detection."
+                        }
+                }
+        ]
+}
+    </script>
     <!-- Google AdSense -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1924789684268835"
          crossorigin="anonymous"></script>
@@ -542,7 +590,7 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals. | <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p>
+            <p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals. | <a href="/about.html" style="color:inherit;text-decoration:underline;">About</a> · <a href="/contact.html" style="color:inherit;text-decoration:underline;">Contact</a> · <a href="/terms-of-service.html" style="color:inherit;text-decoration:underline;">Terms</a> · <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p>
         </div>
     </footer>
 
