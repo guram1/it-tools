@@ -53,8 +53,8 @@
             </div>
             <div class="tool-content">
                 <div class="form-group">
-                    <label class="form-label" for="bgpInput">AS number or IP address</label>
-                    <input type="text" id="bgpInput" class="form-input" value="AS15169" placeholder="AS15169  or  AS13335  or  8.8.8.8  or  2606:4700:4700::1111" style="font-family:'JetBrains Mono',monospace;font-size:1.05rem;" onkeydown="if(event.key==='Enter')lookup()">
+                    <label class="form-label" for="bgpInput">AS number, IP address, or company name</label>
+                    <input type="text" id="bgpInput" class="form-input" value="AS15169" placeholder="AS15169  ·  8.8.8.8  ·  2606:4700::1111  ·  cloudflare" style="font-family:'JetBrains Mono',monospace;font-size:1.05rem;" onkeydown="if(event.key==='Enter')lookup()">
                     <div style="display:flex;flex-wrap:wrap;gap:0.4rem;margin-top:0.6rem;">
                         <button class="preset-btn" onclick="setVal('AS15169')">AS15169 Google</button>
                         <button class="preset-btn" onclick="setVal('AS13335')">AS13335 Cloudflare</button>
@@ -68,6 +68,11 @@
                 <div class="btn-group"><button class="btn btn-primary" onclick="lookup()">Look up</button></div>
 
                 <div id="bgpError" style="display:none;color:#ef4444;margin-top:1rem;padding:0.75rem 1rem;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:0.85rem;"></div>
+
+                <div id="bgpSearchResults" style="display:none;margin-top:1.5rem;">
+                    <div class="form-group" style="margin-bottom:0.5rem;"><label class="form-label">Matching ASNs <span id="bgpSearchCount" style="color:var(--text-muted);font-weight:normal;"></span> — click to drill in</label></div>
+                    <div id="bgpSearchList" class="pfx-list" style="max-height:400px;"></div>
+                </div>
 
                 <div id="bgpResults" style="display:none;margin-top:1.5rem;">
                     <div id="bgpStats" class="stat-row"></div>
@@ -146,7 +151,9 @@
             const s = input.trim();
             const asnMatch = s.match(/^(?:AS)?(\d+)$/i);
             if (asnMatch) return { kind: 'asn', value: 'AS' + asnMatch[1] };
-            return { kind: 'ip', value: s };
+            // IPv4 / IPv6 detection — must contain '.' or ':' and no spaces / letters outside hex
+            if (/^[0-9a-f:.\/]+$/i.test(s) && (s.includes('.') || s.includes(':'))) return { kind: 'ip', value: s };
+            return { kind: 'name', value: s };
         }
 
         async function fetchJson(url) {
@@ -157,16 +164,37 @@
             return j.data;
         }
 
+        async function searchByName(name) {
+            const searchEl = document.getElementById('bgpSearchResults');
+            const listEl = document.getElementById('bgpSearchList');
+            const countEl = document.getElementById('bgpSearchCount');
+            searchEl.style.display = 'block';
+            listEl.innerHTML = '<div class="loading">Searching RIPEstat…</div>';
+            countEl.textContent = '';
+            const data = await fetchJson(`${API}/searchcomplete/data.json?resource=${encodeURIComponent(name)}`);
+            const cats = data.categories || [];
+            const asns = (cats.find(c => c.category === 'ASNs')?.suggestions) || [];
+            if (!asns.length) {
+                listEl.innerHTML = `<div style="color:var(--text-muted);padding:1rem;">No ASNs matched "${escHtml(name)}". Try a different keyword (e.g. the network name, not just the brand).</div>`;
+                return;
+            }
+            countEl.textContent = `— ${asns.length}`;
+            listEl.innerHTML = asns.map(s => `<div style="cursor:pointer;" onclick="setVal('${s.value}')"><strong style="color:var(--accent);">${escHtml(s.value)}</strong> <span style="color:var(--text-secondary);">— ${escHtml(s.description || '')}</span></div>`).join('');
+        }
+
         async function lookup() {
             const errEl = document.getElementById('bgpError');
             const resEl = document.getElementById('bgpResults');
+            const searchEl = document.getElementById('bgpSearchResults');
             errEl.style.display = 'none';
             resEl.style.display = 'none';
+            searchEl.style.display = 'none';
             const input = document.getElementById('bgpInput').value.trim();
             if (!input) return;
             const cls = classify(input);
 
             try {
+                if (cls.kind === 'name') { await searchByName(cls.value); return; }
                 let asn;
                 if (cls.kind === 'ip') {
                     const ni = await fetchJson(`${API}/network-info/data.json?resource=${encodeURIComponent(cls.value)}`);
