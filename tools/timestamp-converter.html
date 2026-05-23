@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-FH74PGMNYD"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-FH74PGMNYD');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unix Timestamp Converter — Epoch to Date &amp; Back | OPS-BOX</title>
+    <meta name="description" content="Free Unix timestamp converter. Convert between epoch seconds/milliseconds and human-readable dates in any timezone. Auto-detects units, supports ISO 8601 input, and shows live current epoch.">
+    <meta name="keywords" content="unix timestamp converter, epoch converter, epoch to date, timestamp to date, ISO 8601, epoch milliseconds">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://ops-box.net/tools/timestamp-converter.html">
+
+    <meta property="og:title" content="Unix Timestamp Converter — Epoch to Date">
+    <meta property="og:description" content="Convert between Unix epoch and human-readable dates in any timezone.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ops-box.net/tools/timestamp-converter.html">
+    <meta property="og:image" content="https://ops-box.net/og-image.png">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Unix Timestamp Converter">
+    <meta name="twitter:description" content="Convert between epoch and human-readable dates.">
+    <meta name="twitter:image" content="https://ops-box.net/og-image.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Unix Timestamp Converter",
+        "url": "https://ops-box.net/tools/timestamp-converter.html",
+        "description": "Convert between Unix epoch timestamps and human-readable dates",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Any",
+        "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {"@type": "Question", "name": "What is a Unix timestamp?", "acceptedAnswer": {"@type": "Answer", "text": "A Unix timestamp (or epoch time) is the number of seconds elapsed since 1970-01-01 00:00:00 UTC, not counting leap seconds. It's the most common machine-friendly way to represent a point in time and is timezone-independent."}},
+            {"@type": "Question", "name": "Seconds or milliseconds — how do I tell?", "acceptedAnswer": {"@type": "Answer", "text": "By magnitude. A 10-digit number (around 1.7 billion in 2024+) is seconds. A 13-digit number (around 1.7 trillion) is milliseconds. 16 digits is microseconds, 19 is nanoseconds. This tool auto-detects based on length."}},
+            {"@type": "Question", "name": "What's the year-2038 problem?", "acceptedAnswer": {"@type": "Answer", "text": "Signed 32-bit timestamps overflow at 03:14:07 UTC on 19 January 2038 (2^31 - 1 seconds). Systems still using int32 for time will wrap to negative numbers, breaking date logic. Modern systems use 64-bit integers (good for ~292 billion years), so this is mostly a concern for legacy embedded systems and old file formats."}},
+            {"@type": "Question", "name": "Why does my date show up as wrong by a few hours?", "acceptedAnswer": {"@type": "Answer", "text": "Almost always a timezone mismatch. Unix timestamps are always UTC; if a system displays them in local time, you may see an offset. This tool shows your local time, UTC, and ISO 8601 simultaneously so you can spot the difference instantly."}},
+            {"@type": "Question", "name": "Does this account for leap seconds?", "acceptedAnswer": {"@type": "Answer", "text": "No, and neither does Unix epoch by design. POSIX explicitly defines epoch time as ignoring leap seconds (every day is exactly 86400 seconds). Astronomical UTC, which does include leap seconds, can differ from POSIX time by a few dozen seconds."}}
+        ]
+    }
+    </script>
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1924789684268835" crossorigin="anonymous"></script>
+    <style>
+        .now-bar { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem 1rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
+        .now-vals { font-family: 'JetBrains Mono', monospace; color: var(--accent); font-size: 0.95rem; }
+        .result-grid { display: grid; gap: 0.5rem; }
+        .result-row { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; padding: 0.6rem 0.9rem; display: flex; justify-content: space-between; gap: 1rem; align-items: center; }
+        .result-label { color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; min-width: 12rem; }
+        .result-val { color: var(--accent); font-family: 'JetBrains Mono', monospace; word-break: break-all; flex: 1; text-align: right; }
+        @media (max-width:600px) { .result-row { flex-direction: column; align-items: flex-start; } .result-val { text-align: left; } }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <a href="/" class="logo">
+                <div class="logo-icon">⚡</div>
+                <div class="logo-text">OPS<span>-BOX</span></div>
+            </a>
+            <nav class="header-nav">
+                <a href="/tools/cron-explainer.html">Cron</a>
+                <a href="/tools/url-encoder.html">URL</a>
+                <a href="/tools/json-formatter.html">JSON</a>
+                <a href="/tools/regex-tester.html">Regex</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <nav class="breadcrumb">
+            <a href="/">Home</a><span>›</span><span class="breadcrumb-current">Timestamp Converter</span>
+        </nav>
+
+        <div class="tool-container">
+            <div class="tool-header">
+                <h1 class="tool-title">Unix Timestamp Converter</h1>
+                <p class="tool-description">Convert between Unix epoch and human-readable dates. Auto-detects seconds vs milliseconds, accepts ISO 8601 dates, and shows the result in your local timezone and UTC simultaneously.</p>
+            </div>
+            <div class="tool-content">
+                <div class="now-bar">
+                    <div>
+                        <div style="color:var(--text-muted);font-size:0.75rem;text-transform:uppercase;letter-spacing:0.05em;">Current epoch</div>
+                        <div class="now-vals"><span id="nowSec">—</span> s · <span id="nowMs">—</span> ms</div>
+                    </div>
+                    <button class="btn btn-secondary" onclick="useNow()">Use now</button>
+                </div>
+
+                <div class="form-group" style="margin-top:1.5rem;">
+                    <label class="form-label" for="tsInput">Input — epoch (s/ms/μs/ns) or any parseable date</label>
+                    <input type="text" id="tsInput" class="form-input" placeholder="1700000000  or  2024-01-15T12:30:00Z  or  Jan 15 2024 12:30 PM" style="font-family:'JetBrains Mono',monospace;font-size:1.05rem;" oninput="run()">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Detected as <span id="tsDetected" style="color:var(--accent);font-weight:normal;font-family:'JetBrains Mono',monospace;"></span></label>
+                </div>
+
+                <div id="tsError" style="display:none;color:#ef4444;margin:0.5rem 0;padding:0.6rem 0.9rem;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:0.85rem;"></div>
+
+                <div id="tsResults" class="result-grid" style="display:none;"></div>
+            </div>
+        </div>
+
+        <section class="seo-content">
+            <h2>About Unix Time</h2>
+            <p>Unix time (also called <strong>epoch time</strong> or <strong>POSIX time</strong>) is the number of seconds that have elapsed since 1970-01-01 00:00:00 UTC. It is the de facto standard for storing and exchanging timestamps in computer systems because it is timezone-independent, monotonic (ignoring NTP corrections), and trivial to do arithmetic on.</p>
+
+            <h3>Common Units &amp; Formats</h3>
+            <ul>
+                <li><strong>Seconds (10 digits today):</strong> <code>1700000000</code> — used by Unix system calls, syslog, PostgreSQL <code>extract(epoch)</code></li>
+                <li><strong>Milliseconds (13 digits):</strong> <code>1700000000000</code> — used by JavaScript <code>Date.now()</code>, Java <code>System.currentTimeMillis()</code></li>
+                <li><strong>Microseconds (16 digits):</strong> used by databases, Python <code>time.time_ns() / 1000</code></li>
+                <li><strong>Nanoseconds (19 digits):</strong> Go <code>time.Now().UnixNano()</code>, Linux <code>clock_gettime</code></li>
+                <li><strong>ISO 8601:</strong> <code>2024-01-15T12:30:00Z</code> — the recommended human-readable format for APIs</li>
+                <li><strong>RFC 2822:</strong> <code>Mon, 15 Jan 2024 12:30:00 +0000</code> — used in email headers and HTTP <code>Date:</code></li>
+            </ul>
+
+            <h3>Year 2038 (Y2K38)</h3>
+            <p>Signed 32-bit Unix timestamps overflow on <strong>19 January 2038 at 03:14:07 UTC</strong>. Systems still using <code>time_t</code> as a 32-bit integer — embedded devices, old filesystems, some MySQL columns — will wrap to negative numbers and break. Most modern systems have moved to 64-bit time, which is good for the next ~292 billion years.</p>
+
+            <div class="faq">
+                <h3>Frequently Asked Questions</h3>
+                <div class="faq-item"><button class="faq-question">What is a Unix timestamp?</button><div class="faq-answer">A Unix timestamp (or epoch time) is the number of seconds elapsed since 1970-01-01 00:00:00 UTC, not counting leap seconds. It's the most common machine-friendly way to represent a point in time and is timezone-independent.</div></div>
+                <div class="faq-item"><button class="faq-question">Seconds or milliseconds — how do I tell?</button><div class="faq-answer">By magnitude. A 10-digit number (around 1.7 billion in 2024+) is seconds. A 13-digit number (around 1.7 trillion) is milliseconds. 16 digits is microseconds, 19 is nanoseconds. This tool auto-detects based on length.</div></div>
+                <div class="faq-item"><button class="faq-question">What's the year-2038 problem?</button><div class="faq-answer">Signed 32-bit timestamps overflow at 03:14:07 UTC on 19 January 2038 (2^31 - 1 seconds). Systems still using <code>int32</code> for time will wrap to negative numbers, breaking date logic. Modern systems use 64-bit integers (good for ~292 billion years), so this is mostly a concern for legacy embedded systems and old file formats.</div></div>
+                <div class="faq-item"><button class="faq-question">Why does my date show up as wrong by a few hours?</button><div class="faq-answer">Almost always a timezone mismatch. Unix timestamps are always UTC; if a system displays them in local time, you may see an offset. This tool shows your local time, UTC, and ISO 8601 simultaneously so you can spot the difference instantly.</div></div>
+                <div class="faq-item"><button class="faq-question">Does this account for leap seconds?</button><div class="faq-answer">No, and neither does Unix epoch by design. POSIX explicitly defines epoch time as ignoring leap seconds (every day is exactly 86400 seconds). Astronomical UTC, which does include leap seconds, can differ from POSIX time by a few dozen seconds.</div></div>
+            </div>
+        </section>
+
+        <section class="related-tools">
+            <h2>Related Tools</h2>
+            <div class="related-grid">
+                <a href="/tools/cron-explainer.html" class="related-card"><h3>Cron Explainer</h3><p>Parse cron expressions and preview run times.</p></a>
+                <a href="/tools/url-encoder.html" class="related-card"><h3>URL Encoder</h3><p>Percent-encode URLs and query strings.</p></a>
+                <a href="/tools/json-formatter.html" class="related-card"><h3>JSON Formatter</h3><p>Format and validate JSON.</p></a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section"><h3>Network Tools</h3><a href="/tools/subnet-calculator.html">Subnet Calculator</a><a href="/tools/ipv6-subnet-calculator.html">IPv6 Subnet Calculator</a><a href="/tools/cidr-aggregator.html">CIDR Aggregator</a></div>
+            <div class="footer-section"><h3>Security Tools</h3><a href="/tools/password-generator.html">Password Generator</a><a href="/tools/jwt-decoder.html">JWT Decoder</a><a href="/tools/jwt-generator.html">JWT Generator</a></div>
+            <div class="footer-section"><h3>Developer Tools</h3><a href="/tools/json-formatter.html">JSON Formatter</a><a href="/tools/url-encoder.html">URL Encoder</a><a href="/tools/timestamp-converter.html">Timestamp Converter</a></div>
+        </div>
+        <div class="footer-bottom"><p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals. | <a href="/about.html" style="color:inherit;text-decoration:underline;">About</a> · <a href="/contact.html" style="color:inherit;text-decoration:underline;">Contact</a> · <a href="/terms-of-service.html" style="color:inherit;text-decoration:underline;">Terms</a> · <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p></div>
+    </footer>
+
+    <div class="toast" id="toast">Copied to clipboard!</div>
+
+    <script src="../js/common.js"></script>
+    <script>
+        function tickNow() {
+            const ms = Date.now();
+            document.getElementById('nowSec').textContent = Math.floor(ms / 1000);
+            document.getElementById('nowMs').textContent = ms;
+        }
+        tickNow(); setInterval(tickNow, 1000);
+
+        function useNow() { document.getElementById('tsInput').value = String(Math.floor(Date.now()/1000)); run(); }
+
+        function parseInput(raw) {
+            raw = raw.trim();
+            if (!raw) return null;
+            if (/^-?\d+$/.test(raw)) {
+                const n = Number(raw);
+                let ms, unit;
+                if (Math.abs(n) >= 1e18) { ms = n / 1e6; unit = 'nanoseconds'; }
+                else if (Math.abs(n) >= 1e15) { ms = n / 1e3; unit = 'microseconds'; }
+                else if (Math.abs(n) >= 1e12) { ms = n; unit = 'milliseconds'; }
+                else { ms = n * 1000; unit = 'seconds'; }
+                return { date: new Date(ms), unit, source: 'number' };
+            }
+            const d = new Date(raw);
+            if (!isNaN(d.getTime())) return { date: d, unit: 'date string', source: 'date' };
+            return null;
+        }
+
+        function run() {
+            const raw = document.getElementById('tsInput').value;
+            const errEl = document.getElementById('tsError');
+            const resultsEl = document.getElementById('tsResults');
+            const detEl = document.getElementById('tsDetected');
+            errEl.style.display = 'none';
+            if (!raw.trim()) { resultsEl.style.display = 'none'; detEl.textContent = ''; return; }
+
+            const parsed = parseInput(raw);
+            if (!parsed) {
+                errEl.textContent = 'Could not parse — enter a Unix epoch (s/ms/μs/ns) or a date string like 2024-01-15T12:30:00Z.';
+                errEl.style.display = 'block'; resultsEl.style.display = 'none'; detEl.textContent = '';
+                return;
+            }
+            const d = parsed.date;
+            detEl.textContent = parsed.unit;
+            if (isNaN(d.getTime()) || d.getFullYear() < 1 || d.getFullYear() > 9999) {
+                errEl.textContent = 'Resulting date is out of range.';
+                errEl.style.display = 'block'; resultsEl.style.display = 'none'; return;
+            }
+
+            const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            const ms = d.getTime();
+            const sec = Math.floor(ms / 1000);
+            const localFmt = d.toLocaleString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const relativeAgo = relTime(ms);
+
+            const rows = [
+                ['Epoch (seconds)', sec],
+                ['Epoch (milliseconds)', ms],
+                ['ISO 8601 (UTC)', d.toISOString()],
+                ['UTC', d.toUTCString()],
+                [`Local (${tz})`, localFmt],
+                ['RFC 2822', toRFC2822(d)],
+                ['Relative', relativeAgo],
+                ['Day of year', dayOfYear(d) + ' / ' + (isLeap(d.getUTCFullYear()) ? 366 : 365)],
+                ['Week (ISO)', isoWeek(d)],
+            ];
+            resultsEl.innerHTML = rows.map(([k, v]) => `<div class="result-row"><span class="result-label">${k}</span><span class="result-val">${escapeHtml(String(v))}</span></div>`).join('');
+            resultsEl.style.display = 'grid';
+        }
+        function escapeHtml(s) { return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+        function toRFC2822(d) {
+            const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+            const mon = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            const off = -d.getTimezoneOffset();
+            const sign = off >= 0 ? '+' : '-';
+            const ah = Math.floor(Math.abs(off) / 60), am = Math.abs(off) % 60;
+            return `${days[d.getDay()]}, ${String(d.getDate()).padStart(2,'0')} ${mon[d.getMonth()]} ${d.getFullYear()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')} ${sign}${String(ah).padStart(2,'0')}${String(am).padStart(2,'0')}`;
+        }
+        function relTime(ms) {
+            const diff = Date.now() - ms;
+            const abs = Math.abs(diff);
+            const sec = Math.round(abs / 1000);
+            const mn = Math.round(sec / 60);
+            const hr = Math.round(mn / 60);
+            const dy = Math.round(hr / 24);
+            const yr = (dy / 365.25);
+            let v;
+            if (sec < 60) v = sec + ' second' + (sec === 1 ? '' : 's');
+            else if (mn < 60) v = mn + ' minute' + (mn === 1 ? '' : 's');
+            else if (hr < 48) v = hr + ' hour' + (hr === 1 ? '' : 's');
+            else if (dy < 365) v = dy + ' day' + (dy === 1 ? '' : 's');
+            else v = yr.toFixed(1) + ' years';
+            return diff >= 0 ? v + ' ago' : 'in ' + v;
+        }
+        function dayOfYear(d) { const start = new Date(Date.UTC(d.getUTCFullYear(), 0, 0)); return Math.floor((d - start) / 86400000); }
+        function isLeap(y) { return (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0; }
+        function isoWeek(d) {
+            const t = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+            const day = t.getUTCDay() || 7;
+            t.setUTCDate(t.getUTCDate() + 4 - day);
+            const yearStart = new Date(Date.UTC(t.getUTCFullYear(), 0, 1));
+            const wk = Math.ceil((((t - yearStart) / 86400000) + 1) / 7);
+            return t.getUTCFullYear() + '-W' + String(wk).padStart(2, '0');
+        }
+        useNow();
+    </script>
+    <script>
+        document.querySelectorAll('.faq-question').forEach(function(btn) {
+            btn.addEventListener('click', function() { btn.parentElement.classList.toggle('open'); });
+        });
+    </script>
+</body>
+</html>

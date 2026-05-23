@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-FH74PGMNYD"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-FH74PGMNYD');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Encoder / Decoder — Percent-Encode &amp; Decode Online | OPS-BOX</title>
+    <meta name="description" content="Free URL encoder and decoder. Percent-encode query strings, decode %xx sequences, choose between encodeURI and encodeURIComponent semantics. 100% client-side.">
+    <meta name="keywords" content="URL encoder, URL decoder, percent encoding, encodeURIComponent, query string encoder, decode URL online">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://ops-box.net/tools/url-encoder.html">
+
+    <meta property="og:title" content="URL Encoder / Decoder — Percent-Encode Online">
+    <meta property="og:description" content="Encode and decode URLs and query strings with full control over encoding mode.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ops-box.net/tools/url-encoder.html">
+    <meta property="og:image" content="https://ops-box.net/og-image.png">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="URL Encoder / Decoder">
+    <meta name="twitter:description" content="Encode and decode URLs and query strings.">
+    <meta name="twitter:image" content="https://ops-box.net/og-image.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "URL Encoder / Decoder",
+        "url": "https://ops-box.net/tools/url-encoder.html",
+        "description": "Percent-encode and decode URLs in the browser",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Any",
+        "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {"@type": "Question", "name": "What's the difference between encodeURI and encodeURIComponent?", "acceptedAnswer": {"@type": "Answer", "text": "encodeURI preserves characters reserved for URL structure — :, /, ?, #, &, =, +, $, and others — because it expects a full URL as input. encodeURIComponent escapes those characters too, because it expects only a fragment that will be inserted into a URL (like a single query-string value). For query parameter values, almost always use encodeURIComponent."}},
+            {"@type": "Question", "name": "Why does + become %2B sometimes but not others?", "acceptedAnswer": {"@type": "Answer", "text": "In a query string, + traditionally means a literal space (form-encoded). If you want a literal + sign in a value, it must be encoded as %2B. encodeURIComponent does this for you; encodeURI does not."}},
+            {"@type": "Question", "name": "Can I decode the same string twice?", "acceptedAnswer": {"@type": "Answer", "text": "Yes, if it was double-encoded — but only intentionally. Double-encoded strings (e.g. %2520 instead of %20) usually indicate a bug where a URL was encoded on the way in and then encoded again. Use the 'decode' button repeatedly to peel off layers."}},
+            {"@type": "Question", "name": "Is non-ASCII text handled correctly?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Both encoding and decoding use UTF-8, matching modern browser and server behavior. Characters like é become %C3%A9 (two bytes), and emoji become four-byte sequences."}},
+            {"@type": "Question", "name": "Is my input sent to a server?", "acceptedAnswer": {"@type": "Answer", "text": "No. Everything runs in your browser using the built-in encodeURI / encodeURIComponent / decodeURIComponent functions."}}
+        ]
+    }
+    </script>
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1924789684268835" crossorigin="anonymous"></script>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <a href="/" class="logo">
+                <div class="logo-icon">⚡</div>
+                <div class="logo-text">OPS<span>-BOX</span></div>
+            </a>
+            <nav class="header-nav">
+                <a href="/tools/base64-encoder.html">Base64</a>
+                <a href="/tools/json-formatter.html">JSON</a>
+                <a href="/tools/jwt-decoder.html">JWT</a>
+                <a href="/tools/regex-tester.html">Regex</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <nav class="breadcrumb">
+            <a href="/">Home</a><span>›</span><span class="breadcrumb-current">URL Encoder</span>
+        </nav>
+
+        <div class="tool-container">
+            <div class="tool-header">
+                <h1 class="tool-title">URL Encoder / Decoder</h1>
+                <p class="tool-description">Percent-encode and decode URLs and query strings. Choose between full-URL (encodeURI) and component (encodeURIComponent) semantics. Runs entirely in your browser.</p>
+            </div>
+            <div class="tool-content">
+                <div class="form-group">
+                    <label class="form-label" for="urlInput">Input</label>
+                    <textarea id="urlInput" class="form-input" rows="6" style="font-family:'JetBrains Mono',monospace;" placeholder="https://example.com/search?q=hello world&lang=en" oninput="run()"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Encoding mode</label>
+                    <div class="checkbox-group" style="flex-direction:row;gap:1.25rem;">
+                        <label class="checkbox-label"><input type="radio" name="urlMode" value="component" checked onchange="run()"> encodeURIComponent <span style="color:var(--text-muted);">(query values)</span></label>
+                        <label class="checkbox-label"><input type="radio" name="urlMode" value="uri" onchange="run()"> encodeURI <span style="color:var(--text-muted);">(whole URL)</span></label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Encoded</label>
+                    <div class="bulk-output"><pre id="urlEncoded"></pre></div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="copyToClipboard('urlEncoded')">Copy encoded</button>
+                    <button class="btn btn-secondary" onclick="useEncoded()">Use as input</button>
+                </div>
+
+                <div class="form-group" style="margin-top:1.5rem;">
+                    <label class="form-label">Decoded</label>
+                    <div class="bulk-output"><pre id="urlDecoded"></pre></div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="copyToClipboard('urlDecoded')">Copy decoded</button>
+                    <button class="btn btn-secondary" onclick="useDecoded()">Use as input</button>
+                </div>
+
+                <div id="urlError" style="display:none;color:#ef4444;margin-top:1rem;padding:0.6rem 0.9rem;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:0.85rem;"></div>
+
+                <div id="urlParts" class="form-group" style="margin-top:1.5rem;display:none;">
+                    <label class="form-label">URL parts (parsed)</label>
+                    <div id="urlPartsBody" class="bulk-output"></div>
+                </div>
+            </div>
+        </div>
+
+        <section class="seo-content">
+            <h2>What is URL Encoding?</h2>
+            <p><strong>URL encoding</strong> (also called <em>percent-encoding</em>) replaces unsafe characters in a URL with <code>%</code> followed by their two-digit hex byte value. It is defined by <a href="https://datatracker.ietf.org/doc/html/rfc3986" rel="noopener">RFC 3986</a>. For example, a space becomes <code>%20</code>, and <code>&amp;</code> in a query value becomes <code>%26</code> so the server doesn't mistake it for a parameter separator.</p>
+            <p>This tool runs entirely in your browser — input never leaves your machine.</p>
+
+            <h3>encodeURI vs encodeURIComponent</h3>
+            <p>JavaScript ships two encoder functions and choosing the wrong one is the most common URL-encoding bug.</p>
+            <ul>
+                <li><code>encodeURI(s)</code> — for a whole URL. Leaves URL-structural characters alone: <code>:/?#[]@!$&amp;'()*+,;=</code></li>
+                <li><code>encodeURIComponent(s)</code> — for a single component (like one query parameter value). Escapes the structural characters too.</li>
+            </ul>
+            <p><strong>Rule of thumb:</strong> when building a URL piece-by-piece, use <code>encodeURIComponent</code> on each query parameter value, then join them with <code>&amp;</code>. Never run <code>encodeURI</code> over a user-provided query value.</p>
+
+            <h3>Common Encoded Characters</h3>
+            <table style="width:100%;border-collapse:collapse;font-family:'JetBrains Mono',monospace;font-size:0.9rem;">
+                <thead><tr style="border-bottom:1px solid var(--border);"><th style="text-align:left;padding:0.4rem;">Char</th><th style="text-align:left;padding:0.4rem;">Encoded</th><th style="text-align:left;padding:0.4rem;">Notes</th></tr></thead>
+                <tbody style="color:var(--text-secondary);">
+                    <tr><td style="padding:0.4rem;">space</td><td style="padding:0.4rem;color:var(--accent);">%20</td><td style="padding:0.4rem;">in query strings, <code>+</code> is also accepted by most servers</td></tr>
+                    <tr><td style="padding:0.4rem;">&amp;</td><td style="padding:0.4rem;color:var(--accent);">%26</td><td style="padding:0.4rem;">otherwise interpreted as parameter separator</td></tr>
+                    <tr><td style="padding:0.4rem;">=</td><td style="padding:0.4rem;color:var(--accent);">%3D</td><td style="padding:0.4rem;">otherwise interpreted as key/value separator</td></tr>
+                    <tr><td style="padding:0.4rem;">+</td><td style="padding:0.4rem;color:var(--accent);">%2B</td><td style="padding:0.4rem;">otherwise interpreted as a space</td></tr>
+                    <tr><td style="padding:0.4rem;">#</td><td style="padding:0.4rem;color:var(--accent);">%23</td><td style="padding:0.4rem;">otherwise interpreted as fragment start</td></tr>
+                    <tr><td style="padding:0.4rem;">/</td><td style="padding:0.4rem;color:var(--accent);">%2F</td><td style="padding:0.4rem;">only encoded by encodeURIComponent</td></tr>
+                </tbody>
+            </table>
+
+            <div class="faq">
+                <h3>Frequently Asked Questions</h3>
+                <div class="faq-item"><button class="faq-question">What's the difference between encodeURI and encodeURIComponent?</button><div class="faq-answer"><code>encodeURI</code> preserves characters reserved for URL structure — <code>:</code>, <code>/</code>, <code>?</code>, <code>#</code>, <code>&amp;</code>, <code>=</code>, <code>+</code>, <code>$</code>, and others — because it expects a full URL as input. <code>encodeURIComponent</code> escapes those characters too, because it expects only a fragment that will be inserted into a URL (like a single query-string value). For query parameter values, almost always use <code>encodeURIComponent</code>.</div></div>
+                <div class="faq-item"><button class="faq-question">Why does + become %2B sometimes but not others?</button><div class="faq-answer">In a query string, <code>+</code> traditionally means a literal space (form-encoded). If you want a literal <code>+</code> sign in a value, it must be encoded as <code>%2B</code>. <code>encodeURIComponent</code> does this for you; <code>encodeURI</code> does not.</div></div>
+                <div class="faq-item"><button class="faq-question">Can I decode the same string twice?</button><div class="faq-answer">Yes, if it was double-encoded — but only intentionally. Double-encoded strings (e.g. <code>%2520</code> instead of <code>%20</code>) usually indicate a bug where a URL was encoded on the way in and then encoded again. Use the "decode" button repeatedly to peel off layers.</div></div>
+                <div class="faq-item"><button class="faq-question">Is non-ASCII text handled correctly?</button><div class="faq-answer">Yes. Both encoding and decoding use UTF-8, matching modern browser and server behavior. Characters like <code>é</code> become <code>%C3%A9</code> (two bytes), and emoji become four-byte sequences.</div></div>
+                <div class="faq-item"><button class="faq-question">Is my input sent to a server?</button><div class="faq-answer">No. Everything runs in your browser using the built-in <code>encodeURI</code> / <code>encodeURIComponent</code> / <code>decodeURIComponent</code> functions.</div></div>
+            </div>
+        </section>
+
+        <section class="related-tools">
+            <h2>Related Tools</h2>
+            <div class="related-grid">
+                <a href="/tools/base64-encoder.html" class="related-card"><h3>Base64 Encoder</h3><p>Encode and decode Base64 strings.</p></a>
+                <a href="/tools/json-formatter.html" class="related-card"><h3>JSON Formatter</h3><p>Format, validate, and minify JSON.</p></a>
+                <a href="/tools/jwt-decoder.html" class="related-card"><h3>JWT Decoder</h3><p>Decode and verify JSON Web Tokens.</p></a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section"><h3>Network Tools</h3><a href="/tools/subnet-calculator.html">Subnet Calculator</a><a href="/tools/ipv6-subnet-calculator.html">IPv6 Subnet Calculator</a><a href="/tools/cidr-aggregator.html">CIDR Aggregator</a></div>
+            <div class="footer-section"><h3>Security Tools</h3><a href="/tools/password-generator.html">Password Generator</a><a href="/tools/jwt-decoder.html">JWT Decoder</a><a href="/tools/jwt-generator.html">JWT Generator</a></div>
+            <div class="footer-section"><h3>Developer Tools</h3><a href="/tools/json-formatter.html">JSON Formatter</a><a href="/tools/url-encoder.html">URL Encoder</a><a href="/tools/timestamp-converter.html">Timestamp Converter</a></div>
+        </div>
+        <div class="footer-bottom"><p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals. | <a href="/about.html" style="color:inherit;text-decoration:underline;">About</a> · <a href="/contact.html" style="color:inherit;text-decoration:underline;">Contact</a> · <a href="/terms-of-service.html" style="color:inherit;text-decoration:underline;">Terms</a> · <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p></div>
+    </footer>
+
+    <div class="toast" id="toast">Copied to clipboard!</div>
+
+    <script src="../js/common.js"></script>
+    <script>
+        function getMode() { return document.querySelector('input[name="urlMode"]:checked').value; }
+        function run() {
+            const input = document.getElementById('urlInput').value;
+            const errEl = document.getElementById('urlError');
+            errEl.style.display = 'none';
+            const mode = getMode();
+            try {
+                const enc = mode === 'uri' ? encodeURI(input) : encodeURIComponent(input);
+                document.getElementById('urlEncoded').textContent = enc;
+            } catch (e) {
+                document.getElementById('urlEncoded').textContent = '';
+                errEl.textContent = 'Encode error: ' + e.message; errEl.style.display = 'block';
+            }
+            try {
+                const dec = decodeURIComponent(input.replace(/\+/g, '%20'));
+                document.getElementById('urlDecoded').textContent = dec;
+            } catch (e) {
+                document.getElementById('urlDecoded').textContent = '';
+                errEl.textContent = (errEl.textContent ? errEl.textContent + '\n' : '') + 'Decode error: ' + e.message + ' (input contains an invalid %xx sequence)';
+                errEl.style.display = 'block';
+            }
+            parseParts(input);
+        }
+        function parseParts(s) {
+            const wrap = document.getElementById('urlParts');
+            const body = document.getElementById('urlPartsBody');
+            try {
+                const u = new URL(s);
+                const params = [...u.searchParams.entries()];
+                let html = '<table style="width:100%;border-collapse:collapse;font-family:\'JetBrains Mono\',monospace;font-size:0.85rem;"><tbody>';
+                const rows = [['protocol', u.protocol], ['host', u.host], ['pathname', u.pathname], ['search', u.search || '(none)'], ['hash', u.hash || '(none)']];
+                for (const [k, v] of rows) html += `<tr><td style="padding:0.35rem 0.5rem;color:var(--text-muted);width:25%;">${k}</td><td style="padding:0.35rem 0.5rem;color:var(--accent);word-break:break-all;">${escapeHtml(v)}</td></tr>`;
+                if (params.length) {
+                    html += `<tr><td colspan="2" style="padding:0.5rem;color:var(--text-muted);border-top:1px solid var(--border);">query parameters (decoded)</td></tr>`;
+                    for (const [k, v] of params) html += `<tr><td style="padding:0.35rem 0.5rem;color:var(--text-secondary);word-break:break-all;">${escapeHtml(k)}</td><td style="padding:0.35rem 0.5rem;color:var(--accent);word-break:break-all;">${escapeHtml(v)}</td></tr>`;
+                }
+                html += '</tbody></table>';
+                body.innerHTML = html;
+                wrap.style.display = 'block';
+            } catch (e) {
+                wrap.style.display = 'none';
+            }
+        }
+        function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+        function useEncoded() { document.getElementById('urlInput').value = document.getElementById('urlEncoded').textContent; run(); }
+        function useDecoded() { document.getElementById('urlInput').value = document.getElementById('urlDecoded').textContent; run(); }
+
+        document.getElementById('urlInput').value = 'https://example.com/search?q=hello world&lang=en&filter=a+b&n=10';
+        run();
+    </script>
+    <script>
+        document.querySelectorAll('.faq-question').forEach(function(btn) {
+            btn.addEventListener('click', function() { btn.parentElement.classList.toggle('open'); });
+        });
+    </script>
+</body>
+</html>

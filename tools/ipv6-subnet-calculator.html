@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-FH74PGMNYD"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-FH74PGMNYD');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IPv6 Subnet Calculator — Prefix, Range, Splitter | OPS-BOX</title>
+    <meta name="description" content="Free IPv6 subnet calculator. Parse IPv6 prefixes, see network/first/last addresses in compressed and expanded form, count total addresses, and split a prefix into equal subnets.">
+    <meta name="keywords" content="IPv6 subnet calculator, IPv6 prefix, IPv6 range, IPv6 splitter, IPv6 expander, IPv6 CIDR">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://ops-box.net/tools/ipv6-subnet-calculator.html">
+
+    <meta property="og:title" content="IPv6 Subnet Calculator">
+    <meta property="og:description" content="Parse, expand, and split IPv6 prefixes in your browser.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ops-box.net/tools/ipv6-subnet-calculator.html">
+    <meta property="og:image" content="https://ops-box.net/og-image.png">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="IPv6 Subnet Calculator">
+    <meta name="twitter:description" content="Parse, expand, and split IPv6 prefixes.">
+    <meta name="twitter:image" content="https://ops-box.net/og-image.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "IPv6 Subnet Calculator",
+        "url": "https://ops-box.net/tools/ipv6-subnet-calculator.html",
+        "description": "Parse and split IPv6 prefixes with full 128-bit arithmetic",
+        "applicationCategory": "NetworkingApplication",
+        "operatingSystem": "Any",
+        "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {"@type": "Question", "name": "What's the standard IPv6 allocation size?", "acceptedAnswer": {"@type": "Answer", "text": "ISPs typically assign /48 to organizations and /56 or /64 to end users. A single LAN segment should always be a /64 — SLAAC and many protocols depend on it. /127 is used for point-to-point links."}},
+            {"@type": "Question", "name": "Why is the address space so much larger than IPv4?", "acceptedAnswer": {"@type": "Answer", "text": "IPv6 uses 128 bits per address, vs 32 for IPv4. That's 2^128 addresses, roughly 3.4 × 10^38 — enough to give every grain of sand on Earth its own internet. The huge space is intentional: it makes large hierarchical allocations and SLAAC (stateless autoconfiguration) practical without conservation worries."}},
+            {"@type": "Question", "name": "What does :: mean in an IPv6 address?", "acceptedAnswer": {"@type": "Answer", "text": ":: is shorthand for one or more consecutive groups of all-zero hexadectets. 2001:db8::1 expands to 2001:0db8:0000:0000:0000:0000:0000:0001. You can only use :: once per address; otherwise the position is ambiguous."}},
+            {"@type": "Question", "name": "Are there 'first usable' and 'broadcast' addresses like in IPv4?", "acceptedAnswer": {"@type": "Answer", "text": "IPv6 has no broadcast address — multicast is used instead. On a /64 LAN, every address in the prefix is technically usable, though convention reserves the all-zeros address (subnet router anycast) and the anycast addresses in the top 128. For point-to-point /127 links, both addresses are used as endpoints."}},
+            {"@type": "Question", "name": "How accurate is the math?", "acceptedAnswer": {"@type": "Answer", "text": "Exact. The calculator uses JavaScript BigInt for full 128-bit arithmetic, so there is no rounding or precision loss even for /0 prefix sizes (which contain 2^128 ≈ 340 undecillion addresses)."}}
+        ]
+    }
+    </script>
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1924789684268835" crossorigin="anonymous"></script>
+    <style>
+        .result-row { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; padding: 0.6rem 0.9rem; display: flex; justify-content: space-between; gap: 1rem; align-items: center; }
+        .result-grid { display: grid; gap: 0.5rem; }
+        .result-label { color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; min-width: 12rem; }
+        .result-val { color: var(--accent); font-family: 'JetBrains Mono', monospace; word-break: break-all; flex: 1; text-align: right; font-size: 0.9rem; }
+        @media (max-width:700px) { .result-row { flex-direction: column; align-items: flex-start; } .result-val { text-align: left; } }
+        .preset-btn { background: var(--bg-secondary); border: 1px solid var(--border); color: var(--text-secondary); padding: 0.4rem 0.75rem; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; cursor: pointer; }
+        .preset-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <a href="/" class="logo">
+                <div class="logo-icon">⚡</div>
+                <div class="logo-text">OPS<span>-BOX</span></div>
+            </a>
+            <nav class="header-nav">
+                <a href="/tools/subnet-calculator.html">Subnet (v4)</a>
+                <a href="/tools/cidr-aggregator.html">CIDR Aggregator</a>
+                <a href="/tools/ip-location.html">IP Location</a>
+                <a href="/tools/dns-lookup.html">DNS</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <nav class="breadcrumb">
+            <a href="/">Home</a><span>›</span><span class="breadcrumb-current">IPv6 Subnet Calculator</span>
+        </nav>
+
+        <div class="tool-container">
+            <div class="tool-header">
+                <h1 class="tool-title">IPv6 Subnet Calculator</h1>
+                <p class="tool-description">Parse and analyze IPv6 prefixes with full 128-bit precision. See compressed and expanded forms, address ranges, and split a prefix into equal subnets.</p>
+            </div>
+            <div class="tool-content">
+                <div class="form-group">
+                    <label class="form-label" for="v6Input">IPv6 prefix</label>
+                    <input type="text" id="v6Input" class="form-input" value="2001:db8::/32" placeholder="2001:db8::/32" style="font-family:'JetBrains Mono',monospace;font-size:1.05rem;" oninput="run()">
+                    <div style="display:flex;flex-wrap:wrap;gap:0.4rem;margin-top:0.6rem;">
+                        <button class="preset-btn" onclick="setV6('2001:db8::/32')">2001:db8::/32 doc</button>
+                        <button class="preset-btn" onclick="setV6('2001:db8:abcd::/48')">/48 org allocation</button>
+                        <button class="preset-btn" onclick="setV6('2001:db8:abcd:1234::/64')">/64 LAN</button>
+                        <button class="preset-btn" onclick="setV6('fe80::/10')">fe80::/10 link-local</button>
+                        <button class="preset-btn" onclick="setV6('fc00::/7')">fc00::/7 ULA</button>
+                        <button class="preset-btn" onclick="setV6('::1/128')">::1/128 loopback</button>
+                    </div>
+                </div>
+
+                <div id="v6Error" style="display:none;color:#ef4444;margin:0.5rem 0;padding:0.6rem 0.9rem;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:0.85rem;"></div>
+
+                <div id="v6Results" class="result-grid" style="display:none;margin-top:1rem;"></div>
+
+                <div class="form-group" style="margin-top:2rem;">
+                    <label class="form-label" for="v6Split">Split into smaller subnets — new prefix length</label>
+                    <input type="number" id="v6Split" class="form-input" min="1" max="128" placeholder="leave blank to skip" style="font-family:'JetBrains Mono',monospace;" oninput="run()">
+                    <div style="color:var(--text-muted);font-size:0.8rem;margin-top:0.4rem;">e.g. for a /48, enter 64 to see the first 50 /64 subnets inside it.</div>
+                </div>
+
+                <div class="form-group" id="v6SplitWrap" style="display:none;">
+                    <label class="form-label">Subnets <span id="v6SplitCount" style="color:var(--text-muted);font-weight:normal;"></span></label>
+                    <div class="bulk-output"><pre id="v6SplitOut"></pre></div>
+                </div>
+            </div>
+        </div>
+
+        <section class="seo-content">
+            <h2>About IPv6 Addressing</h2>
+            <p>An IPv6 address is <strong>128 bits</strong>, written as eight 16-bit hex groups separated by colons: <code>2001:0db8:0000:0000:0000:0000:0000:0001</code>. Leading zeros in a group may be dropped, and one run of consecutive zero groups may be collapsed to <code>::</code> — so the same address can be written <code>2001:db8::1</code>.</p>
+            <p>Prefixes use CIDR notation: <code>2001:db8::/32</code> means the first 32 bits identify the network. All math in this calculator uses JavaScript <code>BigInt</code> for exact 128-bit precision.</p>
+
+            <h3>Typical Prefix Sizes</h3>
+            <table style="width:100%;border-collapse:collapse;font-family:'JetBrains Mono',monospace;font-size:0.9rem;">
+                <thead><tr style="border-bottom:1px solid var(--border);"><th style="text-align:left;padding:0.4rem;">Prefix</th><th style="text-align:left;padding:0.4rem;">Use</th><th style="text-align:right;padding:0.4rem;">Subnets / size</th></tr></thead>
+                <tbody style="color:var(--text-secondary);">
+                    <tr><td style="padding:0.4rem;color:var(--accent);">/32</td><td style="padding:0.4rem;">Per-ISP allocation from a RIR</td><td style="padding:0.4rem;text-align:right;">65,536 × /48</td></tr>
+                    <tr><td style="padding:0.4rem;color:var(--accent);">/48</td><td style="padding:0.4rem;">Per-organization or per-site</td><td style="padding:0.4rem;text-align:right;">65,536 × /64</td></tr>
+                    <tr><td style="padding:0.4rem;color:var(--accent);">/56</td><td style="padding:0.4rem;">Residential customer (some ISPs)</td><td style="padding:0.4rem;text-align:right;">256 × /64</td></tr>
+                    <tr><td style="padding:0.4rem;color:var(--accent);">/64</td><td style="padding:0.4rem;">Standard LAN / VLAN segment</td><td style="padding:0.4rem;text-align:right;">2⁶⁴ addresses</td></tr>
+                    <tr><td style="padding:0.4rem;color:var(--accent);">/127</td><td style="padding:0.4rem;">Point-to-point link (RFC 6164)</td><td style="padding:0.4rem;text-align:right;">2 addresses</td></tr>
+                    <tr><td style="padding:0.4rem;color:var(--accent);">/128</td><td style="padding:0.4rem;">Single host route</td><td style="padding:0.4rem;text-align:right;">1 address</td></tr>
+                </tbody>
+            </table>
+
+            <h3>Reserved IPv6 Ranges</h3>
+            <ul>
+                <li><code>::/128</code> — unspecified address (like 0.0.0.0)</li>
+                <li><code>::1/128</code> — loopback</li>
+                <li><code>fe80::/10</code> — link-local (every interface gets one)</li>
+                <li><code>fc00::/7</code> — Unique Local Addresses (RFC 4193, the IPv6 equivalent of RFC 1918 private space)</li>
+                <li><code>2001:db8::/32</code> — reserved for documentation (use freely in examples)</li>
+                <li><code>ff00::/8</code> — multicast</li>
+                <li><code>2002::/16</code> — 6to4 transition (deprecated)</li>
+            </ul>
+
+            <div class="faq">
+                <h3>Frequently Asked Questions</h3>
+                <div class="faq-item"><button class="faq-question">What's the standard IPv6 allocation size?</button><div class="faq-answer">ISPs typically assign /48 to organizations and /56 or /64 to end users. A single LAN segment should always be a /64 — SLAAC and many protocols depend on it. /127 is used for point-to-point links.</div></div>
+                <div class="faq-item"><button class="faq-question">Why is the address space so much larger than IPv4?</button><div class="faq-answer">IPv6 uses 128 bits per address, vs 32 for IPv4. That's 2^128 addresses, roughly 3.4 × 10^38 — enough to give every grain of sand on Earth its own internet. The huge space is intentional: it makes large hierarchical allocations and SLAAC (stateless autoconfiguration) practical without conservation worries.</div></div>
+                <div class="faq-item"><button class="faq-question">What does <code>::</code> mean in an IPv6 address?</button><div class="faq-answer"><code>::</code> is shorthand for one or more consecutive groups of all-zero hexadectets. <code>2001:db8::1</code> expands to <code>2001:0db8:0000:0000:0000:0000:0000:0001</code>. You can only use <code>::</code> once per address; otherwise the position is ambiguous.</div></div>
+                <div class="faq-item"><button class="faq-question">Are there "first usable" and "broadcast" addresses like in IPv4?</button><div class="faq-answer">IPv6 has no broadcast address — multicast is used instead. On a /64 LAN, every address in the prefix is technically usable, though convention reserves the all-zeros address (subnet router anycast) and the anycast addresses in the top 128. For point-to-point /127 links, both addresses are used as endpoints.</div></div>
+                <div class="faq-item"><button class="faq-question">How accurate is the math?</button><div class="faq-answer">Exact. The calculator uses JavaScript <code>BigInt</code> for full 128-bit arithmetic, so there is no rounding or precision loss even for /0 prefix sizes (which contain 2^128 ≈ 340 undecillion addresses).</div></div>
+            </div>
+        </section>
+
+        <section class="related-tools">
+            <h2>Related Tools</h2>
+            <div class="related-grid">
+                <a href="/tools/subnet-calculator.html" class="related-card"><h3>IPv4 Subnet Calculator</h3><p>VLSM and CIDR planning for IPv4.</p></a>
+                <a href="/tools/cidr-aggregator.html" class="related-card"><h3>CIDR Aggregator</h3><p>Collapse IPv4 ranges to minimal CIDR set.</p></a>
+                <a href="/tools/ip-location.html" class="related-card"><h3>IP Location</h3><p>Geolocate IP addresses with ASN.</p></a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section"><h3>Network Tools</h3><a href="/tools/subnet-calculator.html">Subnet Calculator</a><a href="/tools/ipv6-subnet-calculator.html">IPv6 Subnet Calculator</a><a href="/tools/cidr-aggregator.html">CIDR Aggregator</a></div>
+            <div class="footer-section"><h3>Security Tools</h3><a href="/tools/password-generator.html">Password Generator</a><a href="/tools/jwt-decoder.html">JWT Decoder</a><a href="/tools/jwt-generator.html">JWT Generator</a></div>
+            <div class="footer-section"><h3>Developer Tools</h3><a href="/tools/json-formatter.html">JSON Formatter</a><a href="/tools/url-encoder.html">URL Encoder</a><a href="/tools/timestamp-converter.html">Timestamp Converter</a></div>
+        </div>
+        <div class="footer-bottom"><p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals. | <a href="/about.html" style="color:inherit;text-decoration:underline;">About</a> · <a href="/contact.html" style="color:inherit;text-decoration:underline;">Contact</a> · <a href="/terms-of-service.html" style="color:inherit;text-decoration:underline;">Terms</a> · <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p></div>
+    </footer>
+
+    <div class="toast" id="toast">Copied to clipboard!</div>
+
+    <script src="../js/common.js"></script>
+    <script>
+        const MAX128 = (1n << 128n) - 1n;
+
+        function parseV6(addr) {
+            addr = addr.trim();
+            if (addr.includes('.')) throw new Error('IPv4-mapped addresses not yet supported.');
+            const dbl = addr.split('::');
+            if (dbl.length > 2) throw new Error('Address has more than one "::"');
+            let head = dbl[0] ? dbl[0].split(':') : [];
+            let tail = dbl.length === 2 && dbl[1] ? dbl[1].split(':') : [];
+            if (dbl.length === 1 && head.length !== 8) throw new Error('Address must have exactly 8 groups (or use "::")');
+            if (dbl.length === 2 && head.length + tail.length > 7) throw new Error('Too many groups — "::" must compress at least one');
+            const zeros = 8 - head.length - tail.length;
+            const groups = [...head, ...Array(zeros).fill('0'), ...tail];
+            if (groups.length !== 8) throw new Error('Could not expand to 8 groups');
+            let n = 0n;
+            for (const g of groups) {
+                if (!/^[0-9a-fA-F]{1,4}$/.test(g)) throw new Error('Invalid hex group: "' + g + '"');
+                n = (n << 16n) | BigInt(parseInt(g, 16));
+            }
+            return n;
+        }
+
+        function expand(n) {
+            const parts = [];
+            for (let i = 7; i >= 0; i--) parts.push(((n >> BigInt(i * 16)) & 0xffffn).toString(16).padStart(4, '0'));
+            return parts.join(':');
+        }
+        function compress(n) {
+            const full = expand(n);
+            const groups = full.split(':').map(g => g.replace(/^0+/, '') || '0');
+            let bestStart = -1, bestLen = 0, curStart = -1, curLen = 0;
+            for (let i = 0; i < 8; i++) {
+                if (groups[i] === '0') { if (curStart < 0) curStart = i; curLen++; if (curLen > bestLen) { bestLen = curLen; bestStart = curStart; } }
+                else { curStart = -1; curLen = 0; }
+            }
+            if (bestLen < 2) return groups.join(':');
+            const left = groups.slice(0, bestStart).join(':');
+            const right = groups.slice(bestStart + bestLen).join(':');
+            return left + '::' + right;
+        }
+
+        function maskFor(prefix) { return prefix === 0 ? 0n : (MAX128 << BigInt(128 - prefix)) & MAX128; }
+
+        function setV6(s) { document.getElementById('v6Input').value = s; run(); }
+
+        function run() {
+            const raw = document.getElementById('v6Input').value.trim();
+            const errEl = document.getElementById('v6Error');
+            const resEl = document.getElementById('v6Results');
+            const splitWrap = document.getElementById('v6SplitWrap');
+            errEl.style.display = 'none';
+            if (!raw) { resEl.style.display = 'none'; splitWrap.style.display = 'none'; return; }
+            let addr, prefix;
+            try {
+                const slash = raw.indexOf('/');
+                if (slash < 0) { addr = parseV6(raw); prefix = 128; }
+                else {
+                    addr = parseV6(raw.slice(0, slash));
+                    prefix = parseInt(raw.slice(slash + 1), 10);
+                    if (!Number.isFinite(prefix) || prefix < 0 || prefix > 128) throw new Error('Prefix must be 0-128');
+                }
+            } catch (e) { errEl.textContent = e.message; errEl.style.display = 'block'; resEl.style.display = 'none'; splitWrap.style.display = 'none'; return; }
+
+            const mask = maskFor(prefix);
+            const network = addr & mask;
+            const broadcast = network | (MAX128 >> BigInt(prefix));
+            const count = 1n << BigInt(128 - prefix);
+            const hasHostBits = (addr & ~mask & MAX128) !== 0n;
+
+            const rows = [
+                ['Input', raw],
+                ['Network', compress(network) + '/' + prefix],
+                ['Network (expanded)', expand(network)],
+                ['First address', compress(network)],
+                ['Last address', compress(broadcast)],
+                ['Last (expanded)', expand(broadcast)],
+                ['Prefix length', '/' + prefix],
+                ['Total addresses', count.toString() + (count > 1000000n ? '  (≈ ' + count.toExponential(3) + ')' : '')],
+                ['Equivalent /64s', prefix <= 64 ? (1n << BigInt(64 - prefix)).toString() : 'less than one /64'],
+            ];
+            if (hasHostBits) rows.unshift(['⚠ host bits set', 'Input has bits below /' + prefix + '. Network address would be ' + compress(network) + '/' + prefix]);
+            resEl.innerHTML = rows.map(([k, v]) => `<div class="result-row"><span class="result-label">${k}</span><span class="result-val">${escapeHtml(v)}</span></div>`).join('');
+            resEl.style.display = 'grid';
+
+            const splitRaw = document.getElementById('v6Split').value.trim();
+            if (!splitRaw) { splitWrap.style.display = 'none'; return; }
+            const newPrefix = parseInt(splitRaw, 10);
+            if (!Number.isFinite(newPrefix) || newPrefix <= prefix || newPrefix > 128) {
+                splitWrap.style.display = 'block';
+                document.getElementById('v6SplitOut').textContent = `Split prefix must be > ${prefix} and ≤ 128.`;
+                document.getElementById('v6SplitCount').textContent = '';
+                return;
+            }
+            const totalSubnets = 1n << BigInt(newPrefix - prefix);
+            const step = 1n << BigInt(128 - newPrefix);
+            const max = 50n;
+            const showCount = totalSubnets < max ? totalSubnets : max;
+            const lines = [];
+            let cur = network;
+            for (let i = 0n; i < showCount; i++) { lines.push(compress(cur) + '/' + newPrefix); cur += step; }
+            if (totalSubnets > max) lines.push(`… and ${(totalSubnets - max).toString()} more`);
+            document.getElementById('v6SplitOut').textContent = lines.join('\n');
+            document.getElementById('v6SplitCount').textContent = `— ${totalSubnets.toString()} subnet${totalSubnets === 1n ? '' : 's'} of /${newPrefix}`;
+            splitWrap.style.display = 'block';
+        }
+        function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+        run();
+    </script>
+    <script>
+        document.querySelectorAll('.faq-question').forEach(function(btn) {
+            btn.addEventListener('click', function() { btn.parentElement.classList.toggle('open'); });
+        });
+    </script>
+</body>
+</html>
