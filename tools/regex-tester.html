@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-FH74PGMNYD"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-FH74PGMNYD');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Regex Tester — Test Regular Expressions Online | OPS-BOX</title>
+    <meta name="description" content="Free regex tester with live match highlighting, capture groups, replace mode, and flag support (g, i, m, s, u, y). 100% client-side — your patterns and test strings never leave the browser.">
+    <meta name="keywords" content="regex tester, regular expression tester, regex debugger, regex match, regex replace, JavaScript regex, online regex">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://ops-box.net/tools/regex-tester.html">
+
+    <meta property="og:title" content="Regex Tester — Test Regular Expressions Online">
+    <meta property="og:description" content="Live regex matching with highlights, capture groups, and replace mode.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ops-box.net/tools/regex-tester.html">
+    <meta property="og:image" content="https://ops-box.net/og-image.png">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Regex Tester — Test Regular Expressions Online">
+    <meta name="twitter:description" content="Live regex matching with highlights and capture groups.">
+    <meta name="twitter:image" content="https://ops-box.net/og-image.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Regex Tester",
+        "url": "https://ops-box.net/tools/regex-tester.html",
+        "description": "Test JavaScript regular expressions with live match highlighting",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Any",
+        "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {"@type": "Question", "name": "Which regex flavor does this tester use?", "acceptedAnswer": {"@type": "Answer", "text": "It uses the JavaScript / ECMAScript regex engine (the one built into your browser via the RegExp object). Most syntax is portable to PCRE, Python re, and Go regexp, but a few features differ — JavaScript supports lookbehind only in modern engines, does not support possessive quantifiers, and uses different named-group syntax than PCRE."}},
+            {"@type": "Question", "name": "What does each flag mean?", "acceptedAnswer": {"@type": "Answer", "text": "g = global (find all matches, not just the first); i = case-insensitive; m = multiline (^ and $ match line boundaries); s = dotall (. matches newlines too); u = unicode (full Unicode support, required for \\p{} property escapes); y = sticky (match must start at lastIndex)."}},
+            {"@type": "Question", "name": "Why does my pattern hang the browser?", "acceptedAnswer": {"@type": "Answer", "text": "You probably hit catastrophic backtracking — patterns like (a+)+ or (a|a)* on long strings can cause exponential time complexity. The tester applies your regex synchronously, so a pathological pattern will freeze the tab. Avoid nested quantifiers over the same character class."}},
+            {"@type": "Question", "name": "How do I use capture groups?", "acceptedAnswer": {"@type": "Answer", "text": "Wrap a portion of your pattern in parentheses: (\\d{4})-(\\d{2})-(\\d{2}) captures year, month, and day as groups 1, 2, 3. Use (?<name>...) for named groups. In the replace field, reference them as $1, $2, or $<name>."}},
+            {"@type": "Question", "name": "Is my input sent anywhere?", "acceptedAnswer": {"@type": "Answer", "text": "No. The pattern and test string are processed entirely in your browser using the built-in RegExp engine. Nothing is sent to any server."}}
+        ]
+    }
+    </script>
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1924789684268835" crossorigin="anonymous"></script>
+    <style>
+        .regex-highlight { background: rgba(34,197,94,0.25); border-bottom: 2px solid #22c55e; border-radius: 2px; padding: 1px 0; }
+        .regex-highlight:nth-child(2n) { background: rgba(34,197,94,0.4); }
+        .regex-match-list { font-family: 'JetBrains Mono', monospace; font-size: 0.875rem; }
+        .regex-match-row { padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); }
+        .regex-match-row:last-child { border-bottom: none; }
+        .regex-match-idx { color: var(--text-muted); margin-right: 0.5rem; }
+        .regex-match-val { color: var(--accent); word-break: break-all; }
+        .regex-group { color: var(--text-secondary); margin-left: 1.5rem; font-size: 0.8rem; }
+        .test-area { min-height: 200px; white-space: pre-wrap; word-break: break-word; font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; line-height: 1.5; padding: 0.75rem 1rem; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; }
+        .pattern-row { display: flex; gap: 0.5rem; align-items: center; }
+        .pattern-row .form-input { flex: 1; font-family: 'JetBrains Mono', monospace; }
+        .flag-input { width: 8rem !important; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <a href="/" class="logo">
+                <div class="logo-icon">⚡</div>
+                <div class="logo-text">OPS<span>-BOX</span></div>
+            </a>
+            <nav class="header-nav">
+                <a href="/tools/json-formatter.html">JSON</a>
+                <a href="/tools/jwt-decoder.html">JWT</a>
+                <a href="/tools/cron-explainer.html">Cron</a>
+                <a href="/tools/hash-generator.html">Hash</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <nav class="breadcrumb">
+            <a href="/">Home</a><span>›</span><span class="breadcrumb-current">Regex Tester</span>
+        </nav>
+
+        <div class="tool-container">
+            <div class="tool-header">
+                <h1 class="tool-title">Regex Tester</h1>
+                <p class="tool-description">Test JavaScript regular expressions with live match highlighting, capture group inspection, and replace mode. Runs entirely in your browser.</p>
+            </div>
+            <div class="tool-content">
+                <div class="form-group">
+                    <label class="form-label" for="regexPattern">Pattern</label>
+                    <div class="pattern-row">
+                        <span style="color:var(--text-muted);font-family:'JetBrains Mono',monospace;">/</span>
+                        <input type="text" id="regexPattern" class="form-input" placeholder="\b\w+@\w+\.\w+\b" value="\b\w+@[\w.-]+\.\w+\b" oninput="runRegex()">
+                        <span style="color:var(--text-muted);font-family:'JetBrains Mono',monospace;">/</span>
+                        <input type="text" id="regexFlags" class="form-input flag-input" placeholder="flags" value="gi" oninput="runRegex()">
+                    </div>
+                    <div style="color:var(--text-muted);font-size:0.8rem;margin-top:0.4rem;">Flags: <strong>g</strong> global · <strong>i</strong> ignore case · <strong>m</strong> multiline · <strong>s</strong> dotall · <strong>u</strong> unicode · <strong>y</strong> sticky</div>
+                </div>
+
+                <div id="regexError" style="display:none;color:#ef4444;margin:0.5rem 0;padding:0.6rem 0.9rem;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:0.85rem;"></div>
+
+                <div class="form-group">
+                    <label class="form-label" for="regexInput">Test string</label>
+                    <textarea id="regexInput" class="form-input" rows="8" style="font-family:'JetBrains Mono',monospace;" oninput="runRegex()">Contact us at support@ops-box.net or sales@example.com.
+Invalid: not-an-email, plain text, @no-local.
+Another: jane.doe+filter@sub.domain.co.uk</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Highlighted matches</label>
+                    <div id="regexHighlight" class="test-area"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="regexReplace">Replace with <span style="color:var(--text-muted);font-weight:normal;">(supports $1, $&lt;name&gt;, $&amp;, $`, $')</span></label>
+                    <input type="text" id="regexReplace" class="form-input" placeholder="[email redacted]" style="font-family:'JetBrains Mono',monospace;" oninput="runRegex()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Replace output</label>
+                    <div class="bulk-output"><pre id="regexReplaceOutput"></pre></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Matches <span id="regexCount" style="color:var(--text-muted);font-weight:normal;"></span></label>
+                    <div id="regexMatches" class="bulk-output regex-match-list"></div>
+                </div>
+            </div>
+        </div>
+
+        <section class="seo-content">
+            <h2>What is a Regular Expression?</h2>
+            <p>A <strong>regular expression</strong> (regex or regexp) is a compact language for describing patterns in text. Regexes are used for validation (email, phone, postcode), extraction (parsing logs, scraping data), and substitution (find &amp; replace). Every major programming language and text editor has built-in regex support.</p>
+            <p>This tester uses the JavaScript <code>RegExp</code> engine — the same one running in Node.js and every modern browser. Patterns are compiled and executed entirely in your browser; nothing is sent over the network.</p>
+
+            <h3>Common Regex Patterns</h3>
+            <ul>
+                <li><strong>Email (loose):</strong> <code>\b[\w.+-]+@[\w-]+\.[\w.-]+\b</code></li>
+                <li><strong>IPv4:</strong> <code>\b(?:(?:25[0-5]|2[0-4]\d|1?\d?\d)\.){3}(?:25[0-5]|2[0-4]\d|1?\d?\d)\b</code></li>
+                <li><strong>URL:</strong> <code>https?://[^\s)]+</code></li>
+                <li><strong>UUID:</strong> <code>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}</code></li>
+                <li><strong>ISO date:</strong> <code>\d{4}-\d{2}-\d{2}</code></li>
+                <li><strong>Hex color:</strong> <code>#[0-9a-f]{3,8}\b</code></li>
+            </ul>
+
+            <h3>Quick Syntax Reference</h3>
+            <ul>
+                <li><code>.</code> any char (except newline, unless <code>s</code> flag) · <code>\d \w \s</code> digit/word/whitespace · <code>\D \W \S</code> negations</li>
+                <li><code>^ $</code> start/end of string (or line with <code>m</code>) · <code>\b</code> word boundary</li>
+                <li><code>* + ?</code> 0+, 1+, 0-or-1 · <code>{n} {n,} {n,m}</code> counted · add <code>?</code> for lazy (e.g. <code>.*?</code>)</li>
+                <li><code>[abc]</code> any of · <code>[^abc]</code> none of · <code>[a-z]</code> range</li>
+                <li><code>(abc)</code> capture · <code>(?:abc)</code> non-capture · <code>(?&lt;name&gt;abc)</code> named · <code>\1</code> backreference</li>
+                <li><code>(?=...)</code> lookahead · <code>(?!...)</code> negative · <code>(?&lt;=...)</code> lookbehind · <code>(?&lt;!...)</code> negative</li>
+            </ul>
+
+            <h3>Avoiding Catastrophic Backtracking</h3>
+            <p>Patterns with nested quantifiers over overlapping characters — like <code>(a+)+</code> or <code>(\w+)*$</code> — can hit exponential time on certain inputs and freeze your browser. Prefer atomic structure: rewrite <code>(\w+)*</code> as <code>\w*</code>, and avoid alternations where both branches can match the same text.</p>
+
+            <div class="faq">
+                <h3>Frequently Asked Questions</h3>
+                <div class="faq-item"><button class="faq-question">Which regex flavor does this tester use?</button><div class="faq-answer">It uses the JavaScript / ECMAScript regex engine (the one built into your browser via the <code>RegExp</code> object). Most syntax is portable to PCRE, Python <code>re</code>, and Go <code>regexp</code>, but a few features differ — JavaScript supports lookbehind only in modern engines, does not support possessive quantifiers, and uses different named-group syntax than PCRE.</div></div>
+                <div class="faq-item"><button class="faq-question">What does each flag mean?</button><div class="faq-answer"><code>g</code> = global (find all matches, not just the first); <code>i</code> = case-insensitive; <code>m</code> = multiline (<code>^</code> and <code>$</code> match line boundaries); <code>s</code> = dotall (<code>.</code> matches newlines too); <code>u</code> = unicode (full Unicode support, required for <code>\p{}</code> property escapes); <code>y</code> = sticky (match must start at <code>lastIndex</code>).</div></div>
+                <div class="faq-item"><button class="faq-question">Why does my pattern hang the browser?</button><div class="faq-answer">You probably hit catastrophic backtracking — patterns like <code>(a+)+</code> or <code>(a|a)*</code> on long strings can cause exponential time complexity. The tester applies your regex synchronously, so a pathological pattern will freeze the tab. Avoid nested quantifiers over the same character class.</div></div>
+                <div class="faq-item"><button class="faq-question">How do I use capture groups?</button><div class="faq-answer">Wrap a portion of your pattern in parentheses: <code>(\d{4})-(\d{2})-(\d{2})</code> captures year, month, and day as groups 1, 2, 3. Use <code>(?&lt;name&gt;...)</code> for named groups. In the replace field, reference them as <code>$1</code>, <code>$2</code>, or <code>$&lt;name&gt;</code>.</div></div>
+                <div class="faq-item"><button class="faq-question">Is my input sent anywhere?</button><div class="faq-answer">No. The pattern and test string are processed entirely in your browser using the built-in <code>RegExp</code> engine. Nothing is sent to any server.</div></div>
+            </div>
+        </section>
+
+        <section class="related-tools">
+            <h2>Related Tools</h2>
+            <div class="related-grid">
+                <a href="/tools/json-formatter.html" class="related-card"><h3>JSON Formatter</h3><p>Pretty-print and validate JSON.</p></a>
+                <a href="/tools/jwt-decoder.html" class="related-card"><h3>JWT Decoder</h3><p>Decode and verify JSON Web Tokens.</p></a>
+                <a href="/tools/cron-explainer.html" class="related-card"><h3>Cron Explainer</h3><p>Parse cron expressions to plain English.</p></a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section"><h3>Network Tools</h3><a href="/tools/subnet-calculator.html">Subnet Calculator</a><a href="/tools/mac-vendor-lookup.html">MAC Vendor Lookup</a><a href="/tools/cidr-aggregator.html">CIDR Aggregator</a></div>
+            <div class="footer-section"><h3>Security Tools</h3><a href="/tools/password-generator.html">Password Generator</a><a href="/tools/hash-generator.html">Hash Generator</a><a href="/tools/jwt-decoder.html">JWT Decoder</a></div>
+            <div class="footer-section"><h3>Developer Tools</h3><a href="/tools/json-formatter.html">JSON Formatter</a><a href="/tools/regex-tester.html">Regex Tester</a><a href="/tools/cron-explainer.html">Cron Explainer</a></div>
+        </div>
+        <div class="footer-bottom"><p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals. | <a href="/about.html" style="color:inherit;text-decoration:underline;">About</a> · <a href="/contact.html" style="color:inherit;text-decoration:underline;">Contact</a> · <a href="/terms-of-service.html" style="color:inherit;text-decoration:underline;">Terms</a> · <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p></div>
+    </footer>
+
+    <div class="toast" id="toast">Copied to clipboard!</div>
+
+    <script src="../js/common.js"></script>
+    <script>
+        function escHtml(s) { return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c])); }
+
+        function runRegex() {
+            const pat = document.getElementById('regexPattern').value;
+            const flags = document.getElementById('regexFlags').value;
+            const input = document.getElementById('regexInput').value;
+            const replace = document.getElementById('regexReplace').value;
+            const errEl = document.getElementById('regexError');
+            const hlEl = document.getElementById('regexHighlight');
+            const matchesEl = document.getElementById('regexMatches');
+            const countEl = document.getElementById('regexCount');
+            const replaceOutEl = document.getElementById('regexReplaceOutput');
+
+            errEl.style.display = 'none';
+            if (!pat) { hlEl.innerHTML = escHtml(input); matchesEl.innerHTML = '<div style="padding:0.75rem;color:var(--text-muted);">Enter a pattern.</div>'; countEl.textContent = ''; replaceOutEl.textContent = input; return; }
+
+            let re;
+            try { re = new RegExp(pat, flags); }
+            catch (e) { errEl.textContent = e.message; errEl.style.display = 'block'; return; }
+
+            const matches = [];
+            const reForMatches = new RegExp(pat, flags.includes('g') ? flags : flags + 'g');
+            let m, last = -1;
+            while ((m = reForMatches.exec(input)) !== null) {
+                if (m.index === last) { reForMatches.lastIndex++; continue; }
+                last = m.index;
+                matches.push({ match: m[0], index: m.index, groups: m.slice(1), named: m.groups || {} });
+                if (matches.length > 5000) break;
+            }
+
+            let hl = '', cursor = 0;
+            for (const mm of matches) {
+                hl += escHtml(input.slice(cursor, mm.index));
+                hl += '<span class="regex-highlight">' + escHtml(mm.match) + '</span>';
+                cursor = mm.index + mm.match.length;
+            }
+            hl += escHtml(input.slice(cursor));
+            hlEl.innerHTML = hl || '<span style="color:var(--text-muted);">No matches.</span>';
+
+            countEl.textContent = matches.length === 0 ? '— 0 matches' : `— ${matches.length} match${matches.length === 1 ? '' : 'es'}`;
+            if (matches.length === 0) {
+                matchesEl.innerHTML = '<div style="padding:0.75rem;color:var(--text-muted);">No matches.</div>';
+            } else {
+                matchesEl.innerHTML = matches.slice(0, 200).map((mm, i) => {
+                    let row = `<div class="regex-match-row"><span class="regex-match-idx">[${i}] @${mm.index}</span><span class="regex-match-val">${escHtml(mm.match)}</span>`;
+                    mm.groups.forEach((g, gi) => { if (g !== undefined) row += `<div class="regex-group">$${gi+1} = ${escHtml(String(g))}</div>`; });
+                    Object.entries(mm.named).forEach(([k, v]) => { if (v !== undefined) row += `<div class="regex-group">&lt;${escHtml(k)}&gt; = ${escHtml(String(v))}</div>`; });
+                    return row + '</div>';
+                }).join('') + (matches.length > 200 ? `<div class="regex-match-row" style="color:var(--text-muted);">… ${matches.length - 200} more</div>` : '');
+            }
+
+            try { replaceOutEl.textContent = input.replace(re, replace); }
+            catch (e) { replaceOutEl.textContent = 'Replace error: ' + e.message; }
+        }
+
+        runRegex();
+    </script>
+    <script>
+        document.querySelectorAll('.faq-question').forEach(function(btn) {
+            btn.addEventListener('click', function() { btn.parentElement.classList.toggle('open'); });
+        });
+    </script>
+</body>
+</html>

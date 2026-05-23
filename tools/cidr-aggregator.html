@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-FH74PGMNYD"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-FH74PGMNYD');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CIDR Aggregator — Collapse IPv4 Subnets to Minimal Set | OPS-BOX</title>
+    <meta name="description" content="Free CIDR aggregator. Paste a list of IPv4 addresses, ranges, or CIDR blocks and get the minimal merged CIDR set. Useful for firewall rules, route tables, and BGP filter lists.">
+    <meta name="keywords" content="CIDR aggregator, CIDR summarization, subnet merge, IP range to CIDR, supernetting, route aggregation, firewall rules">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://ops-box.net/tools/cidr-aggregator.html">
+
+    <meta property="og:title" content="CIDR Aggregator — Collapse Subnets to Minimal Set">
+    <meta property="og:description" content="Merge overlapping IP ranges and CIDR blocks into the smallest equivalent CIDR set.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ops-box.net/tools/cidr-aggregator.html">
+    <meta property="og:image" content="https://ops-box.net/og-image.png">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="CIDR Aggregator — Collapse Subnets to Minimal Set">
+    <meta name="twitter:description" content="Merge IP ranges and CIDRs into the smallest equivalent set.">
+    <meta name="twitter:image" content="https://ops-box.net/og-image.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "CIDR Aggregator",
+        "url": "https://ops-box.net/tools/cidr-aggregator.html",
+        "description": "Collapse a list of IPv4 addresses, ranges, and CIDR blocks into a minimal CIDR set",
+        "applicationCategory": "NetworkingApplication",
+        "operatingSystem": "Any",
+        "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {"@type": "Question", "name": "What input formats are supported?", "acceptedAnswer": {"@type": "Answer", "text": "Any mix of single IPv4 addresses (10.0.0.5), CIDR blocks (10.0.0.0/24), and ranges (10.0.0.0-10.0.0.255 or 10.0.0.0 - 10.0.0.255). One entry per line, or comma/space separated. Comments after # are ignored."}},
+            {"@type": "Question", "name": "How does aggregation work?", "acceptedAnswer": {"@type": "Answer", "text": "All inputs are normalized to numeric ranges, sorted, and merged. The merged ranges are then split into the smallest possible set of CIDR blocks where each block is properly aligned (network address is a multiple of its size). The output is always equivalent to the input — it covers the exact same IPs, just expressed more compactly."}},
+            {"@type": "Question", "name": "Why isn't my output a single CIDR?", "acceptedAnswer": {"@type": "Answer", "text": "A CIDR block can only represent a contiguous, power-of-two-sized, properly aligned range. For example, 10.0.0.0 to 10.0.0.10 (11 addresses) cannot be expressed as one CIDR — it needs three: 10.0.0.0/29, 10.0.0.8/30, and 10.0.0.12/32... wait, that's wrong because /32 of .12 isn't in range. The aggregator picks the smallest valid set."}},
+            {"@type": "Question", "name": "Does this support IPv6?", "acceptedAnswer": {"@type": "Answer", "text": "Not yet — this tool is IPv4-only. IPv6 aggregation works on the same principles but requires 128-bit arithmetic (BigInt). If you need IPv6 aggregation, let us know via the contact page."}},
+            {"@type": "Question", "name": "Is anything sent to a server?", "acceptedAnswer": {"@type": "Answer", "text": "No. All parsing, merging, and CIDR computation runs in your browser. The IP list never leaves your machine."}}
+        ]
+    }
+    </script>
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1924789684268835" crossorigin="anonymous"></script>
+    <style>
+        .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin: 1rem 0; }
+        .stat-card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem 1rem; }
+        .stat-label { color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        .stat-val { color: var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 1.2rem; font-weight: 600; margin-top: 0.25rem; }
+        @media (max-width: 600px) { .stat-row { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <a href="/" class="logo">
+                <div class="logo-icon">⚡</div>
+                <div class="logo-text">OPS<span>-BOX</span></div>
+            </a>
+            <nav class="header-nav">
+                <a href="/tools/subnet-calculator.html">Subnet</a>
+                <a href="/tools/ip-location.html">IP Location</a>
+                <a href="/tools/dns-lookup.html">DNS</a>
+                <a href="/tools/ssl-checker.html">SSL</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <nav class="breadcrumb">
+            <a href="/">Home</a><span>›</span><span class="breadcrumb-current">CIDR Aggregator</span>
+        </nav>
+
+        <div class="tool-container">
+            <div class="tool-header">
+                <h1 class="tool-title">CIDR Aggregator</h1>
+                <p class="tool-description">Collapse a mixed list of IPv4 addresses, ranges, and CIDR blocks into the minimal equivalent CIDR set. Ideal for cleaning up firewall rules, route tables, and BGP prefix lists.</p>
+            </div>
+            <div class="tool-content">
+                <div class="form-group">
+                    <label class="form-label" for="cidrInput">Input — one entry per line (CIDR, single IP, or start-end range)</label>
+                    <textarea id="cidrInput" class="form-input" rows="10" style="font-family:'JetBrains Mono',monospace;" placeholder="10.0.0.0/24&#10;10.0.1.0/24&#10;10.0.2.5&#10;192.168.1.0-192.168.1.127&#10;172.16.0.0/16"></textarea>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="aggregate()">Aggregate</button>
+                    <button class="btn btn-secondary" onclick="loadSample()">Load sample</button>
+                    <button class="btn btn-secondary" onclick="copyToClipboard('cidrOutput')">Copy output</button>
+                    <button class="btn btn-secondary" onclick="document.getElementById('cidrInput').value='';aggregate();">Clear</button>
+                </div>
+
+                <div id="cidrError" style="display:none;color:#ef4444;margin-top:1rem;padding:0.75rem 1rem;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:0.85rem;white-space:pre-wrap;"></div>
+
+                <div id="cidrStats" class="stat-row" style="display:none;"></div>
+
+                <div class="form-group">
+                    <label class="form-label">Aggregated CIDR set</label>
+                    <div class="bulk-output"><pre id="cidrOutput">Paste input and click Aggregate.</pre></div>
+                </div>
+            </div>
+        </div>
+
+        <section class="seo-content">
+            <h2>What is CIDR Aggregation?</h2>
+            <p><strong>CIDR aggregation</strong> (also called route summarization or supernetting) is the process of merging multiple adjacent or overlapping IP prefixes into the fewest possible CIDR blocks. Network engineers use it to shrink firewall ACLs, simplify static route tables, and reduce the size of BGP advertisements.</p>
+            <p>For example, <code>10.0.0.0/24</code> and <code>10.0.1.0/24</code> together cover exactly the same addresses as <code>10.0.0.0/23</code>. Three rules become one. On a large router or firewall, the savings add up to faster lookups and easier audits.</p>
+
+            <h3>Accepted Input Formats</h3>
+            <ul>
+                <li><strong>CIDR:</strong> <code>10.0.0.0/24</code></li>
+                <li><strong>Single IP:</strong> <code>10.0.0.5</code> (treated as <code>/32</code>)</li>
+                <li><strong>Range:</strong> <code>10.0.0.0-10.0.0.50</code> or <code>10.0.0.0 - 10.0.0.50</code></li>
+                <li>Mixed input is fine. Comments after <code>#</code> and blank lines are ignored.</li>
+            </ul>
+
+            <h3>How It Works</h3>
+            <ol style="color:var(--text-secondary);margin-left:1.5rem;line-height:1.8;">
+                <li>Every input is parsed into a numeric [start, end] range.</li>
+                <li>Ranges are sorted by start address and merged where they touch or overlap.</li>
+                <li>Each merged range is split into the smallest possible set of properly aligned CIDR blocks.</li>
+            </ol>
+
+            <h3>Use Cases</h3>
+            <ul>
+                <li><strong>Firewall ACL cleanup</strong> — collapse hundreds of <code>/32</code> allow-list entries</li>
+                <li><strong>BGP prefix lists</strong> — reduce announced prefix count</li>
+                <li><strong>Route table optimization</strong> — fewer routes, faster longest-prefix match</li>
+                <li><strong>Cloud security groups</strong> — AWS/GCP/Azure all have rule-count limits</li>
+                <li><strong>Geo-IP / CDN allowlists</strong> — vendors often publish thousands of ranges; aggregate before deploying</li>
+            </ul>
+
+            <div class="faq">
+                <h3>Frequently Asked Questions</h3>
+                <div class="faq-item"><button class="faq-question">What input formats are supported?</button><div class="faq-answer">Any mix of single IPv4 addresses (<code>10.0.0.5</code>), CIDR blocks (<code>10.0.0.0/24</code>), and ranges (<code>10.0.0.0-10.0.0.255</code> or <code>10.0.0.0 - 10.0.0.255</code>). One entry per line, or comma/space separated. Comments after <code>#</code> are ignored.</div></div>
+                <div class="faq-item"><button class="faq-question">How does aggregation work?</button><div class="faq-answer">All inputs are normalized to numeric ranges, sorted, and merged. The merged ranges are then split into the smallest possible set of CIDR blocks where each block is properly aligned (network address is a multiple of its size). The output is always equivalent to the input — it covers the exact same IPs, just expressed more compactly.</div></div>
+                <div class="faq-item"><button class="faq-question">Why isn't my output a single CIDR?</button><div class="faq-answer">A CIDR block can only represent a contiguous, power-of-two-sized, properly aligned range. For example, <code>10.0.0.0</code> to <code>10.0.0.10</code> (11 addresses) cannot be expressed as one CIDR — it needs several. The aggregator picks the minimal valid set.</div></div>
+                <div class="faq-item"><button class="faq-question">Does this support IPv6?</button><div class="faq-answer">Not yet — this tool is IPv4-only. IPv6 aggregation works on the same principles but requires 128-bit arithmetic (BigInt). If you need IPv6 aggregation, let us know via the contact page.</div></div>
+                <div class="faq-item"><button class="faq-question">Is anything sent to a server?</button><div class="faq-answer">No. All parsing, merging, and CIDR computation runs in your browser. The IP list never leaves your machine.</div></div>
+            </div>
+        </section>
+
+        <section class="related-tools">
+            <h2>Related Tools</h2>
+            <div class="related-grid">
+                <a href="/tools/subnet-calculator.html" class="related-card"><h3>Subnet Calculator</h3><p>Plan subnets with VLSM and CIDR.</p></a>
+                <a href="/tools/ip-location.html" class="related-card"><h3>IP Location</h3><p>Geolocate IP addresses with ASN.</p></a>
+                <a href="/tools/dns-lookup.html" class="related-card"><h3>DNS Lookup</h3><p>Query A, MX, TXT, NS, CNAME records.</p></a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section"><h3>Network Tools</h3><a href="/tools/subnet-calculator.html">Subnet Calculator</a><a href="/tools/cidr-aggregator.html">CIDR Aggregator</a><a href="/tools/mac-vendor-lookup.html">MAC Vendor Lookup</a></div>
+            <div class="footer-section"><h3>Security Tools</h3><a href="/tools/password-generator.html">Password Generator</a><a href="/tools/hash-generator.html">Hash Generator</a><a href="/tools/jwt-decoder.html">JWT Decoder</a></div>
+            <div class="footer-section"><h3>Developer Tools</h3><a href="/tools/json-formatter.html">JSON Formatter</a><a href="/tools/regex-tester.html">Regex Tester</a><a href="/tools/cron-explainer.html">Cron Explainer</a></div>
+        </div>
+        <div class="footer-bottom"><p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals. | <a href="/about.html" style="color:inherit;text-decoration:underline;">About</a> · <a href="/contact.html" style="color:inherit;text-decoration:underline;">Contact</a> · <a href="/terms-of-service.html" style="color:inherit;text-decoration:underline;">Terms</a> · <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p></div>
+    </footer>
+
+    <div class="toast" id="toast">Copied to clipboard!</div>
+
+    <script src="../js/common.js"></script>
+    <script>
+        function ipToInt(ip) {
+            const parts = ip.split('.');
+            if (parts.length !== 4) throw new Error('Bad IP: ' + ip);
+            let n = 0;
+            for (const p of parts) {
+                const o = parseInt(p, 10);
+                if (!Number.isFinite(o) || o < 0 || o > 255 || String(o) !== p.replace(/^0+(?=\d)/, '')) throw new Error('Bad octet in: ' + ip);
+                n = (n * 256) + o;
+            }
+            return n;
+        }
+        function intToIp(n) { return [(n>>>24)&255, (n>>>16)&255, (n>>>8)&255, n&255].join('.'); }
+
+        function parseLine(line) {
+            line = line.split('#')[0].trim();
+            if (!line) return null;
+            if (line.includes('/')) {
+                const [ip, pfx] = line.split('/');
+                const p = parseInt(pfx, 10);
+                if (!Number.isFinite(p) || p < 0 || p > 32) throw new Error('Bad prefix: ' + line);
+                const base = ipToInt(ip.trim());
+                const size = p === 0 ? 0x100000000 : (1 << (32 - p)) >>> 0;
+                const start = (base & (size === 0x100000000 ? 0 : (~(size - 1) >>> 0))) >>> 0;
+                if (start !== base) throw new Error('Host bits set in: ' + line + ' (network would be ' + intToIp(start) + '/' + p + ')');
+                const end = (start + size - 1) >>> 0;
+                return [start, end];
+            }
+            if (line.includes('-')) {
+                const [a, b] = line.split('-').map(s => s.trim());
+                const s = ipToInt(a), e = ipToInt(b);
+                if (s > e) throw new Error('Range start > end: ' + line);
+                return [s, e];
+            }
+            const ip = ipToInt(line);
+            return [ip, ip];
+        }
+
+        function rangeToCidrs(start, end) {
+            const out = [];
+            let s = start;
+            while (s <= end) {
+                let maxSize = 32;
+                while (maxSize > 0) {
+                    const mask = (~((1 << (32 - (maxSize - 1))) - 1)) >>> 0;
+                    if (((s & mask) >>> 0) !== s) break;
+                    const blockSize = Math.pow(2, 32 - (maxSize - 1));
+                    if (s + blockSize - 1 > end) break;
+                    maxSize--;
+                }
+                const blockSize = Math.pow(2, 32 - maxSize);
+                out.push(intToIp(s) + '/' + maxSize);
+                s += blockSize;
+                if (s > 0xffffffff) break;
+            }
+            return out;
+        }
+
+        function aggregate() {
+            const raw = document.getElementById('cidrInput').value;
+            const errEl = document.getElementById('cidrError');
+            const outEl = document.getElementById('cidrOutput');
+            const statsEl = document.getElementById('cidrStats');
+            errEl.style.display = 'none';
+
+            const lines = raw.split(/[\n,]/).map(s => s.trim()).filter(Boolean);
+            if (!lines.length) { outEl.textContent = 'Paste input and click Aggregate.'; statsEl.style.display = 'none'; return; }
+
+            const errors = [];
+            const ranges = [];
+            let inputCount = 0, inputAddrs = 0;
+            for (const ln of lines) {
+                try {
+                    const r = parseLine(ln);
+                    if (r) { ranges.push(r); inputCount++; inputAddrs += (r[1] - r[0] + 1); }
+                } catch (e) { errors.push(e.message); }
+            }
+            if (errors.length) { errEl.textContent = errors.join('\n'); errEl.style.display = 'block'; }
+            if (!ranges.length) { outEl.textContent = '(no valid input)'; statsEl.style.display = 'none'; return; }
+
+            ranges.sort((a, b) => a[0] - b[0]);
+            const merged = [ranges[0].slice()];
+            for (let i = 1; i < ranges.length; i++) {
+                const top = merged[merged.length - 1];
+                if (ranges[i][0] <= top[1] + 1) { top[1] = Math.max(top[1], ranges[i][1]); }
+                else merged.push(ranges[i].slice());
+            }
+
+            const cidrs = [];
+            let outAddrs = 0;
+            for (const [s, e] of merged) { cidrs.push(...rangeToCidrs(s, e)); outAddrs += (e - s + 1); }
+            outEl.textContent = cidrs.join('\n');
+
+            statsEl.style.display = 'grid';
+            statsEl.innerHTML = `
+                <div class="stat-card"><div class="stat-label">Input lines</div><div class="stat-val">${inputCount}</div></div>
+                <div class="stat-card"><div class="stat-label">Output CIDRs</div><div class="stat-val">${cidrs.length}</div></div>
+                <div class="stat-card"><div class="stat-label">Addresses covered</div><div class="stat-val">${outAddrs.toLocaleString()}</div></div>
+            `;
+        }
+
+        function loadSample() {
+            document.getElementById('cidrInput').value = `10.0.0.0/24
+10.0.1.0/24
+10.0.2.0/24
+10.0.3.0/24
+192.168.1.5
+192.168.1.6
+192.168.1.0-192.168.1.10
+172.16.0.0/16   # corporate
+172.17.0.0/16`;
+            aggregate();
+        }
+    </script>
+    <script>
+        document.querySelectorAll('.faq-question').forEach(function(btn) {
+            btn.addEventListener('click', function() { btn.parentElement.classList.toggle('open'); });
+        });
+    </script>
+</body>
+</html>

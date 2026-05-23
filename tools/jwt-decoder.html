@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-FH74PGMNYD"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-FH74PGMNYD');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JWT Decoder — Decode & Verify JSON Web Tokens Online | OPS-BOX</title>
+    <meta name="description" content="Free JWT decoder. Decode header and payload, inspect claims (iss, sub, exp, iat), and verify HS256/RS256 signatures. 100% client-side — your tokens never leave the browser.">
+    <meta name="keywords" content="JWT decoder, JWT debugger, decode JWT, verify JWT, JSON web token, HS256, RS256, JWT claims">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://ops-box.net/tools/jwt-decoder.html">
+
+    <meta property="og:title" content="JWT Decoder — Decode & Verify JSON Web Tokens">
+    <meta property="og:description" content="Decode and verify JWTs entirely in your browser. Supports HS256 and RS256 signature verification.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ops-box.net/tools/jwt-decoder.html">
+    <meta property="og:image" content="https://ops-box.net/og-image.png">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="JWT Decoder — Decode & Verify JSON Web Tokens">
+    <meta name="twitter:description" content="Decode and verify JWTs entirely in your browser.">
+    <meta name="twitter:image" content="https://ops-box.net/og-image.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "JWT Decoder",
+        "url": "https://ops-box.net/tools/jwt-decoder.html",
+        "description": "Decode and verify JSON Web Tokens in the browser",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Any",
+        "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {"@type": "Question", "name": "Is it safe to paste my JWT here?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. This tool runs entirely in your browser using JavaScript. The token is never sent to any server, logged, or stored. That said, treat JWTs as credentials — never paste a production token into any web tool you don't trust. For full safety, view the page source or run this tool offline."}},
+            {"@type": "Question", "name": "What's the difference between decoding and verifying a JWT?", "acceptedAnswer": {"@type": "Answer", "text": "Decoding just base64url-decodes the header and payload — anyone with the token can do this, the contents are not encrypted. Verifying checks the cryptographic signature against a secret (HS256) or public key (RS256/ES256) to confirm the token was issued by who it claims and hasn't been tampered with."}},
+            {"@type": "Question", "name": "Why does my token show as expired?", "acceptedAnswer": {"@type": "Answer", "text": "The exp claim is a Unix timestamp (seconds since 1970). If exp is less than the current time, the token is expired and should be rejected by any compliant validator. This tool also flags nbf (not before) and iat (issued at) claims that look wrong relative to current time."}},
+            {"@type": "Question", "name": "Can I verify an RS256 token here?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Paste the issuer's RSA public key in PEM format (the -----BEGIN PUBLIC KEY----- block). The tool uses the Web Crypto API to verify the signature locally. You typically get this key from the issuer's JWKS endpoint (e.g. /.well-known/jwks.json)."}},
+            {"@type": "Question", "name": "Are JWTs encrypted?", "acceptedAnswer": {"@type": "Answer", "text": "No. A standard JWT (JWS) is signed but not encrypted — the payload is base64-encoded plaintext that anyone with the token can read. If you need encryption, use JWE (JSON Web Encryption), or simply don't put secrets in the payload."}}
+        ]
+    }
+    </script>
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1924789684268835" crossorigin="anonymous"></script>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <a href="/" class="logo">
+                <div class="logo-icon">⚡</div>
+                <div class="logo-text">OPS<span>-BOX</span></div>
+            </a>
+            <nav class="header-nav">
+                <a href="/tools/json-formatter.html">JSON</a>
+                <a href="/tools/base64-encoder.html">Base64</a>
+                <a href="/tools/hash-generator.html">Hash</a>
+                <a href="/tools/regex-tester.html">Regex</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <nav class="breadcrumb">
+            <a href="/">Home</a><span>›</span><span class="breadcrumb-current">JWT Decoder</span>
+        </nav>
+
+        <div class="tool-container">
+            <div class="tool-header">
+                <h1 class="tool-title">JWT Decoder & Verifier</h1>
+                <p class="tool-description">Decode the header and payload of a JSON Web Token and optionally verify its signature. Runs 100% in your browser — your token is never transmitted.</p>
+            </div>
+            <div class="tool-content">
+                <div class="form-group">
+                    <label class="form-label" for="jwtInput">JWT</label>
+                    <textarea id="jwtInput" class="form-input" rows="5" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkphbmUgRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.signature" style="font-family:'JetBrains Mono',monospace;"></textarea>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="decodeJWT()">Decode</button>
+                    <button class="btn btn-secondary" onclick="loadSample()">Load sample</button>
+                    <button class="btn btn-secondary" onclick="clearAll()">Clear</button>
+                </div>
+
+                <div id="jwtError" style="display:none;color:#ef4444;margin-top:1rem;padding:0.75rem 1rem;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;"></div>
+
+                <div id="jwtResults" style="display:none;margin-top:1.5rem;">
+                    <div class="form-group">
+                        <label class="form-label">Header</label>
+                        <div class="bulk-output"><pre id="jwtHeader"></pre></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Payload</label>
+                        <div class="bulk-output"><pre id="jwtPayload"></pre></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Claims</label>
+                        <div id="jwtClaims" class="bulk-output"></div>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-top:1.5rem;">
+                    <label class="form-label" for="jwtSecret">Secret / Public key (optional — for signature verification)</label>
+                    <textarea id="jwtSecret" class="form-input" rows="4" placeholder="HS256: your shared secret string&#10;RS256/ES256: -----BEGIN PUBLIC KEY-----&#10;..." style="font-family:'JetBrains Mono',monospace;"></textarea>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="verifyJWT()">Verify signature</button>
+                </div>
+                <div id="jwtVerifyResult" style="display:none;margin-top:1rem;padding:0.75rem 1rem;border-radius:8px;"></div>
+            </div>
+        </div>
+
+        <section class="seo-content">
+            <h2>What is a JWT?</h2>
+            <p>A <strong>JSON Web Token (JWT)</strong> is a compact, URL-safe token format defined by <a href="https://datatracker.ietf.org/doc/html/rfc7519" rel="noopener">RFC 7519</a>. It is the most common way to represent authentication and authorization claims between services — particularly in OAuth 2.0, OpenID Connect, and API gateways.</p>
+            <p>A JWT consists of three base64url-encoded parts separated by dots: <code>header.payload.signature</code>. The header declares the signing algorithm (e.g. <code>HS256</code>, <code>RS256</code>), the payload carries claims (subject, issuer, expiry, custom data), and the signature proves the token was issued by a holder of the secret or private key.</p>
+            <p>This decoder runs entirely in your browser using the Web Crypto API. <strong>Your JWT and any secret you paste never leave your machine</strong> — there are no network requests for decoding or verification.</p>
+
+            <h3>Standard Claims</h3>
+            <ul>
+                <li><strong>iss</strong> — issuer of the token</li>
+                <li><strong>sub</strong> — subject (usually the user ID)</li>
+                <li><strong>aud</strong> — intended audience</li>
+                <li><strong>exp</strong> — expiration time (Unix seconds). Reject if past.</li>
+                <li><strong>nbf</strong> — not-before time. Reject if future.</li>
+                <li><strong>iat</strong> — issued-at time</li>
+                <li><strong>jti</strong> — unique token ID (for revocation lists)</li>
+            </ul>
+
+            <h3>Common Algorithms</h3>
+            <ul>
+                <li><strong>HS256 / HS384 / HS512</strong> — HMAC with a shared secret. Both signer and verifier hold the same key.</li>
+                <li><strong>RS256 / RS384 / RS512</strong> — RSA signature. Signer holds the private key; anyone with the public key can verify.</li>
+                <li><strong>ES256 / ES384 / ES512</strong> — ECDSA signature, smaller and faster than RSA.</li>
+                <li><strong>none</strong> — unsigned. <em>Always reject this in production</em> — historic source of authentication bypass bugs.</li>
+            </ul>
+
+            <h3>Security Notes</h3>
+            <ul>
+                <li>JWTs are <strong>not encrypted</strong> — never put secrets, passwords, or PII in the payload.</li>
+                <li>Always verify the signature server-side before trusting any claim.</li>
+                <li>Pin the expected algorithm; do not let the token's <code>alg</code> header dictate verification (algorithm confusion attacks).</li>
+                <li>Validate <code>exp</code>, <code>nbf</code>, <code>iss</code>, and <code>aud</code> on every request.</li>
+            </ul>
+
+            <div class="faq">
+                <h3>Frequently Asked Questions</h3>
+                <div class="faq-item"><button class="faq-question">Is it safe to paste my JWT here?</button><div class="faq-answer">Yes. This tool runs entirely in your browser using JavaScript. The token is never sent to any server, logged, or stored. That said, treat JWTs as credentials — never paste a production token into any web tool you don't trust. For full safety, view the page source or run this tool offline.</div></div>
+                <div class="faq-item"><button class="faq-question">What's the difference between decoding and verifying a JWT?</button><div class="faq-answer">Decoding just base64url-decodes the header and payload — anyone with the token can do this, the contents are not encrypted. Verifying checks the cryptographic signature against a secret (HS256) or public key (RS256/ES256) to confirm the token was issued by who it claims and hasn't been tampered with.</div></div>
+                <div class="faq-item"><button class="faq-question">Why does my token show as expired?</button><div class="faq-answer">The <code>exp</code> claim is a Unix timestamp (seconds since 1970). If <code>exp</code> is less than the current time, the token is expired and should be rejected by any compliant validator. This tool also flags <code>nbf</code> (not before) and <code>iat</code> (issued at) claims that look wrong relative to current time.</div></div>
+                <div class="faq-item"><button class="faq-question">Can I verify an RS256 token here?</button><div class="faq-answer">Yes. Paste the issuer's RSA public key in PEM format (the <code>-----BEGIN PUBLIC KEY-----</code> block). The tool uses the Web Crypto API to verify the signature locally. You typically get this key from the issuer's JWKS endpoint (e.g. <code>/.well-known/jwks.json</code>).</div></div>
+                <div class="faq-item"><button class="faq-question">Are JWTs encrypted?</button><div class="faq-answer">No. A standard JWT (JWS) is signed but not encrypted — the payload is base64-encoded plaintext that anyone with the token can read. If you need encryption, use JWE (JSON Web Encryption), or simply don't put secrets in the payload.</div></div>
+            </div>
+        </section>
+
+        <section class="related-tools">
+            <h2>Related Tools</h2>
+            <div class="related-grid">
+                <a href="/tools/base64-encoder.html" class="related-card"><h3>Base64 Encoder</h3><p>Encode and decode Base64 strings.</p></a>
+                <a href="/tools/hash-generator.html" class="related-card"><h3>Hash Generator</h3><p>SHA-256, SHA-512, and more.</p></a>
+                <a href="/tools/json-formatter.html" class="related-card"><h3>JSON Formatter</h3><p>Format and validate JSON payloads.</p></a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section"><h3>Network Tools</h3><a href="/tools/subnet-calculator.html">Subnet Calculator</a><a href="/tools/mac-vendor-lookup.html">MAC Vendor Lookup</a><a href="/tools/cidr-aggregator.html">CIDR Aggregator</a></div>
+            <div class="footer-section"><h3>Security Tools</h3><a href="/tools/password-generator.html">Password Generator</a><a href="/tools/hash-generator.html">Hash Generator</a><a href="/tools/jwt-decoder.html">JWT Decoder</a></div>
+            <div class="footer-section"><h3>Developer Tools</h3><a href="/tools/json-formatter.html">JSON Formatter</a><a href="/tools/regex-tester.html">Regex Tester</a><a href="/tools/cron-explainer.html">Cron Explainer</a></div>
+        </div>
+        <div class="footer-bottom"><p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals. | <a href="/about.html" style="color:inherit;text-decoration:underline;">About</a> · <a href="/contact.html" style="color:inherit;text-decoration:underline;">Contact</a> · <a href="/terms-of-service.html" style="color:inherit;text-decoration:underline;">Terms</a> · <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p></div>
+    </footer>
+
+    <div class="toast" id="toast">Copied to clipboard!</div>
+
+    <script src="../js/common.js"></script>
+    <script>
+        const SAMPLE = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkphbmUgRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjE5OTk5OTk5OTl9.5mhBHqs5_DTLdINd9p5m7ZJ6XD0Xc55kIaCRY5r6HRA';
+        let decoded = null;
+
+        function b64urlDecode(s) {
+            s = s.replace(/-/g, '+').replace(/_/g, '/');
+            while (s.length % 4) s += '=';
+            const bin = atob(s);
+            const bytes = new Uint8Array(bin.length);
+            for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+            return new TextDecoder().decode(bytes);
+        }
+
+        function showError(msg) {
+            const el = document.getElementById('jwtError');
+            el.textContent = msg;
+            el.style.display = 'block';
+            document.getElementById('jwtResults').style.display = 'none';
+        }
+
+        function decodeJWT() {
+            const token = document.getElementById('jwtInput').value.trim();
+            document.getElementById('jwtError').style.display = 'none';
+            document.getElementById('jwtVerifyResult').style.display = 'none';
+            if (!token) { showError('Paste a JWT to decode.'); return; }
+            const parts = token.split('.');
+            if (parts.length !== 3) { showError('Not a valid JWT — expected 3 dot-separated parts, got ' + parts.length + '.'); return; }
+            try {
+                const header = JSON.parse(b64urlDecode(parts[0]));
+                const payload = JSON.parse(b64urlDecode(parts[1]));
+                decoded = { header, payload, parts };
+                document.getElementById('jwtHeader').textContent = JSON.stringify(header, null, 2);
+                document.getElementById('jwtPayload').textContent = JSON.stringify(payload, null, 2);
+                renderClaims(payload);
+                document.getElementById('jwtResults').style.display = 'block';
+            } catch (e) {
+                showError('Failed to decode: ' + e.message);
+            }
+        }
+
+        function renderClaims(p) {
+            const now = Math.floor(Date.now() / 1000);
+            const rows = [];
+            const fmt = (t) => new Date(t * 1000).toISOString();
+            if (p.iss !== undefined) rows.push(['iss (issuer)', p.iss]);
+            if (p.sub !== undefined) rows.push(['sub (subject)', p.sub]);
+            if (p.aud !== undefined) rows.push(['aud (audience)', Array.isArray(p.aud) ? p.aud.join(', ') : p.aud]);
+            if (p.iat !== undefined) rows.push(['iat (issued at)', fmt(p.iat) + ' — ' + (now - p.iat) + 's ago']);
+            if (p.nbf !== undefined) rows.push(['nbf (not before)', fmt(p.nbf) + (p.nbf > now ? ' ⚠ not yet valid' : '')]);
+            if (p.exp !== undefined) {
+                const expired = p.exp < now;
+                rows.push(['exp (expires)', fmt(p.exp) + (expired ? ' ❌ EXPIRED ' + (now - p.exp) + 's ago' : ' ✓ valid for ' + (p.exp - now) + 's')]);
+            }
+            if (p.jti !== undefined) rows.push(['jti (token id)', p.jti]);
+            const html = rows.length
+                ? '<table style="width:100%;border-collapse:collapse;"><tbody>' +
+                  rows.map(r => `<tr><td style="padding:0.5rem;border-bottom:1px solid var(--border);color:var(--text-secondary);font-family:'JetBrains Mono',monospace;width:30%;">${r[0]}</td><td style="padding:0.5rem;border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace;word-break:break-all;">${r[1]}</td></tr>`).join('') +
+                  '</tbody></table>'
+                : '<pre style="color:var(--text-muted);">No standard claims present.</pre>';
+            document.getElementById('jwtClaims').innerHTML = html;
+        }
+
+        async function verifyJWT() {
+            if (!decoded) { showError('Decode a token first.'); return; }
+            const secret = document.getElementById('jwtSecret').value.trim();
+            const out = document.getElementById('jwtVerifyResult');
+            if (!secret) { showResult(false, 'Provide a secret (HS*) or PEM public key (RS*/ES*).'); return; }
+            const alg = decoded.header.alg;
+            const signingInput = decoded.parts[0] + '.' + decoded.parts[1];
+            const sigBytes = b64urlToBytes(decoded.parts[2]);
+            try {
+                let key, algo;
+                if (alg === 'HS256' || alg === 'HS384' || alg === 'HS512') {
+                    const hash = 'SHA-' + alg.slice(2);
+                    key = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), { name: 'HMAC', hash }, false, ['verify']);
+                    algo = { name: 'HMAC' };
+                } else if (alg === 'RS256' || alg === 'RS384' || alg === 'RS512') {
+                    const hash = 'SHA-' + alg.slice(2);
+                    key = await importPem(secret, { name: 'RSASSA-PKCS1-v1_5', hash });
+                    algo = { name: 'RSASSA-PKCS1-v1_5' };
+                } else if (alg === 'ES256' || alg === 'ES384' || alg === 'ES512') {
+                    const hash = 'SHA-' + alg.slice(2);
+                    const curve = alg === 'ES256' ? 'P-256' : alg === 'ES384' ? 'P-384' : 'P-521';
+                    key = await importPem(secret, { name: 'ECDSA', namedCurve: curve });
+                    algo = { name: 'ECDSA', hash };
+                } else {
+                    showResult(false, 'Unsupported algorithm: ' + alg);
+                    return;
+                }
+                const ok = await crypto.subtle.verify(algo, key, sigBytes, new TextEncoder().encode(signingInput));
+                showResult(ok, ok ? 'Signature is VALID (' + alg + ').' : 'Signature is INVALID — token may be tampered with, or the wrong secret/key was used.');
+            } catch (e) {
+                showResult(false, 'Verification failed: ' + e.message);
+            }
+        }
+
+        function showResult(ok, msg) {
+            const out = document.getElementById('jwtVerifyResult');
+            out.textContent = msg;
+            out.style.display = 'block';
+            out.style.background = ok ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)';
+            out.style.border = '1px solid ' + (ok ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)');
+            out.style.color = ok ? '#22c55e' : '#ef4444';
+        }
+
+        function b64urlToBytes(s) {
+            s = s.replace(/-/g, '+').replace(/_/g, '/');
+            while (s.length % 4) s += '=';
+            const bin = atob(s);
+            const bytes = new Uint8Array(bin.length);
+            for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+            return bytes;
+        }
+
+        async function importPem(pem, algo) {
+            const b64 = pem.replace(/-----BEGIN [^-]+-----/, '').replace(/-----END [^-]+-----/, '').replace(/\s+/g, '');
+            const der = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+            return crypto.subtle.importKey('spki', der, algo, false, ['verify']);
+        }
+
+        function loadSample() { document.getElementById('jwtInput').value = SAMPLE; decodeJWT(); }
+        function clearAll() { document.getElementById('jwtInput').value = ''; document.getElementById('jwtSecret').value = ''; document.getElementById('jwtResults').style.display = 'none'; document.getElementById('jwtError').style.display = 'none'; document.getElementById('jwtVerifyResult').style.display = 'none'; }
+    </script>
+    <script>
+        document.querySelectorAll('.faq-question').forEach(function(btn) {
+            btn.addEventListener('click', function() { btn.parentElement.classList.toggle('open'); });
+        });
+    </script>
+</body>
+</html>
