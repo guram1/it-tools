@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-FH74PGMNYD"></script>
+    <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-FH74PGMNYD');</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TOTP Generator — RFC 6238 2FA Code (Google Authenticator) | OPS-BOX</title>
+    <meta name="description" content="Free TOTP generator. Compute 2FA codes from a base32 secret in real time (RFC 6238). Compatible with Google Authenticator, Authy, 1Password. 100% client-side.">
+    <meta name="keywords" content="TOTP generator, 2FA code, Google Authenticator online, RFC 6238, base32 secret, time-based OTP">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://ops-box.net/tools/totp-generator.html">
+    <meta property="og:title" content="TOTP Generator — RFC 6238"><meta property="og:description" content="Compute 2FA codes from a base32 secret in your browser."><meta property="og:type" content="website"><meta property="og:url" content="https://ops-box.net/tools/totp-generator.html"><meta property="og:image" content="https://ops-box.net/og-image.png">
+    <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="TOTP Generator"><meta name="twitter:description" content="Compute 2FA codes from a base32 secret."><meta name="twitter:image" content="https://ops-box.net/og-image.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"TOTP Generator","url":"https://ops-box.net/tools/totp-generator.html","description":"Generate time-based OTP codes from a base32 secret","applicationCategory":"SecurityApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+        {"@type":"Question","name":"Is it safe to enter my TOTP secret here?","acceptedAnswer":{"@type":"Answer","text":"All HMAC and base32 decoding happens in your browser via the Web Crypto API. The secret is never transmitted. That said, your TOTP secret is the same kind of credential as a password — only paste it into tools and devices you trust. For production 2FA, store the secret in a dedicated authenticator app or hardware token, not a web tool."}},
+        {"@type":"Question","name":"What is the difference between TOTP and HOTP?","acceptedAnswer":{"@type":"Answer","text":"HOTP (RFC 4226) uses a counter that increments with each use. TOTP (RFC 6238) uses the current Unix time divided by a step (usually 30 s) as the counter — so the code changes automatically. TOTP is what Google Authenticator, Authy, and most 2FA flows use."}},
+        {"@type":"Question","name":"Why doesn't my code match the server?","acceptedAnswer":{"@type":"Answer","text":"Almost always a clock skew. TOTP requires both ends to agree on Unix time within a few seconds. If your computer's clock is off by more than ~30 s, codes will be wrong. Servers usually accept the previous and next windows to tolerate small skew."}},
+        {"@type":"Question","name":"What algorithm and digits should I use?","acceptedAnswer":{"@type":"Answer","text":"Defaults — SHA-1, 6 digits, 30 s step — are what almost every service uses. Some (Microsoft Authenticator, banking apps) use SHA-256 or 8 digits. The secret's source (otpauth:// URI or QR code) usually tells you which parameters to pick."}},
+        {"@type":"Question","name":"Can I import a secret from a QR code?","acceptedAnswer":{"@type":"Answer","text":"Yes — paste the full otpauth://totp/... URI into the secret field. The parser extracts the secret and parameters automatically."}}
+    ]}</script>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1924789684268835" crossorigin="anonymous"></script>
+    <style>
+        .otp-display { background:var(--bg-secondary); border:1px solid var(--border); border-radius:12px; padding:1.5rem; text-align:center; margin:1rem 0; }
+        .otp-code { font-family:'JetBrains Mono',monospace; font-size:3rem; font-weight:600; color:var(--accent); letter-spacing:0.15em; cursor:pointer; }
+        .otp-progress-wrap { background:var(--bg-primary); height:8px; border-radius:4px; margin-top:1rem; overflow:hidden; }
+        .otp-progress { height:100%; background:var(--accent); transition:width 1s linear; }
+        .otp-meta { color:var(--text-muted); font-size:0.85rem; margin-top:0.5rem; font-family:'JetBrains Mono',monospace; }
+        .otp-side { display:flex; justify-content:space-between; gap:1rem; margin-top:1rem; }
+        .otp-side > div { flex:1; background:var(--bg-secondary); border:1px solid var(--border); border-radius:8px; padding:0.6rem 0.9rem; text-align:center; }
+        .otp-side-label { color:var(--text-muted); font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; }
+        .otp-side-code { font-family:'JetBrains Mono',monospace; color:var(--text-secondary); font-size:1.2rem; font-weight:600; margin-top:0.2rem; letter-spacing:0.1em; }
+    </style>
+</head>
+<body>
+    <header><div class="header-content"><a href="/" class="logo"><div class="logo-icon">⚡</div><div class="logo-text">OPS<span>-BOX</span></div></a><nav class="header-nav"><a href="/tools/password-generator.html">Password</a><a href="/tools/bcrypt.html">Bcrypt</a><a href="/tools/jwt-decoder.html">JWT</a><a href="/tools/hash-generator.html">Hash</a></nav></div></header>
+
+    <main>
+        <nav class="breadcrumb"><a href="/">Home</a><span>›</span><span class="breadcrumb-current">TOTP Generator</span></nav>
+
+        <div class="tool-container">
+            <div class="tool-header">
+                <h1 class="tool-title">TOTP Generator</h1>
+                <p class="tool-description">Generate time-based one-time passwords (RFC 6238) from a base32 secret in real time. Compatible with Google Authenticator, Authy, 1Password, and any standard 2FA service.</p>
+            </div>
+            <div class="tool-content">
+                <div class="form-group">
+                    <label class="form-label" for="totpSecret">Secret (base32) or otpauth:// URI</label>
+                    <textarea id="totpSecret" class="form-input" rows="2" placeholder="JBSWY3DPEHPK3PXP   or   otpauth://totp/Example:user@example.com?secret=JBSWY3DPEHPK3PXP&issuer=Example" style="font-family:'JetBrains Mono',monospace;" oninput="onSecretChange()">JBSWY3DPEHPK3PXP</textarea>
+                </div>
+
+                <div class="otp-display">
+                    <div id="totpCode" class="otp-code" onclick="copyCode()">— — — — — —</div>
+                    <div class="otp-progress-wrap"><div id="totpProgress" class="otp-progress" style="width:100%;"></div></div>
+                    <div id="totpMeta" class="otp-meta">expires in 30s</div>
+                </div>
+
+                <div class="otp-side">
+                    <div><div class="otp-side-label">Previous</div><div class="otp-side-code" id="totpPrev">—</div></div>
+                    <div><div class="otp-side-label">Next</div><div class="otp-side-code" id="totpNext">—</div></div>
+                </div>
+
+                <div class="color-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.75rem;margin-top:1rem;">
+                    <div class="form-group" style="margin:0;">
+                        <label class="form-label" for="totpAlgo">Algorithm</label>
+                        <select id="totpAlgo" class="form-input" onchange="tick()" style="font-family:'JetBrains Mono',monospace;">
+                            <option value="SHA-1" selected>SHA-1</option>
+                            <option value="SHA-256">SHA-256</option>
+                            <option value="SHA-512">SHA-512</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label class="form-label" for="totpDigits">Digits</label>
+                        <select id="totpDigits" class="form-input" onchange="tick()" style="font-family:'JetBrains Mono',monospace;">
+                            <option value="6" selected>6</option>
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label class="form-label" for="totpStep">Step (s)</label>
+                        <input type="number" id="totpStep" class="form-input" value="30" min="1" max="300" oninput="tick()" style="font-family:'JetBrains Mono',monospace;">
+                    </div>
+                </div>
+
+                <div id="totpError" style="display:none;color:#ef4444;margin-top:1rem;padding:0.6rem 0.9rem;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:0.85rem;"></div>
+            </div>
+        </div>
+
+        <section class="seo-content">
+            <h2>About TOTP</h2>
+            <p><strong>TOTP</strong> (Time-based One-Time Password, <a href="https://datatracker.ietf.org/doc/html/rfc6238" rel="noopener">RFC 6238</a>) is the algorithm behind Google Authenticator, Authy, and the "verification code" you type during two-factor authentication. The server and client share a secret; both compute the current code from <code>HMAC(secret, floor(unix_time / step))</code> and truncate it to 6 digits. Because the input is the current time, the code changes every 30 seconds without any network round-trip.</p>
+
+            <h3>How It Works</h3>
+            <ol style="color:var(--text-secondary);margin-left:1.5rem;line-height:1.8;">
+                <li>The server generates a random secret (typically 160 bits) and shows you a base32 representation or an <code>otpauth://</code> QR code.</li>
+                <li>Your authenticator app decodes the base32 secret and stores it.</li>
+                <li>Every 30 seconds, both the server and your app compute <code>HMAC-SHA1(secret, time / 30)</code> and apply dynamic truncation to extract a 6-digit code.</li>
+                <li>You enter that code when logging in. The server accepts the current window — and usually the previous one — to tolerate small clock drift.</li>
+            </ol>
+
+            <h3>Common Compatibility</h3>
+            <ul>
+                <li><strong>Google Authenticator, Authy, 1Password, Microsoft Authenticator:</strong> SHA-1, 6 digits, 30 s — the universal default.</li>
+                <li><strong>Some banking and enterprise tools:</strong> SHA-256 or SHA-512, 7 or 8 digits.</li>
+                <li><strong>HOTP (RFC 4226):</strong> counter-based instead of time-based. Used by some hardware tokens; this tool does TOTP only.</li>
+            </ul>
+
+            <div class="faq">
+                <h3>Frequently Asked Questions</h3>
+                <div class="faq-item"><button class="faq-question">Is it safe to enter my TOTP secret here?</button><div class="faq-answer">All HMAC and base32 decoding happens in your browser via the Web Crypto API. The secret is never transmitted. That said, your TOTP secret is the same kind of credential as a password — only paste it into tools and devices you trust. For production 2FA, store the secret in a dedicated authenticator app or hardware token, not a web tool.</div></div>
+                <div class="faq-item"><button class="faq-question">What is the difference between TOTP and HOTP?</button><div class="faq-answer">HOTP (RFC 4226) uses a counter that increments with each use. TOTP (RFC 6238) uses the current Unix time divided by a step (usually 30 s) as the counter — so the code changes automatically. TOTP is what Google Authenticator, Authy, and most 2FA flows use.</div></div>
+                <div class="faq-item"><button class="faq-question">Why doesn't my code match the server?</button><div class="faq-answer">Almost always a clock skew. TOTP requires both ends to agree on Unix time within a few seconds. If your computer's clock is off by more than ~30 s, codes will be wrong. Servers usually accept the previous and next windows to tolerate small skew.</div></div>
+                <div class="faq-item"><button class="faq-question">What algorithm and digits should I use?</button><div class="faq-answer">Defaults — SHA-1, 6 digits, 30 s step — are what almost every service uses. Some (Microsoft Authenticator, banking apps) use SHA-256 or 8 digits. The secret's source (<code>otpauth://</code> URI or QR code) usually tells you which parameters to pick.</div></div>
+                <div class="faq-item"><button class="faq-question">Can I import a secret from a QR code?</button><div class="faq-answer">Yes — paste the full <code>otpauth://totp/...</code> URI into the secret field. The parser extracts the secret and parameters automatically.</div></div>
+            </div>
+        </section>
+
+        <section class="related-tools"><h2>Related Tools</h2><div class="related-grid">
+            <a href="/tools/password-generator.html" class="related-card"><h3>Password Generator</h3><p>Strong random passwords.</p></a>
+            <a href="/tools/bcrypt.html" class="related-card"><h3>Bcrypt</h3><p>Hash and verify passwords.</p></a>
+            <a href="/tools/jwt-generator.html" class="related-card"><h3>JWT Generator</h3><p>Sign JSON Web Tokens.</p></a>
+        </div></section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section"><h3>Network Tools</h3><a href="/tools/subnet-calculator.html">Subnet Calculator</a><a href="/tools/ipv6-subnet-calculator.html">IPv6 Subnet</a><a href="/tools/bgp-asn-lookup.html">BGP ASN Lookup</a></div>
+            <div class="footer-section"><h3>Security Tools</h3><a href="/tools/password-generator.html">Password Generator</a><a href="/tools/bcrypt.html">Bcrypt</a><a href="/tools/totp-generator.html">TOTP Generator</a><a href="/tools/jwt-decoder.html">JWT Decoder</a></div>
+            <div class="footer-section"><h3>Developer Tools</h3><a href="/tools/color-converter.html">Color Converter</a><a href="/tools/http-status-codes.html">HTTP Status Codes</a><a href="/tools/json-formatter.html">JSON Formatter</a></div>
+        </div>
+        <div class="footer-bottom"><p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals. | <a href="/about.html" style="color:inherit;text-decoration:underline;">About</a> · <a href="/contact.html" style="color:inherit;text-decoration:underline;">Contact</a> · <a href="/terms-of-service.html" style="color:inherit;text-decoration:underline;">Terms</a> · <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p></div>
+    </footer>
+
+    <div class="toast" id="toast">Copied to clipboard!</div>
+
+    <script src="../js/common.js"></script>
+    <script>
+        const B32 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+        function base32Decode(s) {
+            s = s.toUpperCase().replace(/=+$/, '').replace(/\s+/g, '');
+            const bytes = [];
+            let bits = 0, value = 0;
+            for (const ch of s) {
+                const i = B32.indexOf(ch);
+                if (i < 0) throw new Error('Invalid base32 character: "' + ch + '"');
+                value = (value << 5) | i;
+                bits += 5;
+                if (bits >= 8) { bits -= 8; bytes.push((value >> bits) & 0xff); }
+            }
+            return new Uint8Array(bytes);
+        }
+
+        function onSecretChange() {
+            const raw = document.getElementById('totpSecret').value.trim();
+            if (raw.startsWith('otpauth://')) {
+                try {
+                    const u = new URL(raw);
+                    const p = u.searchParams;
+                    const secret = p.get('secret');
+                    if (secret) document.getElementById('totpSecret').value = secret;
+                    if (p.get('algorithm')) {
+                        const a = p.get('algorithm').toUpperCase().replace('SHA', 'SHA-');
+                        const sel = document.getElementById('totpAlgo');
+                        if ([...sel.options].some(o => o.value === a)) sel.value = a;
+                    }
+                    if (p.get('digits')) document.getElementById('totpDigits').value = p.get('digits');
+                    if (p.get('period')) document.getElementById('totpStep').value = p.get('period');
+                } catch {}
+            }
+            tick();
+        }
+
+        async function totpFor(secret, time, algo, digits, step) {
+            const key = base32Decode(secret);
+            const counter = Math.floor(time / step);
+            const buf = new ArrayBuffer(8);
+            const view = new DataView(buf);
+            view.setUint32(0, Math.floor(counter / 0x100000000));
+            view.setUint32(4, counter >>> 0);
+            const k = await crypto.subtle.importKey('raw', key, { name: 'HMAC', hash: algo }, false, ['sign']);
+            const sig = new Uint8Array(await crypto.subtle.sign('HMAC', k, buf));
+            const off = sig[sig.length - 1] & 0xf;
+            const bin = ((sig[off] & 0x7f) << 24) | (sig[off+1] << 16) | (sig[off+2] << 8) | sig[off+3];
+            return String(bin % (10 ** digits)).padStart(digits, '0');
+        }
+
+        async function tick() {
+            const errEl = document.getElementById('totpError');
+            errEl.style.display = 'none';
+            const raw = document.getElementById('totpSecret').value.trim();
+            const algo = document.getElementById('totpAlgo').value;
+            const digits = parseInt(document.getElementById('totpDigits').value, 10);
+            const step = parseInt(document.getElementById('totpStep').value, 10) || 30;
+            if (!raw) { document.getElementById('totpCode').textContent = '— — — — — —'; document.getElementById('totpPrev').textContent='—'; document.getElementById('totpNext').textContent='—'; return; }
+            try {
+                const now = Math.floor(Date.now() / 1000);
+                const remaining = step - (now % step);
+                const [cur, prev, next] = await Promise.all([
+                    totpFor(raw, now, algo, digits, step),
+                    totpFor(raw, now - step, algo, digits, step),
+                    totpFor(raw, now + step, algo, digits, step),
+                ]);
+                document.getElementById('totpCode').textContent = cur.match(/.{3}/g)?.join(' ') || cur;
+                document.getElementById('totpPrev').textContent = prev;
+                document.getElementById('totpNext').textContent = next;
+                document.getElementById('totpProgress').style.width = (remaining / step * 100) + '%';
+                document.getElementById('totpMeta').textContent = `expires in ${remaining}s · ${algo} · ${digits} digits · ${step}s step`;
+            } catch (e) {
+                errEl.textContent = e.message;
+                errEl.style.display = 'block';
+                document.getElementById('totpCode').textContent = '— — — — — —';
+            }
+        }
+        function copyCode() {
+            const t = document.getElementById('totpCode').textContent.replace(/\s/g, '');
+            navigator.clipboard.writeText(t).then(() => showToast('Code copied!'));
+        }
+        tick();
+        setInterval(tick, 1000);
+    </script>
+    <script>document.querySelectorAll('.faq-question').forEach(b=>b.addEventListener('click',()=>b.parentElement.classList.toggle('open')));</script>
+</body>
+</html>

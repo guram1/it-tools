@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-FH74PGMNYD"></script>
+    <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-FH74PGMNYD');</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bcrypt Hash &amp; Verify — Online Bcrypt Generator | OPS-BOX</title>
+    <meta name="description" content="Free bcrypt hash generator and verifier. Hash passwords with adjustable cost factor (4–14) and check existing hashes against plaintext. 100% client-side using bcryptjs.">
+    <meta name="keywords" content="bcrypt online, bcrypt generator, bcrypt verify, password hash, bcrypt cost factor, hash password online">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://ops-box.net/tools/bcrypt.html">
+    <meta property="og:title" content="Bcrypt Hash &amp; Verify"><meta property="og:description" content="Generate and verify bcrypt password hashes."><meta property="og:type" content="website"><meta property="og:url" content="https://ops-box.net/tools/bcrypt.html"><meta property="og:image" content="https://ops-box.net/og-image.png">
+    <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Bcrypt Hash &amp; Verify"><meta name="twitter:description" content="Generate and verify bcrypt hashes."><meta name="twitter:image" content="https://ops-box.net/og-image.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Bcrypt Hash & Verify","url":"https://ops-box.net/tools/bcrypt.html","description":"Hash passwords with bcrypt and verify existing hashes","applicationCategory":"DeveloperApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+        {"@type":"Question","name":"What cost factor should I use?","acceptedAnswer":{"@type":"Answer","text":"As of 2024, the OWASP recommendation is a cost factor of 10–12. A factor of 10 takes about 100 ms on a modern server CPU; each increment doubles the work. Pick the highest value your login flow can tolerate."}},
+        {"@type":"Question","name":"Is bcrypt still secure?","acceptedAnswer":{"@type":"Answer","text":"Yes for most use cases. Bcrypt has been deployed since 1999 and has no known practical breaks. Argon2id is the modern PHC-winner recommendation and is preferred for new systems, but bcrypt remains acceptable per OWASP and NIST."}},
+        {"@type":"Question","name":"What does the $2b$ prefix mean?","acceptedAnswer":{"@type":"Answer","text":"The prefix identifies the bcrypt variant: $2a$ (original, has a known sign-extension bug in some implementations), $2b$ (current OpenBSD spec), $2y$ (PHP fix for the $2a$ bug). $2b$ is the modern default."}},
+        {"@type":"Question","name":"Is bcrypt limited to 72 characters?","acceptedAnswer":{"@type":"Answer","text":"Yes. Bcrypt silently truncates passwords longer than 72 bytes. To support longer passphrases, pre-hash with SHA-256 first (then base64-encode the result before bcrypting) or use Argon2id instead."}},
+        {"@type":"Question","name":"Is my password sent anywhere?","acceptedAnswer":{"@type":"Answer","text":"No. The bcryptjs library runs entirely in your browser. Nothing is transmitted to any server."}}
+    ]}</script>
+    <!-- Google AdSense --><script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1924789684268835" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bcryptjs@2.4.3/dist/bcrypt.min.js"></script>
+</head>
+<body>
+    <header><div class="header-content"><a href="/" class="logo"><div class="logo-icon">⚡</div><div class="logo-text">OPS<span>-BOX</span></div></a><nav class="header-nav"><a href="/tools/hash-generator.html">Hash</a><a href="/tools/password-generator.html">Password</a><a href="/tools/jwt-decoder.html">JWT</a><a href="/tools/uuid-generator.html">UUID</a></nav></div></header>
+
+    <main>
+        <nav class="breadcrumb"><a href="/">Home</a><span>›</span><span class="breadcrumb-current">Bcrypt</span></nav>
+
+        <div class="tool-container">
+            <div class="tool-header">
+                <h1 class="tool-title">Bcrypt Hash &amp; Verify</h1>
+                <p class="tool-description">Generate bcrypt password hashes with an adjustable cost factor, or verify an existing hash against a plaintext password. Runs entirely in your browser using bcryptjs.</p>
+            </div>
+            <div class="tool-content">
+                <h3 style="color:var(--text-primary);margin-bottom:0.75rem;">Hash a password</h3>
+                <div class="form-group">
+                    <label class="form-label" for="bcPwd">Password</label>
+                    <input type="text" id="bcPwd" class="form-input" value="correcthorsebatterystaple" style="font-family:'JetBrains Mono',monospace;">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Cost factor <span id="bcCostVal" style="color:var(--accent);font-family:'JetBrains Mono',monospace;">10</span> <span style="color:var(--text-muted);font-weight:normal;font-size:0.85rem;">— work = 2^cost iterations</span></label>
+                    <div class="range-container"><input type="range" class="range-input" id="bcCost" min="4" max="14" value="10" oninput="document.getElementById('bcCostVal').textContent=this.value"></div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="hashPwd()">Generate hash</button>
+                    <button class="btn btn-secondary" onclick="copyToClipboard('bcHashOut')">Copy hash</button>
+                </div>
+                <div class="form-group" style="margin-top:1rem;">
+                    <label class="form-label">Hash <span id="bcHashTime" style="color:var(--text-muted);font-weight:normal;font-size:0.85rem;"></span></label>
+                    <div class="bulk-output"><pre id="bcHashOut" style="word-break:break-all;white-space:pre-wrap;"></pre></div>
+                </div>
+
+                <hr style="border:none;border-top:1px solid var(--border);margin:2rem 0;">
+
+                <h3 style="color:var(--text-primary);margin-bottom:0.75rem;">Verify a hash</h3>
+                <div class="form-group">
+                    <label class="form-label" for="bcVerifyPwd">Plaintext password</label>
+                    <input type="text" id="bcVerifyPwd" class="form-input" style="font-family:'JetBrains Mono',monospace;">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="bcVerifyHash">Bcrypt hash</label>
+                    <input type="text" id="bcVerifyHash" class="form-input" placeholder="$2b$10$..." style="font-family:'JetBrains Mono',monospace;">
+                </div>
+                <div class="btn-group"><button class="btn btn-primary" onclick="verifyPwd()">Verify</button></div>
+                <div id="bcVerifyOut" style="display:none;margin-top:1rem;padding:0.75rem 1rem;border-radius:8px;font-family:'JetBrains Mono',monospace;"></div>
+
+                <div id="bcError" style="display:none;color:#ef4444;margin-top:1rem;padding:0.75rem 1rem;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:0.85rem;"></div>
+            </div>
+        </div>
+
+        <section class="seo-content">
+            <h2>About Bcrypt</h2>
+            <p><strong>Bcrypt</strong> is an adaptive password-hashing function based on the Blowfish cipher, published by Niels Provos and David Mazières in 1999. Its core feature is a tunable <em>cost factor</em>: as hardware gets faster, you raise the cost so each hash still takes a noticeable amount of CPU, making offline brute-force attacks expensive even if your password database leaks.</p>
+            <p>A bcrypt hash looks like: <code>$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy</code> — <code>$2b$</code> is the variant, <code>10</code> is the cost (2^10 = 1024 iterations of the key schedule), then 22 base64 characters of salt, then 31 of hash.</p>
+
+            <h3>Picking a Cost Factor</h3>
+            <ul>
+                <li><strong>10</strong> — current OWASP minimum; ~100 ms per hash on a modern CPU</li>
+                <li><strong>12</strong> — recommended for security-sensitive applications (~400 ms)</li>
+                <li><strong>14</strong> — about 1.5 s; only practical for low-volume login flows</li>
+            </ul>
+            <p>This page lets you crank the cost up to 14 to see how long it really takes on your own hardware before you ship a value to production.</p>
+
+            <h3>When NOT to Use Bcrypt</h3>
+            <ul>
+                <li><strong>For new systems</strong>, prefer Argon2id — it's the PHC competition winner and resists GPU/ASIC attacks better.</li>
+                <li><strong>For passphrases over 72 bytes</strong>, bcrypt silently truncates. Pre-hash with SHA-256 first, or use Argon2/scrypt.</li>
+                <li><strong>For non-password data</strong> (file integrity, API tokens), use SHA-256/HMAC — bcrypt is intentionally slow and overkill.</li>
+            </ul>
+
+            <div class="faq">
+                <h3>Frequently Asked Questions</h3>
+                <div class="faq-item"><button class="faq-question">What cost factor should I use?</button><div class="faq-answer">As of 2024, the OWASP recommendation is a cost factor of <strong>10–12</strong>. A factor of 10 takes about 100 ms on a modern server CPU; each increment doubles the work. Pick the highest value your login flow can tolerate.</div></div>
+                <div class="faq-item"><button class="faq-question">Is bcrypt still secure?</button><div class="faq-answer">Yes for most use cases. Bcrypt has been deployed since 1999 and has no known practical breaks. <strong>Argon2id</strong> is the modern PHC-winner recommendation and is preferred for new systems, but bcrypt remains acceptable per OWASP and NIST.</div></div>
+                <div class="faq-item"><button class="faq-question">What does the $2b$ prefix mean?</button><div class="faq-answer">The prefix identifies the bcrypt variant: <code>$2a$</code> (original, has a known sign-extension bug in some implementations), <code>$2b$</code> (current OpenBSD spec), <code>$2y$</code> (PHP fix for the <code>$2a$</code> bug). <code>$2b$</code> is the modern default.</div></div>
+                <div class="faq-item"><button class="faq-question">Is bcrypt limited to 72 characters?</button><div class="faq-answer">Yes. Bcrypt silently truncates passwords longer than 72 bytes. To support longer passphrases, pre-hash with SHA-256 first (then base64-encode the result before bcrypting) or use Argon2id instead.</div></div>
+                <div class="faq-item"><button class="faq-question">Is my password sent anywhere?</button><div class="faq-answer">No. The bcryptjs library runs entirely in your browser. Nothing is transmitted to any server.</div></div>
+            </div>
+        </section>
+
+        <section class="related-tools">
+            <h2>Related Tools</h2>
+            <div class="related-grid">
+                <a href="/tools/hash-generator.html" class="related-card"><h3>Hash Generator</h3><p>SHA-256, SHA-384, SHA-512.</p></a>
+                <a href="/tools/password-generator.html" class="related-card"><h3>Password Generator</h3><p>Generate strong random passwords.</p></a>
+                <a href="/tools/jwt-generator.html" class="related-card"><h3>JWT Generator</h3><p>Sign JSON Web Tokens.</p></a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section"><h3>Network Tools</h3><a href="/tools/subnet-calculator.html">Subnet Calculator</a><a href="/tools/ipv6-subnet-calculator.html">IPv6 Subnet</a><a href="/tools/cidr-aggregator.html">CIDR Aggregator</a><a href="/tools/bgp-asn-lookup.html">BGP ASN Lookup</a></div>
+            <div class="footer-section"><h3>Security Tools</h3><a href="/tools/password-generator.html">Password Generator</a><a href="/tools/bcrypt.html">Bcrypt</a><a href="/tools/totp-generator.html">TOTP Generator</a><a href="/tools/jwt-decoder.html">JWT Decoder</a></div>
+            <div class="footer-section"><h3>Developer Tools</h3><a href="/tools/json-formatter.html">JSON Formatter</a><a href="/tools/color-converter.html">Color Converter</a><a href="/tools/http-status-codes.html">HTTP Status Codes</a></div>
+        </div>
+        <div class="footer-bottom"><p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals. | <a href="/about.html" style="color:inherit;text-decoration:underline;">About</a> · <a href="/contact.html" style="color:inherit;text-decoration:underline;">Contact</a> · <a href="/terms-of-service.html" style="color:inherit;text-decoration:underline;">Terms</a> · <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p></div>
+    </footer>
+
+    <div class="toast" id="toast">Copied to clipboard!</div>
+
+    <script src="../js/common.js"></script>
+    <script>
+        function showError(m) { const e=document.getElementById('bcError'); e.textContent=m; e.style.display='block'; }
+        function clearError() { document.getElementById('bcError').style.display='none'; }
+        function hashPwd() {
+            clearError();
+            const pwd = document.getElementById('bcPwd').value;
+            const cost = parseInt(document.getElementById('bcCost').value, 10);
+            if (!pwd) return showError('Enter a password to hash.');
+            const t0 = performance.now();
+            try {
+                const salt = dcodeIO.bcrypt.genSaltSync(cost);
+                const hash = dcodeIO.bcrypt.hashSync(pwd, salt);
+                const ms = (performance.now() - t0).toFixed(0);
+                document.getElementById('bcHashOut').textContent = hash;
+                document.getElementById('bcHashTime').textContent = `— hashed in ${ms} ms (cost ${cost})`;
+                document.getElementById('bcVerifyHash').value = hash;
+                document.getElementById('bcVerifyPwd').value = pwd;
+            } catch (e) { showError('Hash failed: ' + e.message); }
+        }
+        function verifyPwd() {
+            clearError();
+            const pwd = document.getElementById('bcVerifyPwd').value;
+            const hash = document.getElementById('bcVerifyHash').value.trim();
+            const out = document.getElementById('bcVerifyOut');
+            if (!hash) return showError('Paste a bcrypt hash to verify against.');
+            try {
+                const ok = dcodeIO.bcrypt.compareSync(pwd, hash);
+                out.textContent = ok ? '✓ Match — password matches this hash.' : '✗ No match — password does NOT match this hash.';
+                out.style.background = ok ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)';
+                out.style.border = '1px solid ' + (ok ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)');
+                out.style.color = ok ? '#22c55e' : '#ef4444';
+                out.style.display = 'block';
+            } catch (e) { showError('Verify failed: ' + e.message); }
+        }
+        hashPwd();
+    </script>
+    <script>document.querySelectorAll('.faq-question').forEach(b=>b.addEventListener('click',()=>b.parentElement.classList.toggle('open')));</script>
+</body>
+</html>

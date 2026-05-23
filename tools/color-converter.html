@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-FH74PGMNYD"></script>
+    <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-FH74PGMNYD');</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Converter &amp; WCAG Contrast Checker — Hex / RGB / HSL / OKLCH | OPS-BOX</title>
+    <meta name="description" content="Free color converter and WCAG contrast checker. Convert between hex, rgb, hsl, hsv, and oklch. Test foreground/background pairs against WCAG 2.1 AA and AAA contrast thresholds.">
+    <meta name="keywords" content="color converter, hex to rgb, rgb to hsl, oklch converter, WCAG contrast checker, accessibility color">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://ops-box.net/tools/color-converter.html">
+    <meta property="og:title" content="Color Converter &amp; Contrast Checker"><meta property="og:description" content="Convert hex/rgb/hsl/oklch and check WCAG contrast ratios."><meta property="og:type" content="website"><meta property="og:url" content="https://ops-box.net/tools/color-converter.html"><meta property="og:image" content="https://ops-box.net/og-image.png">
+    <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Color Converter"><meta name="twitter:description" content="Convert hex/rgb/hsl/oklch and check WCAG contrast."><meta name="twitter:image" content="https://ops-box.net/og-image.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Color Converter","url":"https://ops-box.net/tools/color-converter.html","description":"Convert between color formats and check WCAG contrast","applicationCategory":"DeveloperApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+        {"@type":"Question","name":"What contrast ratio is needed for accessibility?","acceptedAnswer":{"@type":"Answer","text":"WCAG 2.1 requires 4.5:1 for normal body text (AA) and 7:1 for AAA. Large text (18 pt or 14 pt bold) needs 3:1 for AA and 4.5:1 for AAA. UI components and graphical objects need 3:1 against adjacent colors."}},
+        {"@type":"Question","name":"What is OKLCH and why does it matter?","acceptedAnswer":{"@type":"Answer","text":"OKLCH is a perceptually uniform color space — equal numeric differences correspond to equal perceived differences, unlike HSL or HSV. It is part of CSS Color Module Level 4 and is supported in all modern browsers. Use it for color scales and palettes where consistent contrast matters."}},
+        {"@type":"Question","name":"Why does HSL look uneven for color scales?","acceptedAnswer":{"@type":"Answer","text":"HSL's 'lightness' is not perceptual. A yellow at 50% lightness looks much brighter than a blue at 50% lightness. OKLCH and CIELAB fix this — that's why design systems are moving to them."}},
+        {"@type":"Question","name":"Can I paste a CSS color directly?","acceptedAnswer":{"@type":"Answer","text":"Yes. Any CSS color string works: #f00, rgb(255 0 0), rgba(255,0,0,0.5), hsl(0 100% 50%), oklch(70% 0.2 30), or a named color like crimson. The browser's own parser is used, so anything CSS accepts works here."}},
+        {"@type":"Question","name":"Is my color data sent anywhere?","acceptedAnswer":{"@type":"Answer","text":"No. All conversion and contrast calculation runs in your browser using the Canvas color parser and standard formulas."}}
+    ]}</script>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1924789684268835" crossorigin="anonymous"></script>
+    <style>
+        .color-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+        @media (max-width: 700px) { .color-grid { grid-template-columns: 1fr; } }
+        .color-swatch { height: 80px; border-radius: 8px; border: 1px solid var(--border); }
+        .fmt-row { display: flex; justify-content: space-between; padding: 0.5rem 0.75rem; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 6px; margin-bottom: 0.4rem; font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; align-items: center; gap: 0.5rem; }
+        .fmt-label { color: var(--text-muted); width: 4.5rem; flex-shrink: 0; }
+        .fmt-val { color: var(--accent); flex: 1; word-break: break-all; }
+        .fmt-copy { background: transparent; border: 1px solid var(--border); color: var(--text-muted); padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; cursor: pointer; }
+        .fmt-copy:hover { color: var(--text-primary); background: var(--bg-hover); }
+        .contrast-preview { padding: 1.5rem; border-radius: 8px; text-align: center; margin: 1rem 0; }
+        .wcag-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
+        .wcag-card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem; text-align: center; }
+        .wcag-pass { color: #22c55e; }
+        .wcag-fail { color: #ef4444; }
+    </style>
+</head>
+<body>
+    <header><div class="header-content"><a href="/" class="logo"><div class="logo-icon">⚡</div><div class="logo-text">OPS<span>-BOX</span></div></a><nav class="header-nav"><a href="/tools/json-formatter.html">JSON</a><a href="/tools/regex-tester.html">Regex</a><a href="/tools/url-encoder.html">URL</a><a href="/tools/uuid-generator.html">UUID</a></nav></div></header>
+
+    <main>
+        <nav class="breadcrumb"><a href="/">Home</a><span>›</span><span class="breadcrumb-current">Color Converter</span></nav>
+
+        <div class="tool-container">
+            <div class="tool-header">
+                <h1 class="tool-title">Color Converter &amp; Contrast Checker</h1>
+                <p class="tool-description">Convert between hex, RGB, HSL, HSV, and OKLCH. Test foreground/background pairs against WCAG 2.1 AA and AAA contrast thresholds.</p>
+            </div>
+            <div class="tool-content">
+                <div class="color-grid">
+                    <div>
+                        <div class="form-group"><label class="form-label">Foreground</label><input type="text" id="cFg" class="form-input" value="#22c55e" style="font-family:'JetBrains Mono',monospace;" oninput="update()"><input type="color" id="cFgPick" value="#22c55e" style="width:100%;height:38px;margin-top:0.4rem;border:1px solid var(--border);border-radius:6px;background:transparent;" oninput="document.getElementById('cFg').value=this.value;update()"></div>
+                        <div class="color-swatch" id="cFgSwatch"></div>
+                        <div id="cFgFmts" style="margin-top:0.75rem;"></div>
+                    </div>
+                    <div>
+                        <div class="form-group"><label class="form-label">Background</label><input type="text" id="cBg" class="form-input" value="#0a0a0b" style="font-family:'JetBrains Mono',monospace;" oninput="update()"><input type="color" id="cBgPick" value="#0a0a0b" style="width:100%;height:38px;margin-top:0.4rem;border:1px solid var(--border);border-radius:6px;background:transparent;" oninput="document.getElementById('cBg').value=this.value;update()"></div>
+                        <div class="color-swatch" id="cBgSwatch"></div>
+                        <div id="cBgFmts" style="margin-top:0.75rem;"></div>
+                    </div>
+                </div>
+
+                <div class="contrast-preview" id="cPreview">
+                    <div style="font-size:1.5rem;font-weight:600;">Aa</div>
+                    <div style="font-size:1rem;margin-top:0.4rem;">The quick brown fox jumps over the lazy dog</div>
+                    <div style="font-size:0.85rem;margin-top:0.25rem;">12 14 18 24 36 — sample body text</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Contrast ratio <span id="cRatio" style="color:var(--accent);font-family:'JetBrains Mono',monospace;font-weight:normal;"></span></label>
+                </div>
+
+                <div class="wcag-grid" id="cWcag"></div>
+
+                <div class="btn-group" style="margin-top:1rem;"><button class="btn btn-secondary" onclick="swap()">Swap fg/bg</button></div>
+
+                <div id="cError" style="display:none;color:#ef4444;margin-top:1rem;padding:0.6rem 0.9rem;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:0.85rem;"></div>
+            </div>
+        </div>
+
+        <section class="seo-content">
+            <h2>About Color Spaces</h2>
+            <p>This converter parses any CSS-recognized color (named, hex, rgb, hsl, oklch, etc.) and produces equivalents in every common format. Conversion happens in your browser using the Canvas color parser plus standard sRGB↔Oklab/OKLCH formulas.</p>
+
+            <h3>Format Reference</h3>
+            <ul>
+                <li><strong>Hex</strong> — <code>#rrggbb</code> or <code>#rgb</code>. Most common in CSS and design tools.</li>
+                <li><strong>RGB</strong> — <code>rgb(255 0 0)</code> or with alpha <code>rgb(255 0 0 / 0.5)</code>. Modern syntax uses spaces, not commas.</li>
+                <li><strong>HSL</strong> — Hue (0–360°), Saturation (0–100%), Lightness (0–100%). Intuitive for "make this redder/brighter" but not perceptually uniform.</li>
+                <li><strong>HSV / HSB</strong> — Like HSL but with "value" instead of lightness. Used by Photoshop, Figma color pickers.</li>
+                <li><strong>OKLCH</strong> — Perceptually uniform: L = lightness (0–1), C = chroma, H = hue (0–360°). Use this for accessible color scales and palettes.</li>
+            </ul>
+
+            <h3>WCAG 2.1 Contrast Thresholds</h3>
+            <ul>
+                <li><strong>AA normal text:</strong> 4.5:1 — minimum legal/compliance requirement in most jurisdictions</li>
+                <li><strong>AA large text</strong> (≥18pt or ≥14pt bold)<strong>:</strong> 3:1</li>
+                <li><strong>AAA normal text:</strong> 7:1 — enhanced level, recommended for primary content</li>
+                <li><strong>AAA large text:</strong> 4.5:1</li>
+                <li><strong>UI components &amp; graphics:</strong> 3:1 against adjacent colors</li>
+            </ul>
+
+            <div class="faq">
+                <h3>Frequently Asked Questions</h3>
+                <div class="faq-item"><button class="faq-question">What contrast ratio is needed for accessibility?</button><div class="faq-answer">WCAG 2.1 requires <strong>4.5:1</strong> for normal body text (AA) and <strong>7:1</strong> for AAA. Large text (18 pt or 14 pt bold) needs 3:1 for AA and 4.5:1 for AAA. UI components and graphical objects need 3:1 against adjacent colors.</div></div>
+                <div class="faq-item"><button class="faq-question">What is OKLCH and why does it matter?</button><div class="faq-answer">OKLCH is a perceptually uniform color space — equal numeric differences correspond to equal perceived differences, unlike HSL or HSV. It is part of CSS Color Module Level 4 and is supported in all modern browsers. Use it for color scales and palettes where consistent contrast matters.</div></div>
+                <div class="faq-item"><button class="faq-question">Why does HSL look uneven for color scales?</button><div class="faq-answer">HSL's "lightness" is not perceptual. A yellow at 50% lightness looks much brighter than a blue at 50% lightness. OKLCH and CIELAB fix this — that's why design systems are moving to them.</div></div>
+                <div class="faq-item"><button class="faq-question">Can I paste a CSS color directly?</button><div class="faq-answer">Yes. Any CSS color string works: <code>#f00</code>, <code>rgb(255 0 0)</code>, <code>rgba(255,0,0,0.5)</code>, <code>hsl(0 100% 50%)</code>, <code>oklch(70% 0.2 30)</code>, or a named color like <code>crimson</code>. The browser's own parser is used, so anything CSS accepts works here.</div></div>
+                <div class="faq-item"><button class="faq-question">Is my color data sent anywhere?</button><div class="faq-answer">No. All conversion and contrast calculation runs in your browser using the Canvas color parser and standard formulas.</div></div>
+            </div>
+        </section>
+
+        <section class="related-tools"><h2>Related Tools</h2><div class="related-grid">
+            <a href="/tools/json-formatter.html" class="related-card"><h3>JSON Formatter</h3><p>Format and validate JSON.</p></a>
+            <a href="/tools/url-encoder.html" class="related-card"><h3>URL Encoder</h3><p>Percent-encode URLs.</p></a>
+            <a href="/tools/uuid-generator.html" class="related-card"><h3>UUID Generator</h3><p>Random UUIDs for keys.</p></a>
+        </div></section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section"><h3>Network Tools</h3><a href="/tools/subnet-calculator.html">Subnet Calculator</a><a href="/tools/ipv6-subnet-calculator.html">IPv6 Subnet</a><a href="/tools/bgp-asn-lookup.html">BGP ASN Lookup</a></div>
+            <div class="footer-section"><h3>Security Tools</h3><a href="/tools/password-generator.html">Password Generator</a><a href="/tools/bcrypt.html">Bcrypt</a><a href="/tools/totp-generator.html">TOTP Generator</a></div>
+            <div class="footer-section"><h3>Developer Tools</h3><a href="/tools/color-converter.html">Color Converter</a><a href="/tools/http-status-codes.html">HTTP Status Codes</a><a href="/tools/json-formatter.html">JSON Formatter</a></div>
+        </div>
+        <div class="footer-bottom"><p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals. | <a href="/about.html" style="color:inherit;text-decoration:underline;">About</a> · <a href="/contact.html" style="color:inherit;text-decoration:underline;">Contact</a> · <a href="/terms-of-service.html" style="color:inherit;text-decoration:underline;">Terms</a> · <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p></div>
+    </footer>
+
+    <div class="toast" id="toast">Copied to clipboard!</div>
+
+    <script src="../js/common.js"></script>
+    <script>
+        // Parse any CSS color → {r,g,b,a} in 0..255 / 0..1
+        function parseColor(s) {
+            const ctx = document.createElement('canvas').getContext('2d');
+            ctx.fillStyle = '#000'; ctx.fillStyle = s;
+            const computed = ctx.fillStyle; // browser-normalized
+            // Get rgba via getImageData trick
+            const c2 = document.createElement('canvas'); c2.width=c2.height=1;
+            const ctx2 = c2.getContext('2d');
+            ctx2.fillStyle = s; ctx2.fillRect(0,0,1,1);
+            const [r,g,b,a] = ctx2.getImageData(0,0,1,1).data;
+            return { r, g, b, a: a/255, computed };
+        }
+
+        function rgbToHex(r,g,b,a) {
+            const h = n => n.toString(16).padStart(2,'0');
+            const base = '#' + h(r) + h(g) + h(b);
+            if (a < 1) return base + h(Math.round(a*255));
+            return base;
+        }
+        function rgbToHsl(r,g,b) {
+            r/=255; g/=255; b/=255;
+            const mx=Math.max(r,g,b), mn=Math.min(r,g,b);
+            let h=0, s=0, l=(mx+mn)/2;
+            if (mx !== mn) {
+                const d = mx-mn;
+                s = l > 0.5 ? d/(2-mx-mn) : d/(mx+mn);
+                switch(mx) {
+                    case r: h=(g-b)/d + (g<b?6:0); break;
+                    case g: h=(b-r)/d + 2; break;
+                    case b: h=(r-g)/d + 4; break;
+                }
+                h/=6;
+            }
+            return [Math.round(h*360), Math.round(s*100), Math.round(l*100)];
+        }
+        function rgbToHsv(r,g,b) {
+            r/=255; g/=255; b/=255;
+            const mx=Math.max(r,g,b), mn=Math.min(r,g,b);
+            const d = mx-mn;
+            let h=0, s = mx===0?0:d/mx, v = mx;
+            if (mx !== mn) {
+                switch(mx) {
+                    case r: h=(g-b)/d + (g<b?6:0); break;
+                    case g: h=(b-r)/d + 2; break;
+                    case b: h=(r-g)/d + 4; break;
+                }
+                h/=6;
+            }
+            return [Math.round(h*360), Math.round(s*100), Math.round(v*100)];
+        }
+
+        // sRGB → linear
+        function srgbToLin(c) { c/=255; return c <= 0.04045 ? c/12.92 : Math.pow((c+0.055)/1.055, 2.4); }
+        // linear sRGB → OKLab
+        function linToOklab(r,g,b) {
+            const l = 0.4122214708*r + 0.5363325363*g + 0.0514459929*b;
+            const m = 0.2119034982*r + 0.6806995451*g + 0.1073969566*b;
+            const s = 0.0883024619*r + 0.2817188376*g + 0.6299787005*b;
+            const l_ = Math.cbrt(l), m_ = Math.cbrt(m), s_ = Math.cbrt(s);
+            return [
+                0.2104542553*l_ + 0.7936177850*m_ - 0.0040720468*s_,
+                1.9779984951*l_ - 2.4285922050*m_ + 0.4505937099*s_,
+                0.0259040371*l_ + 0.7827717662*m_ - 0.8086757660*s_
+            ];
+        }
+        function rgbToOklch(r,g,b) {
+            const [L,a,bb] = linToOklab(srgbToLin(r), srgbToLin(g), srgbToLin(b));
+            const C = Math.sqrt(a*a + bb*bb);
+            let H = Math.atan2(bb, a) * 180/Math.PI;
+            if (H < 0) H += 360;
+            return [L, C, H];
+        }
+
+        // WCAG relative luminance
+        function relLum(r,g,b) { return 0.2126*srgbToLin(r) + 0.7152*srgbToLin(g) + 0.0722*srgbToLin(b); }
+        function contrast(c1, c2) {
+            const L1 = relLum(c1.r, c1.g, c1.b);
+            const L2 = relLum(c2.r, c2.g, c2.b);
+            const [a,b] = L1 > L2 ? [L1,L2] : [L2,L1];
+            return (a + 0.05) / (b + 0.05);
+        }
+
+        function fmtsHtml(c) {
+            const [h,s,l] = rgbToHsl(c.r,c.g,c.b);
+            const [hh,ss,vv] = rgbToHsv(c.r,c.g,c.b);
+            const [L,C,H] = rgbToOklch(c.r,c.g,c.b);
+            const hex = rgbToHex(c.r,c.g,c.b,c.a);
+            const rgb = c.a < 1 ? `rgb(${c.r} ${c.g} ${c.b} / ${c.a.toFixed(2)})` : `rgb(${c.r} ${c.g} ${c.b})`;
+            const hsl = `hsl(${h} ${s}% ${l}%)`;
+            const hsv = `hsv(${hh}, ${ss}%, ${vv}%)`;
+            const oklch = `oklch(${(L*100).toFixed(1)}% ${C.toFixed(3)} ${H.toFixed(1)})`;
+            const rows = [['HEX', hex], ['RGB', rgb], ['HSL', hsl], ['HSV', hsv], ['OKLCH', oklch]];
+            return rows.map(([k,v]) => `<div class="fmt-row"><span class="fmt-label">${k}</span><span class="fmt-val">${v}</span><button class="fmt-copy" onclick="navigator.clipboard.writeText('${v.replace(/'/g,"\\'")}').then(()=>showToast());">copy</button></div>`).join('');
+        }
+
+        function update() {
+            const errEl = document.getElementById('cError');
+            errEl.style.display = 'none';
+            let fg, bg;
+            try { fg = parseColor(document.getElementById('cFg').value); } catch { errEl.textContent='Bad foreground color.'; errEl.style.display='block'; return; }
+            try { bg = parseColor(document.getElementById('cBg').value); } catch { errEl.textContent='Bad background color.'; errEl.style.display='block'; return; }
+
+            document.getElementById('cFgSwatch').style.background = `rgb(${fg.r} ${fg.g} ${fg.b} / ${fg.a})`;
+            document.getElementById('cBgSwatch').style.background = `rgb(${bg.r} ${bg.g} ${bg.b} / ${bg.a})`;
+            document.getElementById('cFgFmts').innerHTML = fmtsHtml(fg);
+            document.getElementById('cBgFmts').innerHTML = fmtsHtml(bg);
+            try { document.getElementById('cFgPick').value = rgbToHex(fg.r,fg.g,fg.b,1); } catch {}
+            try { document.getElementById('cBgPick').value = rgbToHex(bg.r,bg.g,bg.b,1); } catch {}
+
+            const ratio = contrast(fg, bg);
+            const prev = document.getElementById('cPreview');
+            prev.style.background = `rgb(${bg.r} ${bg.g} ${bg.b})`;
+            prev.style.color = `rgb(${fg.r} ${fg.g} ${fg.b})`;
+            document.getElementById('cRatio').textContent = `${ratio.toFixed(2)} : 1`;
+
+            const checks = [
+                ['AA normal (4.5)', ratio >= 4.5],
+                ['AA large (3.0)', ratio >= 3.0],
+                ['AAA normal (7.0)', ratio >= 7.0],
+                ['AAA large (4.5)', ratio >= 4.5],
+            ];
+            document.getElementById('cWcag').innerHTML = checks.map(([k,ok]) => `<div class="wcag-card"><div style="color:var(--text-muted);font-size:0.75rem;text-transform:uppercase;letter-spacing:0.05em;">${k}</div><div class="${ok?'wcag-pass':'wcag-fail'}" style="font-size:1.2rem;font-weight:600;margin-top:0.2rem;">${ok?'PASS':'FAIL'}</div></div>`).join('');
+        }
+        function swap() {
+            const a = document.getElementById('cFg').value, b = document.getElementById('cBg').value;
+            document.getElementById('cFg').value = b; document.getElementById('cBg').value = a;
+            update();
+        }
+        update();
+    </script>
+    <script>document.querySelectorAll('.faq-question').forEach(b=>b.addEventListener('click',()=>b.parentElement.classList.toggle('open')));</script>
+</body>
+</html>

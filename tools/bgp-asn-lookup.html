@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-FH74PGMNYD"></script>
+    <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-FH74PGMNYD');</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BGP ASN Lookup — Autonomous System Info, Prefixes, Peers | OPS-BOX</title>
+    <meta name="description" content="Free BGP ASN lookup. Look up any AS number or IP — see the holder, country, announced IPv4/IPv6 prefixes, and BGP peer neighbors. Powered by RIPEstat.">
+    <meta name="keywords" content="BGP ASN lookup, AS number lookup, ASN to prefixes, BGP peers, RIPEstat, ip to asn">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://ops-box.net/tools/bgp-asn-lookup.html">
+    <meta property="og:title" content="BGP ASN Lookup — Prefixes &amp; Peers"><meta property="og:description" content="Look up any AS number or IP and see prefixes, peers, and holder info."><meta property="og:type" content="website"><meta property="og:url" content="https://ops-box.net/tools/bgp-asn-lookup.html"><meta property="og:image" content="https://ops-box.net/og-image.png">
+    <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="BGP ASN Lookup"><meta name="twitter:description" content="Look up AS numbers and BGP routing info."><meta name="twitter:image" content="https://ops-box.net/og-image.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"BGP ASN Lookup","url":"https://ops-box.net/tools/bgp-asn-lookup.html","description":"Look up BGP autonomous system information, announced prefixes, and peers","applicationCategory":"NetworkingApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+        {"@type":"Question","name":"What is an ASN?","acceptedAnswer":{"@type":"Answer","text":"An Autonomous System Number (ASN) is a globally unique 16- or 32-bit integer assigned to an organization that operates one or more IP networks under a single, clearly defined external routing policy. ASNs are assigned by the Regional Internet Registries (ARIN, RIPE, APNIC, LACNIC, AFRINIC) and used by BGP — the protocol that exchanges routes between networks on the public internet."}},
+        {"@type":"Question","name":"Where does the data come from?","acceptedAnswer":{"@type":"Answer","text":"All lookups use the RIPEstat Data API, which aggregates BGP routing data from RIS (Routing Information Service) collectors worldwide plus WHOIS data from the five Regional Internet Registries. It updates every few hours."}},
+        {"@type":"Question","name":"Why does an IP show no ASN?","acceptedAnswer":{"@type":"Answer","text":"Either the IP is in a reserved/bogon range (RFC 1918 private space, multicast, documentation), or it is unannounced (the prefix isn't currently in the global BGP table). Both are common."}},
+        {"@type":"Question","name":"What's the difference between 16-bit and 32-bit ASNs?","acceptedAnswer":{"@type":"Answer","text":"ASNs were originally 16-bit (0–65535). The space ran out, so RFC 6793 extended them to 32 bits. Modern allocations are 32-bit; you'll see values like AS213000 or higher. AS23456 (\"AS_TRANS\") is reserved as a placeholder for 32-bit ASNs in legacy 16-bit-only routers."}},
+        {"@type":"Question","name":"Is anything sent through OPS-BOX?","acceptedAnswer":{"@type":"Answer","text":"No. Your browser calls the RIPEstat API directly. Their privacy policy applies to the request; we don't proxy or log it."}}
+    ]}</script>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1924789684268835" crossorigin="anonymous"></script>
+    <style>
+        .stat-row { display:grid; grid-template-columns:repeat(4,1fr); gap:0.75rem; margin:1rem 0; }
+        .stat-card { background:var(--bg-secondary); border:1px solid var(--border); border-radius:8px; padding:0.75rem 1rem; }
+        .stat-label { color:var(--text-muted); font-size:0.7rem; text-transform:uppercase; letter-spacing:0.05em; }
+        .stat-val { color:var(--accent); font-family:'JetBrains Mono',monospace; font-size:1rem; font-weight:600; margin-top:0.25rem; word-break:break-all; }
+        @media (max-width:700px) { .stat-row { grid-template-columns:repeat(2,1fr); } }
+        .pfx-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; }
+        @media (max-width:700px) { .pfx-grid { grid-template-columns:1fr; } }
+        .pfx-list { max-height:300px; overflow-y:auto; background:var(--bg-secondary); border:1px solid var(--border); border-radius:8px; padding:0.5rem 0.75rem; font-family:'JetBrains Mono',monospace; font-size:0.85rem; }
+        .pfx-list div { padding:0.25rem 0; border-bottom:1px solid var(--border); color:var(--text-secondary); }
+        .pfx-list div:last-child { border-bottom:none; }
+        .preset-btn { background:var(--bg-secondary); border:1px solid var(--border); color:var(--text-secondary); padding:0.4rem 0.75rem; border-radius:6px; font-family:'JetBrains Mono',monospace; font-size:0.8rem; cursor:pointer; }
+        .preset-btn:hover { background:var(--bg-hover); color:var(--text-primary); }
+        .loading { color:var(--text-muted); padding:1rem; text-align:center; font-style:italic; }
+    </style>
+</head>
+<body>
+    <header><div class="header-content"><a href="/" class="logo"><div class="logo-icon">⚡</div><div class="logo-text">OPS<span>-BOX</span></div></a><nav class="header-nav"><a href="/tools/ip-location.html">IP Location</a><a href="/tools/cidr-aggregator.html">CIDR</a><a href="/tools/dns-lookup.html">DNS</a><a href="/tools/ssl-checker.html">SSL</a></nav></div></header>
+
+    <main>
+        <nav class="breadcrumb"><a href="/">Home</a><span>›</span><span class="breadcrumb-current">BGP ASN Lookup</span></nav>
+
+        <div class="tool-container">
+            <div class="tool-header">
+                <h1 class="tool-title">BGP ASN Lookup</h1>
+                <p class="tool-description">Look up an Autonomous System Number or an IP and see the holder, country, announced IPv4/IPv6 prefixes, and BGP peer neighbors. Live data from the RIPEstat API.</p>
+            </div>
+            <div class="tool-content">
+                <div class="form-group">
+                    <label class="form-label" for="bgpInput">AS number or IP address</label>
+                    <input type="text" id="bgpInput" class="form-input" value="AS15169" placeholder="AS15169  or  AS13335  or  8.8.8.8  or  2606:4700:4700::1111" style="font-family:'JetBrains Mono',monospace;font-size:1.05rem;" onkeydown="if(event.key==='Enter')lookup()">
+                    <div style="display:flex;flex-wrap:wrap;gap:0.4rem;margin-top:0.6rem;">
+                        <button class="preset-btn" onclick="setVal('AS15169')">AS15169 Google</button>
+                        <button class="preset-btn" onclick="setVal('AS13335')">AS13335 Cloudflare</button>
+                        <button class="preset-btn" onclick="setVal('AS16509')">AS16509 Amazon</button>
+                        <button class="preset-btn" onclick="setVal('AS8075')">AS8075 Microsoft</button>
+                        <button class="preset-btn" onclick="setVal('AS32934')">AS32934 Meta</button>
+                        <button class="preset-btn" onclick="setVal('8.8.8.8')">8.8.8.8</button>
+                        <button class="preset-btn" onclick="setVal('1.1.1.1')">1.1.1.1</button>
+                    </div>
+                </div>
+                <div class="btn-group"><button class="btn btn-primary" onclick="lookup()">Look up</button></div>
+
+                <div id="bgpError" style="display:none;color:#ef4444;margin-top:1rem;padding:0.75rem 1rem;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:0.85rem;"></div>
+
+                <div id="bgpResults" style="display:none;margin-top:1.5rem;">
+                    <div id="bgpStats" class="stat-row"></div>
+                    <div id="bgpWhois" class="form-group"></div>
+                    <div class="pfx-grid">
+                        <div>
+                            <div class="form-group" style="margin-bottom:0.5rem;"><label class="form-label">IPv4 prefixes <span id="bgpV4Count" style="color:var(--text-muted);font-weight:normal;"></span></label></div>
+                            <div id="bgpV4" class="pfx-list"></div>
+                        </div>
+                        <div>
+                            <div class="form-group" style="margin-bottom:0.5rem;"><label class="form-label">IPv6 prefixes <span id="bgpV6Count" style="color:var(--text-muted);font-weight:normal;"></span></label></div>
+                            <div id="bgpV6" class="pfx-list"></div>
+                        </div>
+                    </div>
+                    <div id="bgpPeersWrap" class="form-group" style="margin-top:1rem;display:none;">
+                        <label class="form-label">BGP neighbors <span id="bgpPeerCount" style="color:var(--text-muted);font-weight:normal;"></span></label>
+                        <div id="bgpPeers" class="pfx-list"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <section class="seo-content">
+            <h2>About BGP &amp; ASNs</h2>
+            <p>The public internet is a network of <strong>autonomous systems</strong> — independent networks operated by ISPs, hosting providers, universities, and large enterprises. Each AS is identified by a globally unique <strong>ASN</strong> assigned by a Regional Internet Registry (ARIN, RIPE, APNIC, LACNIC, or AFRINIC). They exchange reachability information using <strong>BGP (Border Gateway Protocol)</strong>, the routing protocol that holds the internet together.</p>
+            <p>This tool queries the <a href="https://stat.ripe.net/" rel="noopener">RIPEstat Data API</a>, which aggregates the global BGP table from RIS (Routing Information Service) collectors plus WHOIS data from the five RIRs. You can look up either:</p>
+            <ul>
+                <li><strong>An ASN</strong> — see the holder, country, prefixes it announces, and which other ASNs it peers with.</li>
+                <li><strong>An IP address</strong> — see which ASN announces it and which prefix covers it.</li>
+            </ul>
+
+            <h3>Common Use Cases</h3>
+            <ul>
+                <li><strong>Incident response:</strong> identify which network owns an attacking or scanning IP</li>
+                <li><strong>Peering decisions:</strong> see who a target network peers with</li>
+                <li><strong>Hijack detection:</strong> compare current announcers of a prefix vs the legitimate holder</li>
+                <li><strong>Network reconnaissance:</strong> map an organization's announced address space</li>
+                <li><strong>Sales / BD:</strong> understand a prospect's network footprint</li>
+            </ul>
+
+            <div class="faq">
+                <h3>Frequently Asked Questions</h3>
+                <div class="faq-item"><button class="faq-question">What is an ASN?</button><div class="faq-answer">An Autonomous System Number (ASN) is a globally unique 16- or 32-bit integer assigned to an organization that operates one or more IP networks under a single, clearly defined external routing policy. ASNs are assigned by the Regional Internet Registries (ARIN, RIPE, APNIC, LACNIC, AFRINIC) and used by BGP — the protocol that exchanges routes between networks on the public internet.</div></div>
+                <div class="faq-item"><button class="faq-question">Where does the data come from?</button><div class="faq-answer">All lookups use the <a href="https://stat.ripe.net/" rel="noopener">RIPEstat Data API</a>, which aggregates BGP routing data from RIS (Routing Information Service) collectors worldwide plus WHOIS data from the five Regional Internet Registries. It updates every few hours.</div></div>
+                <div class="faq-item"><button class="faq-question">Why does an IP show no ASN?</button><div class="faq-answer">Either the IP is in a reserved/bogon range (RFC 1918 private space, multicast, documentation), or it is unannounced (the prefix isn't currently in the global BGP table). Both are common.</div></div>
+                <div class="faq-item"><button class="faq-question">What's the difference between 16-bit and 32-bit ASNs?</button><div class="faq-answer">ASNs were originally 16-bit (0–65535). The space ran out, so RFC 6793 extended them to 32 bits. Modern allocations are 32-bit; you'll see values like AS213000 or higher. AS23456 ("AS_TRANS") is reserved as a placeholder for 32-bit ASNs in legacy 16-bit-only routers.</div></div>
+                <div class="faq-item"><button class="faq-question">Is anything sent through OPS-BOX?</button><div class="faq-answer">No. Your browser calls the RIPEstat API directly. Their privacy policy applies to the request; we don't proxy or log it.</div></div>
+            </div>
+        </section>
+
+        <section class="related-tools"><h2>Related Tools</h2><div class="related-grid">
+            <a href="/tools/ip-location.html" class="related-card"><h3>IP Location</h3><p>Geolocation, ASN &amp; ISP info.</p></a>
+            <a href="/tools/cidr-aggregator.html" class="related-card"><h3>CIDR Aggregator</h3><p>Collapse prefix lists.</p></a>
+            <a href="/tools/ipv6-subnet-calculator.html" class="related-card"><h3>IPv6 Subnet Calculator</h3><p>Plan IPv6 prefixes.</p></a>
+        </div></section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section"><h3>Network Tools</h3><a href="/tools/subnet-calculator.html">Subnet Calculator</a><a href="/tools/ipv6-subnet-calculator.html">IPv6 Subnet</a><a href="/tools/cidr-aggregator.html">CIDR Aggregator</a><a href="/tools/bgp-asn-lookup.html">BGP ASN Lookup</a></div>
+            <div class="footer-section"><h3>Security Tools</h3><a href="/tools/password-generator.html">Password Generator</a><a href="/tools/bcrypt.html">Bcrypt</a><a href="/tools/totp-generator.html">TOTP Generator</a></div>
+            <div class="footer-section"><h3>Developer Tools</h3><a href="/tools/color-converter.html">Color Converter</a><a href="/tools/http-status-codes.html">HTTP Status Codes</a><a href="/tools/json-formatter.html">JSON Formatter</a></div>
+        </div>
+        <div class="footer-bottom"><p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals. | <a href="/about.html" style="color:inherit;text-decoration:underline;">About</a> · <a href="/contact.html" style="color:inherit;text-decoration:underline;">Contact</a> · <a href="/terms-of-service.html" style="color:inherit;text-decoration:underline;">Terms</a> · <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p></div>
+    </footer>
+
+    <div class="toast" id="toast">Copied to clipboard!</div>
+
+    <script src="../js/common.js"></script>
+    <script>
+        const API = 'https://stat.ripe.net/data';
+        function setVal(s) { document.getElementById('bgpInput').value = s; lookup(); }
+        function escHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+        function classify(input) {
+            const s = input.trim();
+            const asnMatch = s.match(/^(?:AS)?(\d+)$/i);
+            if (asnMatch) return { kind: 'asn', value: 'AS' + asnMatch[1] };
+            return { kind: 'ip', value: s };
+        }
+
+        async function fetchJson(url) {
+            const r = await fetch(url);
+            if (!r.ok) throw new Error('RIPEstat ' + r.status);
+            const j = await r.json();
+            if (j.status && j.status !== 'ok') throw new Error(j.status_code + ': ' + (j.messages?.[0]?.[1] || 'API error'));
+            return j.data;
+        }
+
+        async function lookup() {
+            const errEl = document.getElementById('bgpError');
+            const resEl = document.getElementById('bgpResults');
+            errEl.style.display = 'none';
+            resEl.style.display = 'none';
+            const input = document.getElementById('bgpInput').value.trim();
+            if (!input) return;
+            const cls = classify(input);
+
+            try {
+                let asn;
+                if (cls.kind === 'ip') {
+                    const ni = await fetchJson(`${API}/network-info/data.json?resource=${encodeURIComponent(cls.value)}`);
+                    if (!ni.asns || !ni.asns.length) throw new Error(`No ASN found for IP ${cls.value}. May be unannounced or in private space.`);
+                    asn = 'AS' + ni.asns[0];
+                    document.getElementById('bgpInput').value = asn;
+                } else { asn = cls.value; }
+
+                resEl.style.display = 'block';
+                document.getElementById('bgpStats').innerHTML = '<div class="loading">Loading ASN data…</div>';
+                document.getElementById('bgpV4').innerHTML = '<div class="loading">Loading…</div>';
+                document.getElementById('bgpV6').innerHTML = '<div class="loading">Loading…</div>';
+                document.getElementById('bgpWhois').innerHTML = '';
+                document.getElementById('bgpPeersWrap').style.display = 'none';
+
+                const [overview, prefixes, neighbours] = await Promise.allSettled([
+                    fetchJson(`${API}/as-overview/data.json?resource=${asn}`),
+                    fetchJson(`${API}/announced-prefixes/data.json?resource=${asn}`),
+                    fetchJson(`${API}/asn-neighbours/data.json?resource=${asn}`),
+                ]);
+
+                if (overview.status === 'fulfilled') {
+                    const o = overview.value;
+                    const stats = [
+                        ['ASN', asn],
+                        ['Holder', o.holder || '—'],
+                        ['Type', o.type || '—'],
+                        ['Block', o.block?.resource || '—'],
+                    ];
+                    document.getElementById('bgpStats').innerHTML = stats.map(([k,v]) => `<div class="stat-card"><div class="stat-label">${k}</div><div class="stat-val">${escHtml(v)}</div></div>`).join('');
+                } else {
+                    document.getElementById('bgpStats').innerHTML = '<div class="loading">Overview not available.</div>';
+                }
+
+                if (prefixes.status === 'fulfilled') {
+                    const all = prefixes.value.prefixes || [];
+                    const v4 = all.filter(p => p.prefix.includes('.'));
+                    const v6 = all.filter(p => p.prefix.includes(':'));
+                    document.getElementById('bgpV4Count').textContent = `— ${v4.length}`;
+                    document.getElementById('bgpV6Count').textContent = `— ${v6.length}`;
+                    document.getElementById('bgpV4').innerHTML = v4.length ? v4.slice(0, 500).map(p => `<div>${escHtml(p.prefix)}</div>`).join('') + (v4.length > 500 ? `<div style="color:var(--text-muted);font-style:italic;">… ${v4.length - 500} more</div>` : '') : '<div style="color:var(--text-muted);">No IPv4 prefixes.</div>';
+                    document.getElementById('bgpV6').innerHTML = v6.length ? v6.slice(0, 500).map(p => `<div>${escHtml(p.prefix)}</div>`).join('') + (v6.length > 500 ? `<div style="color:var(--text-muted);font-style:italic;">… ${v6.length - 500} more</div>` : '') : '<div style="color:var(--text-muted);">No IPv6 prefixes.</div>';
+                } else {
+                    document.getElementById('bgpV4').innerHTML = '<div class="loading">Prefixes not available.</div>';
+                    document.getElementById('bgpV6').innerHTML = '';
+                }
+
+                if (neighbours.status === 'fulfilled') {
+                    const peers = neighbours.value.neighbours || [];
+                    if (peers.length) {
+                        document.getElementById('bgpPeersWrap').style.display = 'block';
+                        document.getElementById('bgpPeerCount').textContent = `— ${peers.length}`;
+                        document.getElementById('bgpPeers').innerHTML = peers.slice(0, 300).map(p => `<div>AS${p.asn} <span style="color:var(--text-muted);">— ${escHtml(p.type || '')} (power: ${p.power || '?'})</span></div>`).join('') + (peers.length > 300 ? `<div style="color:var(--text-muted);font-style:italic;">… ${peers.length - 300} more</div>` : '');
+                    }
+                }
+            } catch (e) {
+                errEl.textContent = e.message;
+                errEl.style.display = 'block';
+                resEl.style.display = 'none';
+            }
+        }
+        lookup();
+    </script>
+    <script>document.querySelectorAll('.faq-question').forEach(b=>b.addEventListener('click',()=>b.parentElement.classList.toggle('open')));</script>
+</body>
+</html>

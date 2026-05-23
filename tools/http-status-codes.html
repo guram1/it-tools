@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-FH74PGMNYD"></script>
+    <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-FH74PGMNYD');</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTTP Status Codes — Complete Reference (1xx–5xx) | OPS-BOX</title>
+    <meta name="description" content="Complete HTTP status code reference. Search 200 OK, 301, 401, 403, 404, 418, 429, 500, 502, 503 and every other code with concise explanations and RFC references.">
+    <meta name="keywords" content="HTTP status codes, 404 meaning, 500 error, 301 redirect, HTTP response codes, status code reference">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://ops-box.net/tools/http-status-codes.html">
+    <meta property="og:title" content="HTTP Status Codes Reference"><meta property="og:description" content="Complete reference for HTTP 1xx–5xx response codes."><meta property="og:type" content="website"><meta property="og:url" content="https://ops-box.net/tools/http-status-codes.html"><meta property="og:image" content="https://ops-box.net/og-image.png">
+    <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="HTTP Status Codes Reference"><meta name="twitter:description" content="Complete HTTP status code reference."><meta name="twitter:image" content="https://ops-box.net/og-image.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"HTTP Status Codes","url":"https://ops-box.net/tools/http-status-codes.html","description":"Searchable reference for HTTP status codes","applicationCategory":"DeveloperApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1924789684268835" crossorigin="anonymous"></script>
+    <style>
+        .cat-chip { display:inline-block; padding:0.2rem 0.6rem; border-radius:6px; font-family:'JetBrains Mono',monospace; font-size:0.75rem; font-weight:600; }
+        .cat-1xx { background:rgba(99,102,241,0.15); color:#818cf8; }
+        .cat-2xx { background:rgba(34,197,94,0.15); color:#22c55e; }
+        .cat-3xx { background:rgba(234,179,8,0.15); color:#eab308; }
+        .cat-4xx { background:rgba(249,115,22,0.15); color:#fb923c; }
+        .cat-5xx { background:rgba(239,68,68,0.15); color:#ef4444; }
+        .status-card { background:var(--bg-secondary); border:1px solid var(--border); border-radius:8px; padding:0.9rem 1rem; margin-bottom:0.5rem; }
+        .status-head { display:flex; align-items:center; gap:0.75rem; margin-bottom:0.4rem; flex-wrap:wrap; }
+        .status-code { font-family:'JetBrains Mono',monospace; font-size:1.1rem; font-weight:600; color:var(--accent); }
+        .status-name { font-weight:600; color:var(--text-primary); }
+        .status-desc { color:var(--text-secondary); font-size:0.9rem; line-height:1.5; }
+        .status-rfc { color:var(--text-muted); font-size:0.75rem; font-family:'JetBrains Mono',monospace; }
+        .cat-filter { display:flex; flex-wrap:wrap; gap:0.4rem; margin-bottom:1rem; }
+        .cat-btn { background:var(--bg-secondary); border:1px solid var(--border); color:var(--text-secondary); padding:0.4rem 0.8rem; border-radius:6px; font-family:'JetBrains Mono',monospace; font-size:0.85rem; cursor:pointer; }
+        .cat-btn.active { background:var(--accent); color:var(--bg-primary); border-color:var(--accent); }
+        .cat-btn:hover:not(.active) { background:var(--bg-hover); color:var(--text-primary); }
+    </style>
+</head>
+<body>
+    <header><div class="header-content"><a href="/" class="logo"><div class="logo-icon">⚡</div><div class="logo-text">OPS<span>-BOX</span></div></a><nav class="header-nav"><a href="/tools/dns-lookup.html">DNS</a><a href="/tools/ssl-checker.html">SSL</a><a href="/tools/url-encoder.html">URL</a><a href="/tools/jwt-decoder.html">JWT</a></nav></div></header>
+
+    <main>
+        <nav class="breadcrumb"><a href="/">Home</a><span>›</span><span class="breadcrumb-current">HTTP Status Codes</span></nav>
+
+        <div class="tool-container">
+            <div class="tool-header">
+                <h1 class="tool-title">HTTP Status Codes</h1>
+                <p class="tool-description">Searchable reference for every HTTP response code (1xx informational through 5xx server error) with concise explanations and RFC references.</p>
+            </div>
+            <div class="tool-content">
+                <div class="form-group">
+                    <input type="text" id="hsSearch" class="form-input" placeholder="Search by code (404) or text (not found, redirect, rate limit)…" oninput="render()" style="font-size:1rem;">
+                </div>
+                <div class="cat-filter">
+                    <button class="cat-btn active" data-cat="all" onclick="setCat('all')">All</button>
+                    <button class="cat-btn" data-cat="1" onclick="setCat('1')">1xx Informational</button>
+                    <button class="cat-btn" data-cat="2" onclick="setCat('2')">2xx Success</button>
+                    <button class="cat-btn" data-cat="3" onclick="setCat('3')">3xx Redirect</button>
+                    <button class="cat-btn" data-cat="4" onclick="setCat('4')">4xx Client error</button>
+                    <button class="cat-btn" data-cat="5" onclick="setCat('5')">5xx Server error</button>
+                </div>
+                <div id="hsCount" style="color:var(--text-muted);font-size:0.85rem;margin-bottom:0.75rem;"></div>
+                <div id="hsList"></div>
+            </div>
+        </div>
+
+        <section class="seo-content">
+            <h2>About HTTP Status Codes</h2>
+            <p>HTTP status codes are three-digit numbers sent by a server in the first line of its response, telling the client whether the request succeeded, requires further action, or failed. They are defined primarily in <a href="https://datatracker.ietf.org/doc/html/rfc9110" rel="noopener">RFC 9110</a> (replacing the older RFC 7231/2616), with additional codes registered in <a href="https://www.iana.org/assignments/http-status-codes/" rel="noopener">the IANA registry</a>.</p>
+
+            <h3>The Five Classes</h3>
+            <ul>
+                <li><strong>1xx — Informational:</strong> request received, processing continues. Rarely seen by application code.</li>
+                <li><strong>2xx — Success:</strong> request succeeded. <code>200 OK</code> is the default; <code>201 Created</code>, <code>204 No Content</code>, and <code>206 Partial Content</code> have specific meanings.</li>
+                <li><strong>3xx — Redirection:</strong> client must take further action. <code>301</code>/<code>308</code> are permanent; <code>302</code>/<code>307</code> are temporary; <code>304 Not Modified</code> means the cached version is still good.</li>
+                <li><strong>4xx — Client error:</strong> the request looks wrong. <code>400</code>, <code>401</code>, <code>403</code>, <code>404</code>, and <code>429</code> are the most common.</li>
+                <li><strong>5xx — Server error:</strong> the server failed. <code>500 Internal Server Error</code> is the catch-all; <code>502</code>, <code>503</code>, and <code>504</code> usually indicate upstream/load issues.</li>
+            </ul>
+        </section>
+
+        <section class="related-tools"><h2>Related Tools</h2><div class="related-grid">
+            <a href="/tools/dns-lookup.html" class="related-card"><h3>DNS Lookup</h3><p>Query DNS records.</p></a>
+            <a href="/tools/ssl-checker.html" class="related-card"><h3>SSL Checker</h3><p>Inspect TLS certificates.</p></a>
+            <a href="/tools/url-encoder.html" class="related-card"><h3>URL Encoder</h3><p>Percent-encode URLs.</p></a>
+        </div></section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section"><h3>Network Tools</h3><a href="/tools/subnet-calculator.html">Subnet Calculator</a><a href="/tools/ipv6-subnet-calculator.html">IPv6 Subnet</a><a href="/tools/bgp-asn-lookup.html">BGP ASN Lookup</a></div>
+            <div class="footer-section"><h3>Security Tools</h3><a href="/tools/password-generator.html">Password Generator</a><a href="/tools/bcrypt.html">Bcrypt</a><a href="/tools/totp-generator.html">TOTP Generator</a></div>
+            <div class="footer-section"><h3>Developer Tools</h3><a href="/tools/http-status-codes.html">HTTP Status Codes</a><a href="/tools/color-converter.html">Color Converter</a><a href="/tools/json-formatter.html">JSON Formatter</a></div>
+        </div>
+        <div class="footer-bottom"><p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals. | <a href="/about.html" style="color:inherit;text-decoration:underline;">About</a> · <a href="/contact.html" style="color:inherit;text-decoration:underline;">Contact</a> · <a href="/terms-of-service.html" style="color:inherit;text-decoration:underline;">Terms</a> · <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p></div>
+    </footer>
+
+    <div class="toast" id="toast">Copied to clipboard!</div>
+
+    <script src="../js/common.js"></script>
+    <script>
+        const CODES = [
+            [100, 'Continue', 'Client should continue with the request. Used in conjunction with Expect: 100-continue.', 'RFC 9110'],
+            [101, 'Switching Protocols', 'Server is switching to a different protocol per the Upgrade header (e.g. WebSockets).', 'RFC 9110'],
+            [102, 'Processing', 'Server has received the request and is processing it but no response is available yet.', 'RFC 2518 (WebDAV)'],
+            [103, 'Early Hints', 'Used with the Link header to start preloading resources before the final response.', 'RFC 8297'],
+
+            [200, 'OK', 'Standard success response. The body contains the requested resource.', 'RFC 9110'],
+            [201, 'Created', 'Resource was successfully created. The Location header typically points to it.', 'RFC 9110'],
+            [202, 'Accepted', 'Request accepted for processing but not yet completed (asynchronous).', 'RFC 9110'],
+            [203, 'Non-Authoritative Information', 'Returned metadata is from a third-party copy, not the origin server.', 'RFC 9110'],
+            [204, 'No Content', 'Request succeeded; no body returned. Common for PUT/DELETE.', 'RFC 9110'],
+            [205, 'Reset Content', 'Tell the client to reset its view (e.g. clear a form).', 'RFC 9110'],
+            [206, 'Partial Content', 'Response to a Range request — only the requested byte range is returned.', 'RFC 9110'],
+            [207, 'Multi-Status', 'WebDAV: response body contains XML with multiple status codes.', 'RFC 4918'],
+            [208, 'Already Reported', 'WebDAV: members of a binding already enumerated.', 'RFC 5842'],
+            [226, 'IM Used', 'Response is the result of applying delta encoding to the requested resource.', 'RFC 3229'],
+
+            [300, 'Multiple Choices', 'Multiple resources match; client must choose.', 'RFC 9110'],
+            [301, 'Moved Permanently', 'Permanent redirect. Update bookmarks/links. Search engines transfer ranking.', 'RFC 9110'],
+            [302, 'Found', 'Temporary redirect. The original URL should still be used in future requests.', 'RFC 9110'],
+            [303, 'See Other', 'After a POST, redirect the client to GET a different resource (POST/Redirect/GET pattern).', 'RFC 9110'],
+            [304, 'Not Modified', 'Cached response is still valid. Used with conditional GET (If-Modified-Since / ETag).', 'RFC 9110'],
+            [307, 'Temporary Redirect', 'Like 302, but method must not change (POST stays POST).', 'RFC 9110'],
+            [308, 'Permanent Redirect', 'Like 301, but method must not change. Preferred over 301 for non-GET redirects.', 'RFC 7538'],
+
+            [400, 'Bad Request', 'The request is malformed (syntax, framing). Server cannot or will not process it.', 'RFC 9110'],
+            [401, 'Unauthorized', 'Authentication required or failed. Send credentials. Despite the name, this is really "Unauthenticated".', 'RFC 9110'],
+            [402, 'Payment Required', 'Reserved for future use; rarely seen.', 'RFC 9110'],
+            [403, 'Forbidden', 'Server understood but refuses. Auth will not help — the credentials lack permission.', 'RFC 9110'],
+            [404, 'Not Found', 'Resource does not exist (or server does not want to reveal whether it does).', 'RFC 9110'],
+            [405, 'Method Not Allowed', 'HTTP method (GET/POST/etc.) is not supported for this resource. Allow header lists valid methods.', 'RFC 9110'],
+            [406, 'Not Acceptable', 'No representation matches the Accept-* headers from the client.', 'RFC 9110'],
+            [407, 'Proxy Authentication Required', 'Like 401 but authenticate with the proxy, not the origin.', 'RFC 9110'],
+            [408, 'Request Timeout', 'Client did not send the full request in time.', 'RFC 9110'],
+            [409, 'Conflict', 'Request conflicts with current resource state (e.g. version conflict).', 'RFC 9110'],
+            [410, 'Gone', 'Resource is permanently gone. Stronger than 404 — do not retry.', 'RFC 9110'],
+            [411, 'Length Required', 'Content-Length header missing where required.', 'RFC 9110'],
+            [412, 'Precondition Failed', 'If-Match / If-Unmodified-Since precondition not met.', 'RFC 9110'],
+            [413, 'Content Too Large', 'Request body exceeds the server limit (formerly "Payload Too Large").', 'RFC 9110'],
+            [414, 'URI Too Long', 'URI exceeds server limits — usually a very long query string.', 'RFC 9110'],
+            [415, 'Unsupported Media Type', 'Content-Type of the request body is not supported.', 'RFC 9110'],
+            [416, 'Range Not Satisfiable', 'Requested byte range is outside the resource length.', 'RFC 9110'],
+            [417, 'Expectation Failed', 'Server cannot meet the Expect header requirements.', 'RFC 9110'],
+            [418, "I'm a teapot", 'April Fools joke (RFC 2324); some services use it to indicate a refused request.', 'RFC 2324'],
+            [421, 'Misdirected Request', 'Request was directed to a server that cannot produce a response (common with HTTP/2 connection coalescing).', 'RFC 9110'],
+            [422, 'Unprocessable Content', 'Semantic errors in the request body (e.g. valid JSON but missing required fields).', 'RFC 9110'],
+            [423, 'Locked', 'WebDAV: resource is locked.', 'RFC 4918'],
+            [424, 'Failed Dependency', 'WebDAV: request failed because a previous request failed.', 'RFC 4918'],
+            [425, 'Too Early', 'Server unwilling to process a request that may be replayed (TLS 1.3 0-RTT).', 'RFC 8470'],
+            [426, 'Upgrade Required', 'Client must switch to a different protocol (per Upgrade header).', 'RFC 9110'],
+            [428, 'Precondition Required', 'Server requires the request to be conditional (e.g. If-Match).', 'RFC 6585'],
+            [429, 'Too Many Requests', 'Rate limit exceeded. Honor the Retry-After header.', 'RFC 6585'],
+            [431, 'Request Header Fields Too Large', 'Header section is too big.', 'RFC 6585'],
+            [451, 'Unavailable For Legal Reasons', 'Content blocked due to legal demand (named after Fahrenheit 451).', 'RFC 7725'],
+
+            [500, 'Internal Server Error', 'Catch-all for unexpected server failures. Check server logs.', 'RFC 9110'],
+            [501, 'Not Implemented', 'Server does not recognize the request method or cannot fulfil it.', 'RFC 9110'],
+            [502, 'Bad Gateway', 'Server acting as a proxy received an invalid response from upstream.', 'RFC 9110'],
+            [503, 'Service Unavailable', 'Server is temporarily overloaded or down for maintenance. Honor Retry-After.', 'RFC 9110'],
+            [504, 'Gateway Timeout', 'Server acting as a proxy did not get a timely response from upstream.', 'RFC 9110'],
+            [505, 'HTTP Version Not Supported', 'Server does not support the HTTP protocol version.', 'RFC 9110'],
+            [506, 'Variant Also Negotiates', 'Configuration error in content negotiation.', 'RFC 2295'],
+            [507, 'Insufficient Storage', 'WebDAV: server out of disk.', 'RFC 4918'],
+            [508, 'Loop Detected', 'WebDAV: infinite loop detected during processing.', 'RFC 5842'],
+            [510, 'Not Extended', 'Further extensions to the request are required.', 'RFC 2774'],
+            [511, 'Network Authentication Required', 'Client must authenticate to the network (e.g. captive portal).', 'RFC 6585'],
+        ];
+
+        let activeCat = 'all';
+        function setCat(c) {
+            activeCat = c;
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.toggle('active', b.dataset.cat === c));
+            render();
+        }
+        function render() {
+            const q = document.getElementById('hsSearch').value.trim().toLowerCase();
+            const list = CODES.filter(([code, name, desc]) => {
+                if (activeCat !== 'all' && String(code)[0] !== activeCat) return false;
+                if (!q) return true;
+                return String(code).includes(q) || name.toLowerCase().includes(q) || desc.toLowerCase().includes(q);
+            });
+            const out = document.getElementById('hsList');
+            document.getElementById('hsCount').textContent = `${list.length} of ${CODES.length} codes`;
+            if (!list.length) { out.innerHTML = '<div style="padding:1rem;color:var(--text-muted);text-align:center;">No matches.</div>'; return; }
+            out.innerHTML = list.map(([code, name, desc, rfc]) => {
+                const cls = 'cat-' + String(code)[0] + 'xx';
+                return `<div class="status-card"><div class="status-head"><span class="cat-chip ${cls}">${String(code)[0]}xx</span><span class="status-code">${code}</span><span class="status-name">${name}</span><span class="status-rfc" style="margin-left:auto;">${rfc}</span></div><div class="status-desc">${desc}</div></div>`;
+            }).join('');
+        }
+        render();
+    </script>
+</body>
+</html>
