@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-FH74PGMNYD"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-FH74PGMNYD');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSR Decoder — Decode & Verify a Certificate Signing Request | OPS-BOX</title>
+    <meta name="description" content="Free CSR decoder. Paste a PKCS#10 Certificate Signing Request to verify its Common Name, Subject Alternative Names, organization, key size, and signature before sending it to a CA. 100% client-side.">
+    <meta name="keywords" content="csr decoder, decode csr, csr checker, verify csr, pkcs10 decoder, certificate signing request decoder, csr san viewer, csr details online">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://ops-box.net/tools/csr-decoder.html">
+
+    <meta property="og:title" content="CSR Decoder — Decode & Verify a Certificate Signing Request">
+    <meta property="og:description" content="Paste a CSR to verify its subject, SANs, key size, and signature before sending to a CA.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ops-box.net/tools/csr-decoder.html">
+    <meta property="og:image" content="https://ops-box.net/og-image.png">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="CSR Decoder — Decode & Verify a Certificate Signing Request">
+    <meta name="twitter:description" content="Paste a CSR to verify its subject, SANs, and key before sending to a CA.">
+    <meta name="twitter:image" content="https://ops-box.net/og-image.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "CSR Decoder",
+        "url": "https://ops-box.net/tools/csr-decoder.html",
+        "description": "Decode and verify a PKCS#10 Certificate Signing Request",
+        "applicationCategory": "SecurityApplication",
+        "operatingSystem": "Any",
+        "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
+        "featureList": ["PKCS#10 decoding", "Subject fields", "Subject Alternative Names", "Key size", "Signature verification"]
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+                {
+                        "@type": "Question",
+                        "name": "Why should I decode my CSR before sending it to a CA?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "Decoding lets you confirm the CSR contains exactly the right information before the Certificate Authority issues a certificate from it. The most common mistakes are a missing or misspelled domain, forgotten Subject Alternative Names, or an incorrect organization name. Catching these before submission avoids paying for and installing a certificate that does not match what you need."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "What information does a CSR contain?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "A CSR contains the public key and the subject details: Common Name (the primary domain), and optionally Organization, Organizational Unit, Locality, State, Country, and email. It can also carry requested extensions such as Subject Alternative Names. It does not contain the private key — that stays with you — though it is signed by the private key to prove you control it."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "Does the CSR include my private key?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "No. A CSR contains only your public key plus identifying information, and is self-signed by the corresponding private key to prove possession. The private key itself is never part of the CSR and should never be shared. This decoder reads only the public information in the request."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "What does the signature verification result mean?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "A CSR is signed with the private key that matches the public key inside it. Verifying that signature confirms the request is internally consistent and was not corrupted in transit. A valid result means the public key and the signature agree; an invalid result usually means the CSR text was truncated, altered, or copied incorrectly."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "Is my CSR sent to a server?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "No. The CSR is decoded entirely in your browser using JavaScript. It is never uploaded, logged, or stored anywhere. A CSR contains only public information, but keeping the processing client-side is still the right approach, which this tool follows."
+                        }
+                }
+        ]
+    }
+    </script>
+    <style>
+        .cert-section { margin-top: 1.5rem; }
+        .cert-section h3 {
+            font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em;
+            color: var(--accent); margin-bottom: 0.6rem;
+        }
+        .cert-fields { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+        .cert-field {
+            display: grid; grid-template-columns: 180px 1fr; gap: 1rem;
+            padding: 0.7rem 1rem; border-bottom: 1px solid var(--border);
+        }
+        .cert-field:last-child { border-bottom: none; }
+        .cert-field:nth-child(odd) { background: var(--bg-secondary); }
+        .cert-field .k { color: var(--text-muted); font-size: 0.85rem; }
+        .cert-field .v {
+            font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;
+            color: var(--text-primary); word-break: break-all;
+        }
+        .badge {
+            display: inline-block; padding: 0.15rem 0.6rem; border-radius: 999px;
+            font-size: 0.75rem; font-weight: 600; font-family: 'Outfit', sans-serif;
+        }
+        .badge.ok { background: rgba(34,197,94,0.15); color: #22c55e; }
+        .badge.err { background: rgba(239,68,68,0.15); color: #ef4444; }
+        .san-list { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+        .san-chip {
+            font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 6px; padding: 0.2rem 0.55rem;
+        }
+        .parse-error {
+            background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3);
+            border-radius: 8px; padding: 0.85rem 1rem; margin-top: 1rem; color: #ef4444; font-size: 0.9rem;
+        }
+    </style>
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1924789684268835"
+         crossorigin="anonymous"></script>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <a href="/" class="logo">
+                <div class="logo-icon">⚡</div>
+                <div class="logo-text">OPS<span>-BOX</span></div>
+            </a>
+            <nav class="header-nav">
+                <a href="/tools/password-generator.html">Password</a>
+                <a href="/tools/subnet-calculator.html">Subnet</a>
+                <a href="/tools/ssl-checker.html">SSL Check</a>
+                <a href="/tools/hash-generator.html">Hash</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <nav class="breadcrumb">
+            <a href="/">Home</a><span>›</span><span class="breadcrumb-current">CSR Decoder</span>
+        </nav>
+
+        <div class="tool-container">
+            <div class="tool-header">
+                <h1 class="tool-title">CSR Decoder</h1>
+                <p class="tool-description">Paste a PKCS#10 Certificate Signing Request to verify its Common Name, SANs, organization, key size, and signature — before you send it to a Certificate Authority.</p>
+            </div>
+            <div class="tool-content">
+                <div class="form-group">
+                    <label class="form-label">PEM Certificate Signing Request</label>
+                    <textarea class="form-textarea" id="csrInput" placeholder="-----BEGIN CERTIFICATE REQUEST-----&#10;MIIC...&#10;-----END CERTIFICATE REQUEST-----" style="min-height:180px;font-family:'JetBrains Mono',monospace;font-size:0.8rem;"></textarea>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="decodeCSR()">Decode CSR</button>
+                </div>
+                <div id="results"></div>
+            </div>
+        </div>
+
+        <section class="seo-content">
+            <h2>What is a CSR Decoder?</h2>
+            <p>A CSR decoder reads a <strong>Certificate Signing Request</strong> — the PKCS#10 block you generate before ordering an SSL/TLS certificate — and shows you the information packed inside it in plain, readable form. Before a Certificate Authority issues your certificate, it builds it from the CSR's contents, so any error in the CSR carries straight into the certificate. Decoding first is a quick sanity check that saves time and money.</p>
+            <p>This tool parses the CSR locally in your browser. Nothing is uploaded.</p>
+
+            <h3>How to Use This Tool</h3>
+            <ol style="color:var(--text-secondary);margin-left:1.5rem;margin-bottom:1rem;line-height:1.8;">
+                <li>Paste the full CSR, including the <code>-----BEGIN CERTIFICATE REQUEST-----</code> and <code>-----END CERTIFICATE REQUEST-----</code> lines.</li>
+                <li>Click <strong>Decode CSR</strong>.</li>
+                <li>Confirm the Common Name and every Subject Alternative Name are correct, and that the key size and organization match what you expect.</li>
+            </ol>
+
+            <h3>What to Check Before Submitting</h3>
+            <ul>
+                <li><strong>Common Name</strong> — Is the primary domain spelled exactly right (including <code>www</code> if needed)?</li>
+                <li><strong>Subject Alternative Names</strong> — Are all the domains you intend to secure present? Missing SANs are the most common CSR mistake.</li>
+                <li><strong>Organization details</strong> — For OV/EV certificates, the O, L, ST and C fields must match your verified business records.</li>
+                <li><strong>Key size</strong> — At least RSA 2048-bit; CAs reject weaker keys.</li>
+                <li><strong>Signature</strong> — A valid self-signature confirms the CSR was not corrupted when copied.</li>
+            </ul>
+
+            <div class="faq">
+                <h3>Frequently Asked Questions</h3>
+                <div class="faq-item">
+                    <button class="faq-question">Why should I decode my CSR before sending it to a CA?</button>
+                    <div class="faq-answer">Decoding lets you confirm the CSR contains exactly the right information before the Certificate Authority issues a certificate from it. The most common mistakes are a missing or misspelled domain, forgotten Subject Alternative Names, or an incorrect organization name. Catching these before submission avoids paying for and installing a certificate that does not match what you need.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">What information does a CSR contain?</button>
+                    <div class="faq-answer">A CSR contains the public key and the subject details: Common Name (the primary domain), and optionally Organization, Organizational Unit, Locality, State, Country, and email. It can also carry requested extensions such as Subject Alternative Names. It does not contain the private key — that stays with you — though it is signed by the private key to prove you control it.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">Does the CSR include my private key?</button>
+                    <div class="faq-answer">No. A CSR contains only your public key plus identifying information, and is self-signed by the corresponding private key to prove possession. The private key itself is never part of the CSR and should never be shared. This decoder reads only the public information in the request.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">What does the signature verification result mean?</button>
+                    <div class="faq-answer">A CSR is signed with the private key that matches the public key inside it. Verifying that signature confirms the request is internally consistent and was not corrupted in transit. A valid result means the public key and the signature agree; an invalid result usually means the CSR text was truncated, altered, or copied incorrectly.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">Is my CSR sent to a server?</button>
+                    <div class="faq-answer">No. The CSR is decoded entirely in your browser using JavaScript. It is never uploaded, logged, or stored anywhere. A CSR contains only public information, but keeping the processing client-side is still the right approach, which this tool follows.</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="related-tools">
+            <h2>Related Tools</h2>
+            <div class="related-grid">
+                <a href="/tools/csr-generator.html" class="related-card">
+                    <h3>CSR Generator</h3>
+                    <p>Generate a CSR and matching private key in your browser.</p>
+                </a>
+                <a href="/tools/certificate-decoder.html" class="related-card">
+                    <h3>Certificate Decoder</h3>
+                    <p>Decode an issued X.509 certificate and inspect its fields.</p>
+                </a>
+                <a href="/tools/ssl-checker.html" class="related-card">
+                    <h3>SSL Certificate Checker</h3>
+                    <p>Check a live site's certificate expiry and chain.</p>
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Network Tools</h3>
+                <a href="/tools/subnet-calculator.html">Subnet Calculator</a>
+                <a href="/tools/ssl-checker.html">SSL Checker</a>
+                <a href="/tools/mac-vendor-lookup.html">MAC Vendor Lookup</a>
+            </div>
+            <div class="footer-section">
+                <h3>Security Tools</h3>
+                <a href="/tools/csr-generator.html">CSR Generator</a>
+                <a href="/tools/csr-decoder.html">CSR Decoder</a>
+                <a href="/tools/certificate-decoder.html">Certificate Decoder</a>
+            </div>
+            <div class="footer-section">
+                <h3>Developer Tools</h3>
+                <a href="/tools/json-formatter.html">JSON Formatter</a>
+                <a href="/tools/chmod-calculator.html">Chmod Calculator</a>
+                <a href="/tools/openssl-command-generator.html">OpenSSL Commands</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals. | <a href="/about.html" style="color:inherit;text-decoration:underline;">About</a> · <a href="/contact.html" style="color:inherit;text-decoration:underline;">Contact</a> · <a href="/terms-of-service.html" style="color:inherit;text-decoration:underline;">Terms</a> · <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p>
+        </div>
+    </footer>
+
+    <div class="toast" id="toast">Copied to clipboard!</div>
+
+    <script src="../js/common.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/node-forge@1.3.1/dist/forge.min.js"></script>
+    <script>
+        const OID_NAMES = {
+            commonName: 'Common Name (CN)', organizationName: 'Organization (O)',
+            organizationalUnitName: 'Org Unit (OU)', localityName: 'Locality (L)',
+            stateOrProvinceName: 'State (ST)', countryName: 'Country (C)', emailAddress: 'Email'
+        };
+        function esc(s) { return String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+        function field(k, v) {
+            return '<div class="cert-field"><div class="k">' + k + '</div><div class="v">' + v + '</div></div>';
+        }
+
+        function decodeCSR() {
+            const pem = document.getElementById('csrInput').value.trim();
+            const out = document.getElementById('results');
+            if (!pem) { out.innerHTML = ''; return; }
+            if (typeof forge === 'undefined') { alert('Crypto library still loading — try again in a moment.'); return; }
+
+            let csr;
+            try {
+                csr = forge.pki.certificationRequestFromPem(pem);
+            } catch (e) {
+                out.innerHTML = '<div class="parse-error">Could not parse CSR: ' + esc(e.message) + '. Make sure you pasted a complete request including the BEGIN/END CERTIFICATE REQUEST lines.</div>';
+                return;
+            }
+
+            // Signature verification
+            let verified;
+            try { verified = csr.verify(); } catch (e) { verified = false; }
+            const verifyBadge = verified
+                ? '<span class="badge ok">valid</span>'
+                : '<span class="badge err">invalid / unverifiable</span>';
+
+            // SANs from the extensionRequest attribute
+            let sansHtml = '<span style="color:var(--text-muted)">none</span>';
+            const attr = csr.getAttribute({ name: 'extensionRequest' });
+            if (attr && attr.extensions) {
+                const san = attr.extensions.find(e => e.name === 'subjectAltName');
+                if (san && san.altNames && san.altNames.length) {
+                    sansHtml = '<div class="san-list">' + san.altNames.map(n => '<span class="san-chip">' + esc(n.value) + '</span>').join('') + '</div>';
+                }
+            }
+
+            const pk = csr.publicKey;
+            let keyInfo = 'unknown';
+            if (pk && pk.n) keyInfo = 'RSA ' + pk.n.bitLength() + '-bit';
+            else if (pk && pk.curve) keyInfo = 'EC';
+
+            out.innerHTML =
+                '<div class="cert-section"><h3>Subject</h3><div class="cert-fields">' +
+                    csr.subject.attributes.map(a => field(OID_NAMES[a.name] || a.name, esc(a.value))).join('') +
+                '</div></div>' +
+                '<div class="cert-section"><h3>Subject Alternative Names</h3><div class="cert-fields">' +
+                    field('DNS / IP', sansHtml) +
+                '</div></div>' +
+                '<div class="cert-section"><h3>Key &amp; Signature</h3><div class="cert-fields">' +
+                    field('Public Key', keyInfo) +
+                    field('Signature', verifyBadge) +
+                '</div></div>';
+        }
+
+        document.getElementById('csrInput').addEventListener('input', () => {
+            if (document.getElementById('csrInput').value.includes('END CERTIFICATE REQUEST')) decodeCSR();
+        });
+    </script>
+
+    <script>
+    document.querySelectorAll('.faq-question').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var item = btn.parentElement;
+            item.classList.toggle('open');
+        });
+    });
+    </script>
+</body>
+</html>

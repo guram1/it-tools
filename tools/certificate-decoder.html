@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-FH74PGMNYD"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-FH74PGMNYD');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Certificate Decoder — Decode X.509 SSL Certificates Online | OPS-BOX</title>
+    <meta name="description" content="Free X.509 certificate decoder. Paste a PEM certificate to view subject, issuer, validity dates, SANs, serial number, key usage, signature algorithm and SHA-256 fingerprint. 100% client-side.">
+    <meta name="keywords" content="certificate decoder, x509 decoder, ssl certificate decoder, decode pem certificate, certificate parser, view certificate details, certificate fingerprint, san decoder, certificate viewer online">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://ops-box.net/tools/certificate-decoder.html">
+
+    <meta property="og:title" content="Certificate Decoder — Decode X.509 SSL Certificates Online">
+    <meta property="og:description" content="Paste a PEM certificate to view subject, issuer, validity, SANs, and fingerprint.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ops-box.net/tools/certificate-decoder.html">
+    <meta property="og:image" content="https://ops-box.net/og-image.png">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Certificate Decoder — Decode X.509 SSL Certificates Online">
+    <meta name="twitter:description" content="Paste a PEM certificate to view subject, issuer, validity, SANs, and fingerprint.">
+    <meta name="twitter:image" content="https://ops-box.net/og-image.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Certificate Decoder",
+        "url": "https://ops-box.net/tools/certificate-decoder.html",
+        "description": "Decode and inspect X.509 SSL/TLS certificates in PEM format",
+        "applicationCategory": "SecurityApplication",
+        "operatingSystem": "Any",
+        "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
+        "featureList": ["X.509 decoding", "Subject and issuer", "Validity dates", "Subject Alternative Names", "SHA-256 fingerprint", "Key usage"]
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+                {
+                        "@type": "Question",
+                        "name": "What certificate format does this decoder accept?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "It accepts X.509 certificates in PEM format — the Base64 text block that begins with -----BEGIN CERTIFICATE----- and ends with -----END CERTIFICATE-----. This is the most common format used by web servers and Certificate Authorities. If you have a binary DER (.cer/.der) or PKCS#12 (.pfx) file, convert it to PEM first."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "What is the difference between subject and issuer?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "The subject identifies the entity the certificate was issued to — for a website, this includes the domain name. The issuer identifies the Certificate Authority that signed and issued the certificate. For a self-signed certificate the subject and issuer are identical, since the entity signed its own certificate."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "What are Subject Alternative Names (SANs)?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "SANs are the list of host names (and sometimes IP addresses) that a certificate is valid for. Modern browsers validate a connection against the SAN list rather than the Common Name, so a certificate must list every domain it protects as a SAN. A single certificate can secure many domains by including them all here."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "What is a certificate fingerprint and why does it matter?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "A fingerprint is a hash (commonly SHA-256 or SHA-1) of the entire certificate, producing a short unique identifier. It is used to verify you are looking at exactly the right certificate — for example, when pinning a certificate in an application or comparing what a server presents against an expected value. Even a one-byte change to the certificate produces a completely different fingerprint."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "Is my certificate uploaded anywhere?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "No. Decoding happens entirely in your browser with JavaScript. The certificate you paste is parsed locally and is never sent to a server. Certificates are public by nature, but it is still good practice to keep all processing client-side, which this tool does."
+                        }
+                }
+        ]
+    }
+    </script>
+    <style>
+        .cert-section { margin-top: 1.5rem; }
+        .cert-section h3 {
+            font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em;
+            color: var(--accent); margin-bottom: 0.6rem;
+        }
+        .cert-fields {
+            display: grid; grid-template-columns: 1fr; gap: 0; border: 1px solid var(--border);
+            border-radius: 8px; overflow: hidden;
+        }
+        .cert-field {
+            display: grid; grid-template-columns: 180px 1fr; gap: 1rem;
+            padding: 0.7rem 1rem; border-bottom: 1px solid var(--border);
+        }
+        .cert-field:last-child { border-bottom: none; }
+        .cert-field:nth-child(odd) { background: var(--bg-secondary); }
+        .cert-field .k { color: var(--text-muted); font-size: 0.85rem; }
+        .cert-field .v {
+            font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;
+            color: var(--text-primary); word-break: break-all;
+        }
+        .badge {
+            display: inline-block; padding: 0.15rem 0.6rem; border-radius: 999px;
+            font-size: 0.75rem; font-weight: 600; font-family: 'Outfit', sans-serif;
+        }
+        .badge.ok { background: rgba(34,197,94,0.15); color: #22c55e; }
+        .badge.warn { background: rgba(251,191,36,0.15); color: #fbbf24; }
+        .badge.err { background: rgba(239,68,68,0.15); color: #ef4444; }
+        .san-list { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+        .san-chip {
+            font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 6px; padding: 0.2rem 0.55rem;
+        }
+        .parse-error {
+            background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3);
+            border-radius: 8px; padding: 0.85rem 1rem; margin-top: 1rem; color: #ef4444; font-size: 0.9rem;
+        }
+    </style>
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1924789684268835"
+         crossorigin="anonymous"></script>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <a href="/" class="logo">
+                <div class="logo-icon">⚡</div>
+                <div class="logo-text">OPS<span>-BOX</span></div>
+            </a>
+            <nav class="header-nav">
+                <a href="/tools/password-generator.html">Password</a>
+                <a href="/tools/subnet-calculator.html">Subnet</a>
+                <a href="/tools/ssl-checker.html">SSL Check</a>
+                <a href="/tools/hash-generator.html">Hash</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <nav class="breadcrumb">
+            <a href="/">Home</a><span>›</span><span class="breadcrumb-current">Certificate Decoder</span>
+        </nav>
+
+        <div class="tool-container">
+            <div class="tool-header">
+                <h1 class="tool-title">Certificate Decoder</h1>
+                <p class="tool-description">Paste an X.509 certificate in PEM format to inspect its subject, issuer, validity, SANs, key details, and fingerprint — decoded entirely in your browser.</p>
+            </div>
+            <div class="tool-content">
+                <div class="form-group">
+                    <label class="form-label">PEM Certificate</label>
+                    <textarea class="form-textarea" id="certInput" placeholder="-----BEGIN CERTIFICATE-----&#10;MIID...&#10;-----END CERTIFICATE-----" style="min-height:180px;font-family:'JetBrains Mono',monospace;font-size:0.8rem;"></textarea>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="decodeCert()">Decode Certificate</button>
+                </div>
+                <div id="results"></div>
+            </div>
+        </div>
+
+        <section class="seo-content">
+            <h2>What is an X.509 Certificate?</h2>
+            <p>An X.509 certificate is the digital document that powers HTTPS and TLS. It binds a public key to an identity — a domain name, organization, or person — and is signed by a trusted Certificate Authority (CA) so that anyone can verify the binding. When your browser shows a padlock, it has validated the site's X.509 certificate against this chain of trust.</p>
+            <p>Certificates are usually stored and shared in <strong>PEM format</strong>: a Base64-encoded block wrapped between <code>-----BEGIN CERTIFICATE-----</code> and <code>-----END CERTIFICATE-----</code> markers. This decoder parses that block locally in your browser and shows you everything inside it.</p>
+
+            <h3>How to Use This Tool</h3>
+            <ol style="color:var(--text-secondary);margin-left:1.5rem;margin-bottom:1rem;line-height:1.8;">
+                <li>Copy your certificate, including the <code>BEGIN</code>/<code>END</code> lines, and paste it into the box.</li>
+                <li>Click <strong>Decode Certificate</strong>.</li>
+                <li>Review the subject, issuer, validity window, Subject Alternative Names, key type, and fingerprints.</li>
+            </ol>
+
+            <h3>What the Fields Mean</h3>
+            <ul>
+                <li><strong>Subject</strong> — Who the certificate is issued to (includes the domain for a website).</li>
+                <li><strong>Issuer</strong> — The CA that signed it. Equal to the subject for a self-signed certificate.</li>
+                <li><strong>Valid From / Valid To</strong> — The window during which the certificate is trusted. An expired certificate triggers browser warnings.</li>
+                <li><strong>Subject Alternative Names</strong> — Every host name the certificate covers; browsers check these, not the Common Name.</li>
+                <li><strong>Serial Number</strong> — A unique identifier assigned by the issuing CA.</li>
+                <li><strong>Signature Algorithm</strong> — The algorithm used to sign the certificate (e.g. SHA-256 with RSA).</li>
+                <li><strong>Fingerprint</strong> — A hash of the whole certificate, used to identify or pin it precisely.</li>
+            </ul>
+
+            <h3>Common Uses</h3>
+            <p>Use a certificate decoder to confirm a certificate covers the right domains before deploying, to check expiry dates, to verify a CSR was issued correctly, to read the SANs on a multi-domain certificate, or to grab the SHA-256 fingerprint for certificate pinning. It is also handy for troubleshooting chain and trust problems where you need to see exactly who signed what.</p>
+
+            <div class="faq">
+                <h3>Frequently Asked Questions</h3>
+                <div class="faq-item">
+                    <button class="faq-question">What certificate format does this decoder accept?</button>
+                    <div class="faq-answer">It accepts X.509 certificates in PEM format — the Base64 text block that begins with <code>-----BEGIN CERTIFICATE-----</code> and ends with <code>-----END CERTIFICATE-----</code>. This is the most common format used by web servers and Certificate Authorities. If you have a binary DER (.cer/.der) or PKCS#12 (.pfx) file, convert it to PEM first.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">What is the difference between subject and issuer?</button>
+                    <div class="faq-answer">The subject identifies the entity the certificate was issued to — for a website, this includes the domain name. The issuer identifies the Certificate Authority that signed and issued the certificate. For a self-signed certificate the subject and issuer are identical, since the entity signed its own certificate.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">What are Subject Alternative Names (SANs)?</button>
+                    <div class="faq-answer">SANs are the list of host names (and sometimes IP addresses) that a certificate is valid for. Modern browsers validate a connection against the SAN list rather than the Common Name, so a certificate must list every domain it protects as a SAN. A single certificate can secure many domains by including them all here.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">What is a certificate fingerprint and why does it matter?</button>
+                    <div class="faq-answer">A fingerprint is a hash (commonly SHA-256 or SHA-1) of the entire certificate, producing a short unique identifier. It is used to verify you are looking at exactly the right certificate — for example, when pinning a certificate in an application or comparing what a server presents against an expected value. Even a one-byte change to the certificate produces a completely different fingerprint.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">Is my certificate uploaded anywhere?</button>
+                    <div class="faq-answer">No. Decoding happens entirely in your browser with JavaScript. The certificate you paste is parsed locally and is never sent to a server. Certificates are public by nature, but it is still good practice to keep all processing client-side, which this tool does.</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="related-tools">
+            <h2>Related Tools</h2>
+            <div class="related-grid">
+                <a href="/tools/ssl-checker.html" class="related-card">
+                    <h3>SSL Certificate Checker</h3>
+                    <p>Check a live website's certificate expiry and chain.</p>
+                </a>
+                <a href="/tools/csr-decoder.html" class="related-card">
+                    <h3>CSR Decoder</h3>
+                    <p>Decode a Certificate Signing Request and view its fields.</p>
+                </a>
+                <a href="/tools/csr-generator.html" class="related-card">
+                    <h3>CSR Generator</h3>
+                    <p>Generate a CSR and private key in your browser.</p>
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Network Tools</h3>
+                <a href="/tools/subnet-calculator.html">Subnet Calculator</a>
+                <a href="/tools/ssl-checker.html">SSL Checker</a>
+                <a href="/tools/mac-vendor-lookup.html">MAC Vendor Lookup</a>
+            </div>
+            <div class="footer-section">
+                <h3>Security Tools</h3>
+                <a href="/tools/csr-generator.html">CSR Generator</a>
+                <a href="/tools/certificate-decoder.html">Certificate Decoder</a>
+                <a href="/tools/hmac-generator.html">HMAC Generator</a>
+            </div>
+            <div class="footer-section">
+                <h3>Developer Tools</h3>
+                <a href="/tools/json-formatter.html">JSON Formatter</a>
+                <a href="/tools/chmod-calculator.html">Chmod Calculator</a>
+                <a href="/tools/openssl-command-generator.html">OpenSSL Commands</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals. | <a href="/about.html" style="color:inherit;text-decoration:underline;">About</a> · <a href="/contact.html" style="color:inherit;text-decoration:underline;">Contact</a> · <a href="/terms-of-service.html" style="color:inherit;text-decoration:underline;">Terms</a> · <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p>
+        </div>
+    </footer>
+
+    <div class="toast" id="toast">Copied to clipboard!</div>
+
+    <script src="../js/common.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/node-forge@1.3.1/dist/forge.min.js"></script>
+    <script>
+        const OID_NAMES = {
+            commonName: 'Common Name (CN)', organizationName: 'Organization (O)',
+            organizationalUnitName: 'Org Unit (OU)', localityName: 'Locality (L)',
+            stateOrProvinceName: 'State (ST)', countryName: 'Country (C)', emailAddress: 'Email'
+        };
+
+        function dn(attrs) {
+            return attrs.map(a => {
+                const label = OID_NAMES[a.shortName ? a.name : a.name] || a.name || a.type;
+                return (OID_NAMES[a.name] || a.name || a.type) + '=' + a.value;
+            }).join(', ');
+        }
+
+        function esc(s) { return String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+
+        function field(k, v) {
+            return '<div class="cert-field"><div class="k">' + k + '</div><div class="v">' + v + '</div></div>';
+        }
+
+        function decodeCert() {
+            const pem = document.getElementById('certInput').value.trim();
+            const out = document.getElementById('results');
+            if (!pem) { out.innerHTML = ''; return; }
+            if (typeof forge === 'undefined') { alert('Crypto library still loading — try again in a moment.'); return; }
+
+            let cert;
+            try {
+                cert = forge.pki.certificateFromPem(pem);
+            } catch (e) {
+                out.innerHTML = '<div class="parse-error">Could not parse certificate: ' + esc(e.message) + '. Make sure you pasted a complete PEM certificate including the BEGIN/END lines.</div>';
+                return;
+            }
+
+            const now = new Date();
+            const nb = cert.validity.notBefore, na = cert.validity.notAfter;
+            let status, daysLeft = Math.round((na - now) / 86400000);
+            if (now < nb) status = '<span class="badge warn">Not yet valid</span>';
+            else if (now > na) status = '<span class="badge err">Expired</span>';
+            else status = '<span class="badge ok">Valid</span> <span style="color:var(--text-muted);font-family:Outfit;">(' + daysLeft + ' days left)</span>';
+
+            // SANs
+            let sansHtml = '<span style="color:var(--text-muted)">none</span>';
+            const ext = cert.getExtension('subjectAltName');
+            if (ext && ext.altNames && ext.altNames.length) {
+                sansHtml = '<div class="san-list">' + ext.altNames.map(n => '<span class="san-chip">' + esc(n.value) + '</span>').join('') + '</div>';
+            }
+
+            // Key info
+            const pk = cert.publicKey;
+            let keyInfo = 'unknown';
+            if (pk && pk.n) keyInfo = 'RSA ' + pk.n.bitLength() + '-bit';
+            else if (pk && pk.curve) keyInfo = 'EC';
+
+            // Fingerprints from DER
+            const der = forge.asn1.toDer(forge.pki.certificateToAsn1(cert)).getBytes();
+            const fp = (md) => { md.update(der); return md.digest().toHex().match(/.{2}/g).join(':').toUpperCase(); };
+            const sha256 = fp(forge.md.sha256.create());
+            const sha1 = fp(forge.md.sha1.create());
+
+            const selfSigned = dn(cert.subject.attributes) === dn(cert.issuer.attributes);
+
+            out.innerHTML =
+                '<div class="cert-section"><h3>Status</h3><div class="cert-fields">' +
+                    field('Status', status) +
+                    field('Valid From', nb.toUTCString()) +
+                    field('Valid To', na.toUTCString()) +
+                '</div></div>' +
+                '<div class="cert-section"><h3>Subject</h3><div class="cert-fields">' +
+                    cert.subject.attributes.map(a => field(OID_NAMES[a.name] || a.name, esc(a.value))).join('') +
+                '</div></div>' +
+                '<div class="cert-section"><h3>Issuer ' + (selfSigned ? '<span class="badge warn">self-signed</span>' : '') + '</h3><div class="cert-fields">' +
+                    cert.issuer.attributes.map(a => field(OID_NAMES[a.name] || a.name, esc(a.value))).join('') +
+                '</div></div>' +
+                '<div class="cert-section"><h3>Subject Alternative Names</h3><div class="cert-fields">' +
+                    field('DNS / IP', sansHtml) +
+                '</div></div>' +
+                '<div class="cert-section"><h3>Details</h3><div class="cert-fields">' +
+                    field('Serial Number', esc(cert.serialNumber)) +
+                    field('Version', 'v' + (cert.version + 1)) +
+                    field('Public Key', keyInfo) +
+                    field('Signature Algorithm', esc(forge.pki.oids[cert.signatureOid] || cert.signatureOid)) +
+                '</div></div>' +
+                '<div class="cert-section"><h3>Fingerprints</h3><div class="cert-fields">' +
+                    field('SHA-256', '<span style="cursor:pointer" onclick="copyFp(this)">' + sha256 + '</span>') +
+                    field('SHA-1', '<span style="cursor:pointer" onclick="copyFp(this)">' + sha1 + '</span>') +
+                '</div></div>';
+        }
+
+        function copyFp(el) {
+            navigator.clipboard.writeText(el.textContent).then(() => showToast('Fingerprint copied'));
+        }
+
+        document.getElementById('certInput').addEventListener('input', () => {
+            if (document.getElementById('certInput').value.includes('END CERTIFICATE')) decodeCert();
+        });
+    </script>
+
+    <script>
+    document.querySelectorAll('.faq-question').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var item = btn.parentElement;
+            item.classList.toggle('open');
+        });
+    });
+    </script>
+</body>
+</html>

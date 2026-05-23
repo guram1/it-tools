@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-FH74PGMNYD"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-FH74PGMNYD');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSR Generator — Create a Certificate Signing Request Online | OPS-BOX</title>
+    <meta name="description" content="Free online CSR generator. Create a PKCS#10 Certificate Signing Request and matching RSA private key in your browser. Add SANs, choose RSA-2048/4096. 100% client-side — keys never leave your device.">
+    <meta name="keywords" content="csr generator, certificate signing request, create csr online, pkcs10, generate csr, rsa private key, san csr, ssl csr generator, openssl csr">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://ops-box.net/tools/csr-generator.html">
+
+    <meta property="og:title" content="CSR Generator — Create a Certificate Signing Request Online">
+    <meta property="og:description" content="Generate a PKCS#10 CSR and RSA private key in your browser. Add SANs, choose key size.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ops-box.net/tools/csr-generator.html">
+    <meta property="og:image" content="https://ops-box.net/og-image.png">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="CSR Generator — Create a Certificate Signing Request Online">
+    <meta name="twitter:description" content="Generate a PKCS#10 CSR and RSA private key entirely in your browser.">
+    <meta name="twitter:image" content="https://ops-box.net/og-image.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "CSR Generator",
+        "url": "https://ops-box.net/tools/csr-generator.html",
+        "description": "Create a PKCS#10 Certificate Signing Request and private key in the browser",
+        "applicationCategory": "SecurityApplication",
+        "operatingSystem": "Any",
+        "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
+        "featureList": ["PKCS#10 CSR generation", "RSA 2048/4096 keypair", "Subject Alternative Names", "PEM output", "Client-side key generation"]
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+                {
+                        "@type": "Question",
+                        "name": "What is a CSR (Certificate Signing Request)?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "A CSR is a block of encoded text that you send to a Certificate Authority (CA) to apply for an SSL/TLS certificate. It contains your public key and identifying information such as the domain name (Common Name), organization, and location. The CA uses it to create a signed certificate that matches your private key. The CSR follows the PKCS#10 standard and is usually shared in PEM format beginning with -----BEGIN CERTIFICATE REQUEST-----."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "Is my private key safe with this tool?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "Yes. The keypair and CSR are generated entirely in your browser using JavaScript. Nothing is sent to any server, logged, or stored. That said, you must save the generated private key yourself and keep it secret — the certificate you receive back from the CA will only work with this exact private key, and it cannot be recovered if lost."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "What is the Common Name (CN) and how does it relate to SANs?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "The Common Name is the primary domain the certificate is for, such as example.com or www.example.com. Modern browsers ignore the CN and rely on the Subject Alternative Name (SAN) extension, so any domain the certificate should cover — including the CN itself — must be listed as a SAN. For a multi-domain certificate, add each hostname as a separate SAN entry."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "Should I use RSA 2048 or 4096?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "RSA 2048-bit is the industry standard and is accepted by every CA — it offers strong security with fast performance and is the right default for almost all websites. RSA 4096-bit doubles the key size for a higher security margin at the cost of slower TLS handshakes and key generation. Use 4096 only when a specific policy requires it; otherwise 2048 is recommended."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "What do I do with the CSR and private key after generating them?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "Submit the CSR (the CERTIFICATE REQUEST block) to your Certificate Authority when ordering the certificate. Keep the private key on your server and never share it. When the CA returns your signed certificate, install it alongside the private key in your web server configuration. The private key generated here is the only key that will work with the issued certificate."
+                        }
+                }
+        ]
+    }
+    </script>
+    <style>
+        .san-row { display: flex; gap: 0.5rem; margin-bottom: 0.5rem; align-items: center; }
+        .san-row input { flex: 1; }
+        .san-row .remove-btn {
+            background: rgba(239,68,68,0.1); color: #ef4444;
+            border: 1px solid rgba(239,68,68,0.3); padding: 0.5rem 0.75rem;
+            border-radius: 6px; cursor: pointer;
+        }
+        .add-san-btn {
+            margin-top: 0.25rem; padding: 0.5rem 1rem; background: var(--bg-secondary);
+            border: 1px dashed var(--border); color: var(--text-secondary);
+            border-radius: 6px; cursor: pointer; width: 100%;
+        }
+        .add-san-btn:hover { background: var(--bg-card); color: var(--accent); border-color: var(--accent); }
+        .output-block { margin-top: 1.25rem; }
+        .output-head {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;
+        }
+        .output-head span {
+            font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);
+        }
+        .output-pem {
+            font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; line-height: 1.5;
+            background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px;
+            padding: 1rem; white-space: pre-wrap; word-break: break-all; color: var(--text-primary);
+            max-height: 260px; overflow-y: auto;
+        }
+        .gen-status { margin-top: 1rem; color: var(--text-muted); font-size: 0.9rem; }
+        .key-warning {
+            background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.3);
+            border-radius: 8px; padding: 0.85rem 1rem; margin-top: 1.25rem; font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+    </style>
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1924789684268835"
+         crossorigin="anonymous"></script>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <a href="/" class="logo">
+                <div class="logo-icon">⚡</div>
+                <div class="logo-text">OPS<span>-BOX</span></div>
+            </a>
+            <nav class="header-nav">
+                <a href="/tools/password-generator.html">Password</a>
+                <a href="/tools/subnet-calculator.html">Subnet</a>
+                <a href="/tools/ssl-checker.html">SSL Check</a>
+                <a href="/tools/hash-generator.html">Hash</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <nav class="breadcrumb">
+            <a href="/">Home</a><span>›</span><span class="breadcrumb-current">CSR Generator</span>
+        </nav>
+
+        <div class="tool-container">
+            <div class="tool-header">
+                <h1 class="tool-title">CSR Generator</h1>
+                <p class="tool-description">Create a PKCS#10 Certificate Signing Request and matching RSA private key — generated entirely in your browser. Nothing is uploaded.</p>
+            </div>
+            <div class="tool-content">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Common Name (domain) *</label>
+                        <input type="text" class="form-input" id="cn" placeholder="example.com">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Organization (O)</label>
+                        <input type="text" class="form-input" id="o" placeholder="Example Inc.">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Organizational Unit (OU)</label>
+                        <input type="text" class="form-input" id="ou" placeholder="IT">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="text" class="form-input" id="email" placeholder="admin@example.com">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">City / Locality (L)</label>
+                        <input type="text" class="form-input" id="l" placeholder="San Francisco">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">State / Province (ST)</label>
+                        <input type="text" class="form-input" id="st" placeholder="California">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Country (2-letter)</label>
+                        <input type="text" class="form-input" id="c" placeholder="US" maxlength="2" style="text-transform:uppercase;">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Key Size</label>
+                        <select class="form-select" id="bits">
+                            <option value="2048">RSA 2048 (recommended)</option>
+                            <option value="4096">RSA 4096</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Subject Alternative Names (SANs)</label>
+                    <div id="sanInputs">
+                        <div class="san-row">
+                            <input type="text" class="form-input" placeholder="example.com">
+                            <button class="remove-btn" onclick="removeSan(this)">✕</button>
+                        </div>
+                        <div class="san-row">
+                            <input type="text" class="form-input" placeholder="www.example.com">
+                            <button class="remove-btn" onclick="removeSan(this)">✕</button>
+                        </div>
+                    </div>
+                    <button class="add-san-btn" onclick="addSan()">+ Add SAN</button>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-primary" id="genBtn" onclick="generateCSR()">Generate CSR &amp; Key</button>
+                </div>
+
+                <div class="gen-status" id="status"></div>
+                <div id="results"></div>
+            </div>
+        </div>
+
+        <section class="seo-content">
+            <h2>What is a Certificate Signing Request?</h2>
+            <p>A Certificate Signing Request (CSR) is the first step in obtaining an SSL/TLS certificate. It is an encoded block of text, defined by the <strong>PKCS#10</strong> standard, that bundles your <strong>public key</strong> together with identifying details about the entity requesting the certificate — the domain name, organization, and location. You send the CSR to a Certificate Authority (CA), which verifies the information and returns a signed certificate that pairs with the private key generated alongside the CSR.</p>
+            <p>This tool generates the keypair and the CSR <strong>entirely inside your browser</strong> using JavaScript. Your private key is never transmitted, so you stay in full control of it — but that also means you are responsible for saving it.</p>
+
+            <h3>How to Use This Tool</h3>
+            <ol style="color:var(--text-secondary);margin-left:1.5rem;margin-bottom:1rem;line-height:1.8;">
+                <li>Fill in the <strong>Common Name</strong> (your primary domain) and any organization details your CA requires.</li>
+                <li>List every hostname the certificate should cover under <strong>Subject Alternative Names</strong> — including the Common Name itself.</li>
+                <li>Choose a key size (RSA 2048 is the standard default).</li>
+                <li>Click <strong>Generate CSR &amp; Key</strong>. Save both the CSR and the private key.</li>
+                <li>Submit the CSR to your Certificate Authority; keep the private key safe on your server.</li>
+            </ol>
+
+            <h3>Which Fields Matter?</h3>
+            <ul>
+                <li><strong>Common Name (CN)</strong> — The main domain, e.g. <code>example.com</code>. Required.</li>
+                <li><strong>Subject Alternative Names</strong> — All domains the cert protects. Browsers validate against SANs, not the CN, so list every hostname here.</li>
+                <li><strong>Organization / OU</strong> — Required for OV and EV certificates; optional for domain-validated (DV) certs like Let's Encrypt.</li>
+                <li><strong>Country / State / Locality</strong> — Legal location of the organization; required for OV/EV.</li>
+            </ul>
+
+            <h3>Security Notes</h3>
+            <p>Because key generation happens locally, no third party — including this site — ever sees your private key. Store it securely (correct file permissions, restricted access) and never email it or paste it into untrusted services. If you lose the private key, the issued certificate becomes unusable and you must generate a new CSR and reissue.</p>
+
+            <div class="faq">
+                <h3>Frequently Asked Questions</h3>
+                <div class="faq-item">
+                    <button class="faq-question">What is a CSR (Certificate Signing Request)?</button>
+                    <div class="faq-answer">A CSR is a block of encoded text that you send to a Certificate Authority (CA) to apply for an SSL/TLS certificate. It contains your public key and identifying information such as the domain name (Common Name), organization, and location. The CA uses it to create a signed certificate that matches your private key. The CSR follows the PKCS#10 standard and is usually shared in PEM format beginning with <code>-----BEGIN CERTIFICATE REQUEST-----</code>.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">Is my private key safe with this tool?</button>
+                    <div class="faq-answer">Yes. The keypair and CSR are generated entirely in your browser using JavaScript. Nothing is sent to any server, logged, or stored. That said, you must save the generated private key yourself and keep it secret — the certificate you receive back from the CA will only work with this exact private key, and it cannot be recovered if lost.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">What is the Common Name (CN) and how does it relate to SANs?</button>
+                    <div class="faq-answer">The Common Name is the primary domain the certificate is for, such as example.com or www.example.com. Modern browsers ignore the CN and rely on the Subject Alternative Name (SAN) extension, so any domain the certificate should cover — including the CN itself — must be listed as a SAN. For a multi-domain certificate, add each hostname as a separate SAN entry.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">Should I use RSA 2048 or 4096?</button>
+                    <div class="faq-answer">RSA 2048-bit is the industry standard and is accepted by every CA — it offers strong security with fast performance and is the right default for almost all websites. RSA 4096-bit doubles the key size for a higher security margin at the cost of slower TLS handshakes and key generation. Use 4096 only when a specific policy requires it; otherwise 2048 is recommended.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">What do I do with the CSR and private key after generating them?</button>
+                    <div class="faq-answer">Submit the CSR (the CERTIFICATE REQUEST block) to your Certificate Authority when ordering the certificate. Keep the private key on your server and never share it. When the CA returns your signed certificate, install it alongside the private key in your web server configuration. The private key generated here is the only key that will work with the issued certificate.</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="related-tools">
+            <h2>Related Tools</h2>
+            <div class="related-grid">
+                <a href="/tools/csr-decoder.html" class="related-card">
+                    <h3>CSR Decoder</h3>
+                    <p>Verify the contents of a CSR before submitting it to a CA.</p>
+                </a>
+                <a href="/tools/certificate-decoder.html" class="related-card">
+                    <h3>Certificate Decoder</h3>
+                    <p>Decode an X.509 certificate and inspect all its fields.</p>
+                </a>
+                <a href="/tools/ssl-checker.html" class="related-card">
+                    <h3>SSL Certificate Checker</h3>
+                    <p>Check a live site's certificate expiry and chain.</p>
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Network Tools</h3>
+                <a href="/tools/subnet-calculator.html">Subnet Calculator</a>
+                <a href="/tools/ssl-checker.html">SSL Checker</a>
+                <a href="/tools/mac-vendor-lookup.html">MAC Vendor Lookup</a>
+            </div>
+            <div class="footer-section">
+                <h3>Security Tools</h3>
+                <a href="/tools/csr-generator.html">CSR Generator</a>
+                <a href="/tools/certificate-decoder.html">Certificate Decoder</a>
+                <a href="/tools/hmac-generator.html">HMAC Generator</a>
+            </div>
+            <div class="footer-section">
+                <h3>Developer Tools</h3>
+                <a href="/tools/json-formatter.html">JSON Formatter</a>
+                <a href="/tools/chmod-calculator.html">Chmod Calculator</a>
+                <a href="/tools/openssl-command-generator.html">OpenSSL Commands</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals. | <a href="/about.html" style="color:inherit;text-decoration:underline;">About</a> · <a href="/contact.html" style="color:inherit;text-decoration:underline;">Contact</a> · <a href="/terms-of-service.html" style="color:inherit;text-decoration:underline;">Terms</a> · <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p>
+        </div>
+    </footer>
+
+    <div class="toast" id="toast">Copied to clipboard!</div>
+
+    <script src="../js/common.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/node-forge@1.3.1/dist/forge.min.js"></script>
+    <script>
+        function addSan() {
+            const c = document.getElementById('sanInputs');
+            const row = document.createElement('div');
+            row.className = 'san-row';
+            row.innerHTML = '<input type="text" class="form-input" placeholder="sub.example.com"><button class="remove-btn" onclick="removeSan(this)">✕</button>';
+            c.appendChild(row);
+        }
+        function removeSan(btn) {
+            if (document.querySelectorAll('.san-row').length > 1) btn.parentElement.remove();
+        }
+
+        function downloadText(filename, text) {
+            const blob = new Blob([text], { type: 'text/plain' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(a.href);
+        }
+
+        function generateCSR() {
+            const cn = document.getElementById('cn').value.trim();
+            if (!cn) { alert('Common Name (domain) is required'); return; }
+            if (typeof forge === 'undefined') { alert('Crypto library still loading — try again in a moment.'); return; }
+
+            const bits = parseInt(document.getElementById('bits').value);
+            const btn = document.getElementById('genBtn');
+            const status = document.getElementById('status');
+            btn.disabled = true;
+            status.textContent = 'Generating ' + bits + '-bit key… this can take a few seconds.';
+            document.getElementById('results').innerHTML = '';
+
+            // Async keygen keeps the UI responsive (no web-worker file needed)
+            forge.pki.rsa.generateKeyPair({ bits: bits }, function (err, keys) {
+                if (err) { status.textContent = 'Error: ' + err.message; btn.disabled = false; return; }
+
+                const csr = forge.pki.createCertificationRequest();
+                csr.publicKey = keys.publicKey;
+
+                const subject = [{ name: 'commonName', value: cn }];
+                const map = { o: 'organizationName', ou: 'organizationalUnitName', l: 'localityName', st: 'stateOrProvinceName', c: 'countryName', email: 'emailAddress' };
+                Object.keys(map).forEach(id => {
+                    const v = document.getElementById(id).value.trim();
+                    if (v) subject.push({ name: map[id], value: id === 'c' ? v.toUpperCase() : v });
+                });
+                csr.setSubject(subject);
+
+                // Collect SANs (DNS type = 2)
+                const altNames = [];
+                document.querySelectorAll('#sanInputs input').forEach(inp => {
+                    const v = inp.value.trim();
+                    if (v) altNames.push({ type: 2, value: v });
+                });
+                if (altNames.length) {
+                    csr.setAttributes([{
+                        name: 'extensionRequest',
+                        extensions: [{ name: 'subjectAltName', altNames: altNames }]
+                    }]);
+                }
+
+                csr.sign(keys.privateKey, forge.md.sha256.create());
+
+                const csrPem = forge.pki.certificationRequestToPem(csr);
+                const keyPem = forge.pki.privateKeyToPem(keys.privateKey);
+
+                status.textContent = '';
+                btn.disabled = false;
+
+                document.getElementById('results').innerHTML = `
+                    <div class="output-block">
+                        <div class="output-head">
+                            <span>Certificate Signing Request (CSR)</span>
+                            <div>
+                                <button class="copy-btn" onclick="copyPem('csrPem')">Copy</button>
+                                <button class="copy-btn" onclick="downloadText('${cn}.csr', document.getElementById('csrPem').textContent)">Download</button>
+                            </div>
+                        </div>
+                        <div class="output-pem" id="csrPem">${csrPem.trim()}</div>
+                    </div>
+                    <div class="output-block">
+                        <div class="output-head">
+                            <span>Private Key (keep secret)</span>
+                            <div>
+                                <button class="copy-btn" onclick="copyPem('keyPem')">Copy</button>
+                                <button class="copy-btn" onclick="downloadText('${cn}.key', document.getElementById('keyPem').textContent)">Download</button>
+                            </div>
+                        </div>
+                        <div class="output-pem" id="keyPem">${keyPem.trim()}</div>
+                    </div>
+                    <div class="key-warning">⚠️ Save the private key now and store it securely. It is never sent anywhere and cannot be recovered if you lose it. The certificate issued from this CSR will only work with this key.</div>
+                `;
+            });
+        }
+
+        function copyPem(id) {
+            navigator.clipboard.writeText(document.getElementById(id).textContent).then(() => showToast());
+        }
+    </script>
+
+    <script>
+    document.querySelectorAll('.faq-question').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var item = btn.parentElement;
+            item.classList.toggle('open');
+        });
+    });
+    </script>
+</body>
+</html>

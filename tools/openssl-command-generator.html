@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-FH74PGMNYD"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-FH74PGMNYD');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenSSL Command Generator — CSR, Certs, Conversions | OPS-BOX</title>
+    <meta name="description" content="Free OpenSSL command generator. Build the exact openssl command for generating CSRs, self-signed certificates, key conversions (PEM/DER/PFX), and inspecting certificates — no need to memorize the syntax.">
+    <meta name="keywords" content="openssl command generator, openssl csr command, openssl self signed certificate, openssl convert pem der, openssl pfx to pem, openssl commands cheat sheet, generate openssl command">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://ops-box.net/tools/openssl-command-generator.html">
+
+    <meta property="og:title" content="OpenSSL Command Generator — CSR, Certs, Conversions">
+    <meta property="og:description" content="Build the exact openssl command for CSRs, certificates, and key conversions.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ops-box.net/tools/openssl-command-generator.html">
+    <meta property="og:image" content="https://ops-box.net/og-image.png">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="OpenSSL Command Generator — CSR, Certs, Conversions">
+    <meta name="twitter:description" content="Build the exact openssl command for CSRs, certificates, and key conversions.">
+    <meta name="twitter:image" content="https://ops-box.net/og-image.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "OpenSSL Command Generator",
+        "url": "https://ops-box.net/tools/openssl-command-generator.html",
+        "description": "Generate the correct openssl command for common certificate and key tasks",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Any",
+        "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
+        "featureList": ["CSR commands", "Self-signed certificate", "Key conversion", "Certificate inspection", "PFX import/export"]
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+                {
+                        "@type": "Question",
+                        "name": "What is OpenSSL?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "OpenSSL is a free, open-source command-line toolkit for working with SSL/TLS and general cryptography. It is the de facto standard tool for generating private keys and CSRs, creating self-signed certificates, converting between certificate formats, and inspecting certificate details. It ships with most Linux and macOS systems and is available for Windows."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "Does this tool run the OpenSSL commands for me?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "No. This generator builds the correct command text from your inputs so you can copy it and run it in your own terminal. It does not execute anything and never sees your keys or files. Running the command locally keeps your private keys on your own machine, which is the safest approach."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "How do I convert a PFX/P12 file to PEM?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "Use openssl pkcs12 to extract the contents. To get the certificate and key in PEM form: openssl pkcs12 -in input.pfx -out output.pem -nodes. The -nodes flag leaves the private key unencrypted; omit it to be prompted for a passphrase. This generator builds the exact command for both PFX-to-PEM and PEM-to-PFX directions."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "How do I create a self-signed certificate with OpenSSL?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "Run openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 365 -nodes. This generates a new private key and a self-signed certificate valid for the chosen number of days in one step. Self-signed certificates are useful for local development and internal services but are not trusted by browsers without manual installation."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "How can I view the contents of a certificate?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "Use openssl x509 -in certificate.crt -text -noout to print all the human-readable details, including subject, issuer, validity dates, and Subject Alternative Names. The -noout flag suppresses the re-encoded certificate so you see only the parsed information. To check a live server instead, use openssl s_client -connect host:443."
+                        }
+                }
+        ]
+    }
+    </script>
+    <style>
+        .tool-tabs {
+            display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border);
+            padding-bottom: 1rem; flex-wrap: wrap;
+        }
+        .tool-tab {
+            padding: 0.6rem 1rem; background: var(--bg-secondary); border: 1px solid var(--border);
+            border-radius: 6px; color: var(--text-secondary); cursor: pointer; font-size: 0.85rem;
+            font-weight: 500; transition: all 0.2s ease;
+        }
+        .tool-tab:hover { background: var(--bg-card); color: var(--text-primary); }
+        .tool-tab.active { background: var(--accent); color: #000; border-color: var(--accent); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .cmd-output {
+            margin-top: 1.5rem; background: var(--bg-secondary); border: 1px solid var(--border);
+            border-radius: 8px; padding: 1rem 1.1rem;
+        }
+        .cmd-head {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;
+        }
+        .cmd-head span {
+            font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);
+        }
+        .cmd-text {
+            font-family: 'JetBrains Mono', monospace; font-size: 0.88rem; line-height: 1.6;
+            color: var(--accent); white-space: pre-wrap; word-break: break-all;
+        }
+        .cmd-note { margin-top: 0.75rem; font-size: 0.82rem; color: var(--text-muted); }
+    </style>
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1924789684268835"
+         crossorigin="anonymous"></script>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <a href="/" class="logo">
+                <div class="logo-icon">⚡</div>
+                <div class="logo-text">OPS<span>-BOX</span></div>
+            </a>
+            <nav class="header-nav">
+                <a href="/tools/password-generator.html">Password</a>
+                <a href="/tools/subnet-calculator.html">Subnet</a>
+                <a href="/tools/ssl-checker.html">SSL Check</a>
+                <a href="/tools/hash-generator.html">Hash</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <nav class="breadcrumb">
+            <a href="/">Home</a><span>›</span><span class="breadcrumb-current">OpenSSL Command Generator</span>
+        </nav>
+
+        <div class="tool-container">
+            <div class="tool-header">
+                <h1 class="tool-title">OpenSSL Command Generator</h1>
+                <p class="tool-description">Pick a task, fill in the blanks, and get the exact <code>openssl</code> command to run in your terminal — no need to memorize the flags.</p>
+            </div>
+            <div class="tool-content">
+                <div class="tool-tabs">
+                    <button class="tool-tab active" onclick="switchTab('csr')">Generate CSR</button>
+                    <button class="tool-tab" onclick="switchTab('selfsigned')">Self-Signed Cert</button>
+                    <button class="tool-tab" onclick="switchTab('key')">Private Key</button>
+                    <button class="tool-tab" onclick="switchTab('convert')">Convert Format</button>
+                    <button class="tool-tab" onclick="switchTab('inspect')">Inspect / Verify</button>
+                </div>
+
+                <!-- CSR -->
+                <div id="tab-csr" class="tab-content active">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Domain (CN)</label>
+                            <input type="text" class="form-input oin" id="csr_cn" value="example.com">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Key Size</label>
+                            <select class="form-select oin" id="csr_bits">
+                                <option value="2048">RSA 2048</option>
+                                <option value="4096">RSA 4096</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Key filename</label>
+                            <input type="text" class="form-input oin" id="csr_key" value="example.com.key">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">CSR filename</label>
+                            <input type="text" class="form-input oin" id="csr_out" value="example.com.csr">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Self-signed -->
+                <div id="tab-selfsigned" class="tab-content">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Domain (CN)</label>
+                            <input type="text" class="form-input oin" id="ss_cn" value="localhost">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Valid days</label>
+                            <input type="number" class="form-input oin" id="ss_days" value="365">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Key filename</label>
+                            <input type="text" class="form-input oin" id="ss_key" value="key.pem">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Cert filename</label>
+                            <input type="text" class="form-input oin" id="ss_out" value="cert.pem">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Private key -->
+                <div id="tab-key" class="tab-content">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Key type</label>
+                            <select class="form-select oin" id="key_type">
+                                <option value="rsa2048">RSA 2048</option>
+                                <option value="rsa4096">RSA 4096</option>
+                                <option value="ec256">EC P-256 (prime256v1)</option>
+                                <option value="ec384">EC P-384 (secp384r1)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Key filename</label>
+                            <input type="text" class="form-input oin" id="key_out" value="private.key">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Convert -->
+                <div id="tab-convert" class="tab-content">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Conversion</label>
+                            <select class="form-select oin" id="conv_type">
+                                <option value="pem2der">PEM → DER (certificate)</option>
+                                <option value="der2pem">DER → PEM (certificate)</option>
+                                <option value="pfx2pem">PFX/P12 → PEM</option>
+                                <option value="pem2pfx">PEM → PFX/P12</option>
+                                <option value="p7b2pem">P7B → PEM</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Input file</label>
+                            <input type="text" class="form-input oin" id="conv_in" value="input.pfx">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Output file</label>
+                        <input type="text" class="form-input oin" id="conv_out" value="output.pem">
+                    </div>
+                </div>
+
+                <!-- Inspect -->
+                <div id="tab-inspect" class="tab-content">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Action</label>
+                            <select class="form-select oin" id="insp_type">
+                                <option value="viewcert">View certificate details</option>
+                                <option value="viewcsr">View CSR details</option>
+                                <option value="viewkey">Check private key</option>
+                                <option value="checkserver">Check live server (s_client)</option>
+                                <option value="matchkey">Verify key matches cert (modulus)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" id="insp_label">Certificate file</label>
+                            <input type="text" class="form-input oin" id="insp_in" value="certificate.crt">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cmd-output">
+                    <div class="cmd-head">
+                        <span>Command</span>
+                        <button class="copy-btn" onclick="copyCmd()">Copy</button>
+                    </div>
+                    <div class="cmd-text" id="cmdText">openssl …</div>
+                    <div class="cmd-note" id="cmdNote"></div>
+                </div>
+            </div>
+        </div>
+
+        <section class="seo-content">
+            <h2>Why an OpenSSL Command Generator?</h2>
+            <p>OpenSSL is the standard toolkit for almost everything involving SSL/TLS certificates — generating keys and CSRs, creating self-signed certificates, converting between formats, and inspecting what is inside a certificate. It is also notorious for its dense, hard-to-remember flag syntax. This generator builds the exact command from a simple form so you can copy it straight into your terminal.</p>
+            <p>Nothing runs here — the commands are meant to run on your own machine, where your private keys stay safely under your control.</p>
+
+            <h3>What This Tool Covers</h3>
+            <ul>
+                <li><strong>Generate CSR</strong> — Create a new private key and a Certificate Signing Request to send to a CA.</li>
+                <li><strong>Self-Signed Certificate</strong> — Make a key + certificate in one step for local development or internal services.</li>
+                <li><strong>Private Key</strong> — Generate an RSA or EC private key on its own.</li>
+                <li><strong>Convert Format</strong> — Move between PEM, DER, PKCS#12 (PFX/P12), and PKCS#7 (P7B).</li>
+                <li><strong>Inspect / Verify</strong> — Read certificate or CSR details, check a private key, query a live server, or confirm a key matches a certificate.</li>
+            </ul>
+
+            <h3>Handy OpenSSL Reference</h3>
+            <ul>
+                <li><code>openssl req -new -newkey rsa:2048 -nodes -keyout site.key -out site.csr</code> — new key + CSR</li>
+                <li><code>openssl x509 -in cert.crt -text -noout</code> — read a certificate</li>
+                <li><code>openssl s_client -connect example.com:443 -servername example.com</code> — inspect a live TLS endpoint</li>
+                <li><code>openssl pkcs12 -in cert.pfx -out cert.pem -nodes</code> — extract PFX to PEM</li>
+                <li><code>openssl rsa -in private.key -check</code> — validate an RSA private key</li>
+            </ul>
+
+            <div class="faq">
+                <h3>Frequently Asked Questions</h3>
+                <div class="faq-item">
+                    <button class="faq-question">What is OpenSSL?</button>
+                    <div class="faq-answer">OpenSSL is a free, open-source command-line toolkit for working with SSL/TLS and general cryptography. It is the de facto standard tool for generating private keys and CSRs, creating self-signed certificates, converting between certificate formats, and inspecting certificate details. It ships with most Linux and macOS systems and is available for Windows.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">Does this tool run the OpenSSL commands for me?</button>
+                    <div class="faq-answer">No. This generator builds the correct command text from your inputs so you can copy it and run it in your own terminal. It does not execute anything and never sees your keys or files. Running the command locally keeps your private keys on your own machine, which is the safest approach.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">How do I convert a PFX/P12 file to PEM?</button>
+                    <div class="faq-answer">Use openssl pkcs12 to extract the contents. To get the certificate and key in PEM form: <code>openssl pkcs12 -in input.pfx -out output.pem -nodes</code>. The <code>-nodes</code> flag leaves the private key unencrypted; omit it to be prompted for a passphrase. This generator builds the exact command for both PFX-to-PEM and PEM-to-PFX directions.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">How do I create a self-signed certificate with OpenSSL?</button>
+                    <div class="faq-answer">Run <code>openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 365 -nodes</code>. This generates a new private key and a self-signed certificate valid for the chosen number of days in one step. Self-signed certificates are useful for local development and internal services but are not trusted by browsers without manual installation.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">How can I view the contents of a certificate?</button>
+                    <div class="faq-answer">Use <code>openssl x509 -in certificate.crt -text -noout</code> to print all the human-readable details, including subject, issuer, validity dates, and Subject Alternative Names. The <code>-noout</code> flag suppresses the re-encoded certificate so you see only the parsed information. To check a live server instead, use <code>openssl s_client -connect host:443</code>.</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="related-tools">
+            <h2>Related Tools</h2>
+            <div class="related-grid">
+                <a href="/tools/csr-generator.html" class="related-card">
+                    <h3>CSR Generator</h3>
+                    <p>Generate a CSR and key in your browser, no openssl needed.</p>
+                </a>
+                <a href="/tools/certificate-decoder.html" class="related-card">
+                    <h3>Certificate Decoder</h3>
+                    <p>Decode an X.509 certificate without running a command.</p>
+                </a>
+                <a href="/tools/ssl-checker.html" class="related-card">
+                    <h3>SSL Certificate Checker</h3>
+                    <p>Check a live website's certificate expiry and chain.</p>
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Network Tools</h3>
+                <a href="/tools/subnet-calculator.html">Subnet Calculator</a>
+                <a href="/tools/ssl-checker.html">SSL Checker</a>
+                <a href="/tools/mac-vendor-lookup.html">MAC Vendor Lookup</a>
+            </div>
+            <div class="footer-section">
+                <h3>Security Tools</h3>
+                <a href="/tools/csr-generator.html">CSR Generator</a>
+                <a href="/tools/certificate-decoder.html">Certificate Decoder</a>
+                <a href="/tools/hmac-generator.html">HMAC Generator</a>
+            </div>
+            <div class="footer-section">
+                <h3>Developer Tools</h3>
+                <a href="/tools/json-formatter.html">JSON Formatter</a>
+                <a href="/tools/chmod-calculator.html">Chmod Calculator</a>
+                <a href="/tools/openssl-command-generator.html">OpenSSL Commands</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals. | <a href="/about.html" style="color:inherit;text-decoration:underline;">About</a> · <a href="/contact.html" style="color:inherit;text-decoration:underline;">Contact</a> · <a href="/terms-of-service.html" style="color:inherit;text-decoration:underline;">Terms</a> · <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p>
+        </div>
+    </footer>
+
+    <div class="toast" id="toast">Copied to clipboard!</div>
+
+    <script src="../js/common.js"></script>
+    <script>
+        let activeTab = 'csr';
+        function switchTab(id) {
+            activeTab = id;
+            document.querySelectorAll('.tool-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelector(`[onclick="switchTab('${id}')"]`).classList.add('active');
+            document.getElementById('tab-' + id).classList.add('active');
+            build();
+        }
+
+        const v = id => (document.getElementById(id).value || '').trim();
+
+        function build() {
+            let cmd = '', note = '';
+            if (activeTab === 'csr') {
+                const cn = v('csr_cn') || 'example.com';
+                cmd = `openssl req -new -newkey rsa:${v('csr_bits')} -nodes \\\n  -keyout ${v('csr_key') || 'site.key'} -out ${v('csr_out') || 'site.csr'} \\\n  -subj "/CN=${cn}"`;
+                note = 'Creates a new private key and CSR in one step. Edit -subj to add /O, /OU, /L, /ST, /C fields.';
+            } else if (activeTab === 'selfsigned') {
+                const cn = v('ss_cn') || 'localhost';
+                cmd = `openssl req -x509 -newkey rsa:2048 -nodes \\\n  -keyout ${v('ss_key') || 'key.pem'} -out ${v('ss_out') || 'cert.pem'} \\\n  -days ${v('ss_days') || '365'} -subj "/CN=${cn}"`;
+                note = 'Self-signed certificates are not trusted by browsers automatically — use for local/dev only.';
+            } else if (activeTab === 'key') {
+                const t = v('key_type'), out = v('key_out') || 'private.key';
+                if (t === 'rsa2048') cmd = `openssl genrsa -out ${out} 2048`;
+                else if (t === 'rsa4096') cmd = `openssl genrsa -out ${out} 4096`;
+                else if (t === 'ec256') cmd = `openssl ecparam -name prime256v1 -genkey -noout -out ${out}`;
+                else if (t === 'ec384') cmd = `openssl ecparam -name secp384r1 -genkey -noout -out ${out}`;
+                note = 'Keep the generated private key secret. Add -aes256 (RSA) to encrypt it with a passphrase.';
+            } else if (activeTab === 'convert') {
+                const t = v('conv_type'), inp = v('conv_in') || 'input', out = v('conv_out') || 'output';
+                if (t === 'pem2der') cmd = `openssl x509 -in ${inp} -outform der -out ${out}`;
+                else if (t === 'der2pem') cmd = `openssl x509 -inform der -in ${inp} -out ${out}`;
+                else if (t === 'pfx2pem') { cmd = `openssl pkcs12 -in ${inp} -out ${out} -nodes`; note = 'Use -nodes to leave the key unencrypted; omit it to set a passphrase.'; }
+                else if (t === 'pem2pfx') { cmd = `openssl pkcs12 -export -in cert.pem -inkey key.pem -out ${out}`; note = 'Bundles cert + key into a PFX/P12. Add -certfile chain.pem to include intermediates.'; }
+                else if (t === 'p7b2pem') cmd = `openssl pkcs7 -print_certs -in ${inp} -out ${out}`;
+            } else if (activeTab === 'inspect') {
+                const t = v('insp_type'), inp = v('insp_in') || 'file';
+                if (t === 'viewcert') cmd = `openssl x509 -in ${inp} -text -noout`;
+                else if (t === 'viewcsr') cmd = `openssl req -in ${inp} -text -noout -verify`;
+                else if (t === 'viewkey') cmd = `openssl rsa -in ${inp} -check`;
+                else if (t === 'checkserver') cmd = `openssl s_client -connect ${inp}:443 -servername ${inp}`;
+                else if (t === 'matchkey') { cmd = `openssl x509 -noout -modulus -in cert.crt | openssl md5\nopenssl rsa -noout -modulus -in private.key | openssl md5`; note = 'The two MD5 outputs must match if the key belongs to the certificate.'; }
+            }
+            document.getElementById('cmdText').textContent = cmd;
+            document.getElementById('cmdNote').textContent = note;
+        }
+
+        function copyCmd() {
+            navigator.clipboard.writeText(document.getElementById('cmdText').textContent).then(() => showToast());
+        }
+
+        // Update placeholder label + value for inspect action
+        document.getElementById('insp_type').addEventListener('change', e => {
+            const map = {
+                viewcert: ['Certificate file', 'certificate.crt'],
+                viewcsr: ['CSR file', 'request.csr'],
+                viewkey: ['Private key file', 'private.key'],
+                checkserver: ['Hostname', 'example.com'],
+                matchkey: ['(uses cert.crt + private.key)', 'cert.crt']
+            };
+            const [label, val] = map[e.target.value];
+            document.getElementById('insp_label').textContent = label;
+            document.getElementById('insp_in').value = val;
+            build();
+        });
+
+        document.querySelectorAll('.oin').forEach(el => {
+            el.addEventListener('input', build);
+            el.addEventListener('change', build);
+        });
+        build();
+    </script>
+
+    <script>
+    document.querySelectorAll('.faq-question').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var item = btn.parentElement;
+            item.classList.toggle('open');
+        });
+    });
+    </script>
+</body>
+</html>
