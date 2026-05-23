@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-FH74PGMNYD"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-FH74PGMNYD');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chmod Calculator — Octal & Symbolic Linux File Permissions | OPS-BOX</title>
+    <meta name="description" content="Free chmod calculator. Convert between octal (755, 644) and symbolic (rwxr-xr-x) Linux file permissions with checkboxes. Includes setuid, setgid, sticky bit and the chmod command. 100% client-side.">
+    <meta name="keywords" content="chmod calculator, file permissions calculator, octal permissions, symbolic permissions, linux permissions, unix permissions, 755 644, rwx calculator, setuid setgid sticky bit, chmod command">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://ops-box.net/tools/chmod-calculator.html">
+
+    <meta property="og:title" content="Chmod Calculator — Octal & Symbolic Linux File Permissions">
+    <meta property="og:description" content="Convert between octal and symbolic Linux file permissions with a visual checkbox grid.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ops-box.net/tools/chmod-calculator.html">
+    <meta property="og:image" content="https://ops-box.net/og-image.png">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Chmod Calculator — Octal & Symbolic Linux File Permissions">
+    <meta name="twitter:description" content="Convert between octal and symbolic Linux file permissions with a visual checkbox grid.">
+    <meta name="twitter:image" content="https://ops-box.net/og-image.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Chmod Calculator",
+        "url": "https://ops-box.net/tools/chmod-calculator.html",
+        "description": "Convert between octal and symbolic Linux/Unix file permissions",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Any",
+        "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
+        "featureList": ["Octal to symbolic conversion", "Symbolic to octal conversion", "Visual permission grid", "setuid/setgid/sticky bit", "chmod command generation"]
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+                {
+                        "@type": "Question",
+                        "name": "What does chmod 755 mean?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "755 means the owner can read, write, and execute (7 = 4+2+1), while the group and others can read and execute but not write (5 = 4+1). In symbolic notation this is rwxr-xr-x. It is the standard permission for directories and executable scripts that everyone should be able to run but only the owner should modify."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "What does chmod 644 mean?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "644 means the owner can read and write (6 = 4+2), while the group and others can only read (4). In symbolic notation this is rw-r--r--. It is the standard permission for regular, non-executable files such as documents, HTML pages, and configuration files."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "How is the octal permission number calculated?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "Each permission has a value: read = 4, write = 2, execute = 1. Add the values for each role (owner, group, others) to get one digit. For example, read + write + execute = 4 + 2 + 1 = 7, and read + execute = 4 + 1 = 5. The three digits together form the permission, such as 755."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "What are the setuid, setgid, and sticky bits?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "They are special permission bits represented by an optional fourth leading octal digit. setuid (4000) runs an executable with the file owner's privileges. setgid (2000) runs with the group's privileges, or on a directory forces new files to inherit the directory's group. The sticky bit (1000) on a directory like /tmp lets users delete only their own files. For example, chmod 1777 /tmp sets full permissions plus the sticky bit."
+                        }
+                },
+                {
+                        "@type": "Question",
+                        "name": "What is the difference between symbolic and octal chmod modes?",
+                        "acceptedAnswer": {
+                                "@type": "Answer",
+                                "text": "Octal mode (e.g., chmod 644 file) sets the entire permission set at once using numbers. Symbolic mode (e.g., chmod u+x file) adds, removes, or sets specific permissions for specific roles using letters: u (user/owner), g (group), o (others), a (all), with + (add), - (remove), = (set exactly), and r/w/x for the permissions. Symbolic mode is useful when you want to change one permission without affecting the others."
+                        }
+                }
+        ]
+    }
+    </script>
+    <style>
+        .perm-display {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .perm-box {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            position: relative;
+        }
+        .perm-box-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+        .perm-box-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.6rem;
+            font-weight: 600;
+            color: var(--accent);
+        }
+        .perm-box .copy-btn {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .perm-box .copy-btn:hover { color: var(--accent); }
+
+        .chmod-cmd {
+            font-family: 'JetBrains Mono', monospace;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.9rem 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            overflow-x: auto;
+        }
+        .chmod-cmd .copy-btn {
+            background: none; border: none; color: var(--text-muted);
+            cursor: pointer; flex-shrink: 0;
+        }
+        .chmod-cmd .copy-btn:hover { color: var(--accent); }
+
+        .perm-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1.5rem;
+        }
+        .perm-table th, .perm-table td {
+            padding: 0.85rem 0.5rem;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+        }
+        .perm-table th {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+        .perm-table th:first-child, .perm-table td:first-child {
+            text-align: left;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        .perm-table td:first-child { font-size: 0.85rem; }
+        .perm-table input[type="checkbox"] {
+            width: 20px; height: 20px;
+            accent-color: var(--accent);
+            cursor: pointer;
+        }
+        .perm-table .role-digit {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .quick-presets {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .preset-btn {
+            padding: 0.5rem 0.85rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            transition: all 0.2s ease;
+        }
+        .preset-btn:hover {
+            background: var(--bg-card);
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+        .special-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.25rem;
+            margin: 0.5rem 0 1.5rem;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        .special-row label {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            cursor: pointer;
+        }
+        .special-row input[type="checkbox"] {
+            width: 18px; height: 18px;
+            accent-color: var(--accent);
+            cursor: pointer;
+        }
+    </style>
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1924789684268835"
+         crossorigin="anonymous"></script>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <a href="/" class="logo">
+                <div class="logo-icon">⚡</div>
+                <div class="logo-text">OPS<span>-BOX</span></div>
+            </a>
+            <nav class="header-nav">
+                <a href="/tools/password-generator.html">Password</a>
+                <a href="/tools/subnet-calculator.html">Subnet</a>
+                <a href="/tools/mac-vendor-lookup.html">MAC Lookup</a>
+                <a href="/tools/ssl-checker.html">SSL Check</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <nav class="breadcrumb">
+            <a href="/">Home</a><span>›</span><span class="breadcrumb-current">Chmod Calculator</span>
+        </nav>
+
+        <div class="tool-container">
+            <div class="tool-header">
+                <h1 class="tool-title">Chmod Calculator</h1>
+                <p class="tool-description">Convert between octal (755) and symbolic (rwxr-xr-x) Linux file permissions. Tick the boxes or type a number — everything updates instantly.</p>
+            </div>
+            <div class="tool-content">
+                <div class="quick-presets" id="presets"></div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Octal</label>
+                        <input type="text" class="form-input" id="octalInput" placeholder="755" maxlength="4" style="font-family:'JetBrains Mono',monospace;">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Symbolic</label>
+                        <input type="text" class="form-input" id="symbolicInput" placeholder="rwxr-xr-x" maxlength="9" style="font-family:'JetBrains Mono',monospace;">
+                    </div>
+                </div>
+
+                <table class="perm-table">
+                    <thead>
+                        <tr>
+                            <th>Role</th>
+                            <th>Read (4)</th>
+                            <th>Write (2)</th>
+                            <th>Execute (1)</th>
+                            <th>Digit</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Owner (u)</td>
+                            <td><input type="checkbox" data-role="0" data-bit="4"></td>
+                            <td><input type="checkbox" data-role="0" data-bit="2"></td>
+                            <td><input type="checkbox" data-role="0" data-bit="1"></td>
+                            <td class="role-digit" id="digit-0">0</td>
+                        </tr>
+                        <tr>
+                            <td>Group (g)</td>
+                            <td><input type="checkbox" data-role="1" data-bit="4"></td>
+                            <td><input type="checkbox" data-role="1" data-bit="2"></td>
+                            <td><input type="checkbox" data-role="1" data-bit="1"></td>
+                            <td class="role-digit" id="digit-1">0</td>
+                        </tr>
+                        <tr>
+                            <td>Others (o)</td>
+                            <td><input type="checkbox" data-role="2" data-bit="4"></td>
+                            <td><input type="checkbox" data-role="2" data-bit="2"></td>
+                            <td><input type="checkbox" data-role="2" data-bit="1"></td>
+                            <td class="role-digit" id="digit-2">0</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="special-row">
+                    <label><input type="checkbox" id="setuid"> setuid (4000)</label>
+                    <label><input type="checkbox" id="setgid"> setgid (2000)</label>
+                    <label><input type="checkbox" id="sticky"> sticky bit (1000)</label>
+                </div>
+
+                <div class="perm-display">
+                    <div class="perm-box">
+                        <button class="copy-btn" onclick="copyText(document.getElementById('octalOut').textContent)">📋</button>
+                        <div class="perm-box-label">Octal</div>
+                        <div class="perm-box-value" id="octalOut">000</div>
+                    </div>
+                    <div class="perm-box">
+                        <button class="copy-btn" onclick="copyText(document.getElementById('symbolicOut').textContent)">📋</button>
+                        <div class="perm-box-label">Symbolic</div>
+                        <div class="perm-box-value" id="symbolicOut" style="font-size:1.3rem;">---------</div>
+                    </div>
+                </div>
+
+                <div class="chmod-cmd">
+                    <span id="chmodCmd">chmod 000 filename</span>
+                    <button class="copy-btn" onclick="copyText(document.getElementById('chmodCmd').textContent)">📋 Copy</button>
+                </div>
+            </div>
+        </div>
+
+        <section class="seo-content">
+            <h2>What Are Linux File Permissions?</h2>
+            <p>Every file and directory on a Linux or Unix system has a set of permissions that control who can read, write, or execute it. Permissions are defined for three roles: the file's <strong>owner</strong> (user), the file's <strong>group</strong>, and <strong>others</strong> (everyone else). The <code>chmod</code> (change mode) command sets these permissions, and this calculator converts between the two ways of expressing them — octal numbers and symbolic <code>rwx</code> strings.</p>
+            <p>Everything runs locally in your browser. No data is sent anywhere — this is a pure JavaScript calculator.</p>
+
+            <h3>How to Use This Tool</h3>
+            <ol style="color:var(--text-secondary);margin-left:1.5rem;margin-bottom:1rem;line-height:1.8;">
+                <li>Tick the read / write / execute boxes for owner, group, and others — or</li>
+                <li>Type an octal value like <code>755</code> in the Octal field, or a symbolic string like <code>rwxr-xr-x</code> in the Symbolic field.</li>
+                <li>Optionally enable the special <strong>setuid</strong>, <strong>setgid</strong>, or <strong>sticky bit</strong> checkboxes.</li>
+                <li>Copy the ready-to-paste <code>chmod</code> command at the bottom.</li>
+            </ol>
+
+            <h3>How the Octal Number Works</h3>
+            <p>Each permission is a power of two: <strong>read = 4</strong>, <strong>write = 2</strong>, <strong>execute = 1</strong>. Add them up per role to get a single digit between 0 and 7:</p>
+            <ul>
+                <li><code>7</code> = read + write + execute (<code>rwx</code>)</li>
+                <li><code>6</code> = read + write (<code>rw-</code>)</li>
+                <li><code>5</code> = read + execute (<code>r-x</code>)</li>
+                <li><code>4</code> = read only (<code>r--</code>)</li>
+                <li><code>0</code> = no access (<code>---</code>)</li>
+            </ul>
+
+            <h3>Common Permission Values</h3>
+            <ul>
+                <li><code>644</code> (<code>rw-r--r--</code>) — Regular files: documents, web pages, config files. Owner edits, everyone reads.</li>
+                <li><code>755</code> (<code>rwxr-xr-x</code>) — Directories and executable scripts. Owner has full control, others can read/run.</li>
+                <li><code>600</code> (<code>rw-------</code>) — Private files like SSH keys and credentials. Only the owner can read or write.</li>
+                <li><code>700</code> (<code>rwx------</code>) — Private directories. Only the owner can access anything inside.</li>
+                <li><code>777</code> (<code>rwxrwxrwx</code>) — Full access for everyone. Almost always a security mistake — avoid it.</li>
+                <li><code>1777</code> (<code>rwxrwxrwt</code>) — World-writable directory with the sticky bit, like <code>/tmp</code>.</li>
+            </ul>
+
+            <h3>Special Permission Bits</h3>
+            <ul>
+                <li><strong>setuid (4000)</strong> — An executable runs with the privileges of its owner, not the user running it. Shown as <code>s</code> in the owner's execute position (e.g., <code>rwsr-xr-x</code>).</li>
+                <li><strong>setgid (2000)</strong> — Runs with the group's privileges; on a directory, new files inherit that directory's group. Shown as <code>s</code> in the group's execute position.</li>
+                <li><strong>sticky bit (1000)</strong> — On a shared directory, only a file's owner can delete or rename it. Shown as <code>t</code> in the others' execute position.</li>
+            </ul>
+
+            <div class="faq">
+                <h3>Frequently Asked Questions</h3>
+                <div class="faq-item">
+                    <button class="faq-question">What does chmod 755 mean?</button>
+                    <div class="faq-answer">755 means the owner can read, write, and execute (7 = 4+2+1), while the group and others can read and execute but not write (5 = 4+1). In symbolic notation this is <code>rwxr-xr-x</code>. It is the standard permission for directories and executable scripts that everyone should be able to run but only the owner should modify.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">What does chmod 644 mean?</button>
+                    <div class="faq-answer">644 means the owner can read and write (6 = 4+2), while the group and others can only read (4). In symbolic notation this is <code>rw-r--r--</code>. It is the standard permission for regular, non-executable files such as documents, HTML pages, and configuration files.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">How is the octal permission number calculated?</button>
+                    <div class="faq-answer">Each permission has a value: read = 4, write = 2, execute = 1. Add the values for each role (owner, group, others) to get one digit. For example, read + write + execute = 4 + 2 + 1 = 7, and read + execute = 4 + 1 = 5. The three digits together form the permission, such as 755.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">What are the setuid, setgid, and sticky bits?</button>
+                    <div class="faq-answer">They are special permission bits represented by an optional fourth leading octal digit. setuid (4000) runs an executable with the file owner's privileges. setgid (2000) runs with the group's privileges, or on a directory forces new files to inherit the directory's group. The sticky bit (1000) on a directory like <code>/tmp</code> lets users delete only their own files. For example, <code>chmod 1777 /tmp</code> sets full permissions plus the sticky bit.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">What is the difference between symbolic and octal chmod modes?</button>
+                    <div class="faq-answer">Octal mode (e.g., <code>chmod 644 file</code>) sets the entire permission set at once using numbers. Symbolic mode (e.g., <code>chmod u+x file</code>) adds, removes, or sets specific permissions for specific roles using letters: u (user/owner), g (group), o (others), a (all), with + (add), - (remove), = (set exactly), and r/w/x for the permissions. Symbolic mode is useful when you want to change one permission without affecting the others.</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="related-tools">
+            <h2>Related Tools</h2>
+            <div class="related-grid">
+                <a href="/tools/cron-explainer.html" class="related-card">
+                    <h3>Cron Explainer</h3>
+                    <p>Translate crontab schedules into plain English with next run times.</p>
+                </a>
+                <a href="/tools/hash-generator.html" class="related-card">
+                    <h3>Hash Generator</h3>
+                    <p>Generate SHA-256, SHA-512, and SHA-1 checksums in your browser.</p>
+                </a>
+                <a href="/tools/base64-encoder.html" class="related-card">
+                    <h3>Base64 Encoder</h3>
+                    <p>Encode and decode Base64 strings instantly.</p>
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Network Tools</h3>
+                <a href="/tools/subnet-calculator.html">Subnet Calculator</a>
+                <a href="/tools/mac-vendor-lookup.html">MAC Vendor Lookup</a>
+                <a href="/tools/ssl-checker.html">SSL Checker</a>
+            </div>
+            <div class="footer-section">
+                <h3>Security Tools</h3>
+                <a href="/tools/password-generator.html">Password Generator</a>
+                <a href="/tools/hash-generator.html">Hash Generator</a>
+                <a href="/tools/hmac-generator.html">HMAC Generator</a>
+            </div>
+            <div class="footer-section">
+                <h3>Developer Tools</h3>
+                <a href="/tools/json-formatter.html">JSON Formatter</a>
+                <a href="/tools/chmod-calculator.html">Chmod Calculator</a>
+                <a href="/tools/base64-encoder.html">Base64 Encoder</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals. | <a href="/about.html" style="color:inherit;text-decoration:underline;">About</a> · <a href="/contact.html" style="color:inherit;text-decoration:underline;">Contact</a> · <a href="/terms-of-service.html" style="color:inherit;text-decoration:underline;">Terms</a> · <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p>
+        </div>
+    </footer>
+
+    <div class="toast" id="toast">Copied to clipboard!</div>
+
+    <script src="../js/common.js"></script>
+    <script>
+        const checkboxes = () => Array.from(document.querySelectorAll('.perm-table input[type="checkbox"]'));
+        const specials = ['setuid', 'setgid', 'sticky'];
+
+        function copyText(text) {
+            navigator.clipboard.writeText(text).then(() => showToast('Copied: ' + text));
+        }
+
+        // Read the three role digits from the checkbox grid
+        function rolesFromBoxes() {
+            const digits = [0, 0, 0];
+            checkboxes().forEach(cb => {
+                if (cb.checked) digits[+cb.dataset.role] += +cb.dataset.bit;
+            });
+            return digits;
+        }
+
+        function specialDigit() {
+            return (document.getElementById('setuid').checked ? 4 : 0)
+                 + (document.getElementById('setgid').checked ? 2 : 0)
+                 + (document.getElementById('sticky').checked ? 1 : 0);
+        }
+
+        function toSymbolic(digits, special) {
+            const rwx = ['---','--x','-w-','-wx','r--','r-x','rw-','rwx'];
+            let s = digits.map(d => rwx[d]).join('').split('');
+            // Apply special bits to the execute positions (indexes 2, 5, 8)
+            if (special & 4) s[2] = (s[2] === 'x') ? 's' : 'S';
+            if (special & 2) s[5] = (s[5] === 'x') ? 's' : 'S';
+            if (special & 1) s[8] = (s[8] === 'x') ? 't' : 'T';
+            return s.join('');
+        }
+
+        // Central render: takes the canonical state from checkboxes + special, updates everything
+        function render() {
+            const digits = rolesFromBoxes();
+            const special = specialDigit();
+
+            digits.forEach((d, i) => document.getElementById('digit-' + i).textContent = d);
+
+            const octal = (special ? special : '') + digits.join('');
+            const symbolic = toSymbolic(digits, special);
+
+            document.getElementById('octalOut').textContent = octal;
+            document.getElementById('symbolicOut').textContent = symbolic;
+            document.getElementById('chmodCmd').textContent = 'chmod ' + octal + ' filename';
+
+            // Sync the editable inputs without clobbering focus
+            const oi = document.getElementById('octalInput');
+            const si = document.getElementById('symbolicInput');
+            if (document.activeElement !== oi) oi.value = octal;
+            if (document.activeElement !== si) si.value = symbolic;
+        }
+
+        // Apply a 3- or 4-digit octal value to the checkboxes
+        function applyOctal(str) {
+            str = str.replace(/[^0-7]/g, '');
+            if (str.length < 3) return;
+            let special = 0, perm = str;
+            if (str.length >= 4) { special = +str[str.length - 4]; perm = str.slice(-3); }
+            const digits = perm.split('').map(Number);
+            checkboxes().forEach(cb => {
+                cb.checked = (digits[+cb.dataset.role] & +cb.dataset.bit) !== 0;
+            });
+            document.getElementById('setuid').checked = !!(special & 4);
+            document.getElementById('setgid').checked = !!(special & 2);
+            document.getElementById('sticky').checked = !!(special & 1);
+        }
+
+        // Apply a 9-char symbolic string (rwxr-xr-x style, s/S/t/T allowed)
+        function applySymbolic(str) {
+            if (str.length !== 9) return;
+            const map = { r: 4, w: 2, x: 1 };
+            const digits = [0, 0, 0];
+            let setuid = false, setgid = false, sticky = false;
+            for (let i = 0; i < 9; i++) {
+                const c = str[i], role = Math.floor(i / 3);
+                if (c === 'r') digits[role] += 4;
+                else if (c === 'w') digits[role] += 2;
+                else if (c === 'x') digits[role] += 1;
+                else if (c === 's' || c === 'S') {
+                    if (i === 2) { setuid = true; if (c === 's') digits[0] += 1; }
+                    if (i === 5) { setgid = true; if (c === 's') digits[1] += 1; }
+                }
+                else if (c === 't' || c === 'T') {
+                    if (i === 8) { sticky = true; if (c === 't') digits[2] += 1; }
+                }
+            }
+            checkboxes().forEach(cb => {
+                cb.checked = (digits[+cb.dataset.role] & +cb.dataset.bit) !== 0;
+            });
+            document.getElementById('setuid').checked = setuid;
+            document.getElementById('setgid').checked = setgid;
+            document.getElementById('sticky').checked = sticky;
+        }
+
+        // Wire up events
+        checkboxes().forEach(cb => cb.addEventListener('change', render));
+        specials.forEach(id => document.getElementById(id).addEventListener('change', render));
+
+        document.getElementById('octalInput').addEventListener('input', e => {
+            applyOctal(e.target.value);
+            render();
+        });
+        document.getElementById('symbolicInput').addEventListener('input', e => {
+            applySymbolic(e.target.value.trim());
+            render();
+        });
+
+        // Quick presets
+        const presetData = [
+            ['644', 'Files'], ['755', 'Scripts/Dirs'], ['600', 'Private'],
+            ['700', 'Private dir'], ['664', 'Group write'], ['777', 'All (avoid)'],
+            ['400', 'Read-only'], ['1777', 'tmp']
+        ];
+        const presetsEl = document.getElementById('presets');
+        presetData.forEach(([val, label]) => {
+            const b = document.createElement('button');
+            b.className = 'preset-btn';
+            b.innerHTML = val + ' <span style="color:var(--text-muted)">' + label + '</span>';
+            b.onclick = () => { applyOctal(val); render(); };
+            presetsEl.appendChild(b);
+        });
+
+        // Initialize at 644
+        applyOctal('644');
+        render();
+    </script>
+
+    <script>
+    document.querySelectorAll('.faq-question').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var item = btn.parentElement;
+            item.classList.toggle('open');
+        });
+    });
+    </script>
+</body>
+</html>
