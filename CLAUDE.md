@@ -68,4 +68,8 @@ Everything else (JWT sign/verify, HMAC, TOTP, hashing, IPv6 BigInt math) uses th
 
 This site is on Google AdSense — past commits explicitly addressed an AdSense "low value content" violation (see `a4ff790`). When adding pages or trimming content, keep substantive descriptions/usage text on each tool page rather than reducing them to bare UI. Canonical URL, OG tags, Twitter card, and schema.org JSON-LD blocks are present on every page and should be kept for any new tool.
 
+Absolute self-URLs (canonical, `og:url`, JSON-LD `url`, `sitemap.xml` `<loc>`) are **extensionless** (`https://ops-box.net/tools/<slug>`), because Cloudflare Pages 308-redirects `*.html` to the extensionless path. Relative internal links keep `.html` so `python3 -m http.server` previews still work.
+
+`ads.txt` (AdSense seller line) and `404.html` (noindex, **no AdSense script**: Google forbids ads on error pages) live at the repo root. Without `404.html`, Cloudflare Pages serves `index.html` with status 200 for every unknown path, which creates soft-404s.
+
 Contact email across the site is `contact@ops-box.net` (not a personal address — see commit `49d8184`).
