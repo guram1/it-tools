@@ -1,5 +1,5 @@
 # Cloudflare Pages redirects — https://developers.cloudflare.com/pages/configuration/redirects/
-# Renamed / merged / removed tools (2026-11-22). Both forms are listed because Pages also serves *.html.
+# Renamed / merged / removed tools (2026-11-21). Both forms are listed because Pages also serves *.html.
 /tools/dns-dumpster            /tools/subdomain-finder        301
 /tools/dns-dumpster.html       /tools/subdomain-finder        301
 /tools/bulk-mac-formatter      /tools/mac-address-formatter   301

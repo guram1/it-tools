@@ -2,202 +2,202 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
         <loc>https://ops-box.net/about</loc>
-        <lastmod>2026-11-22</lastmod>
+        <lastmod>2026-11-21</lastmod>
         <priority>0.3</priority>
     </url>
     <url>
         <loc>https://ops-box.net/contact</loc>
-        <lastmod>2026-11-22</lastmod>
+        <lastmod>2026-11-21</lastmod>
         <priority>0.3</priority>
     </url>
     <url>
         <loc>https://ops-box.net/</loc>
-        <lastmod>2026-11-22</lastmod>
+        <lastmod>2026-11-21</lastmod>
         <priority>1.0</priority>
     </url>
     <url>
         <loc>https://ops-box.net/privacy-policy</loc>
-        <lastmod>2026-11-22</lastmod>
+        <lastmod>2026-11-21</lastmod>
         <priority>0.3</priority>
     </url>
     <url>
         <loc>https://ops-box.net/terms-of-service</loc>
-        <lastmod>2026-11-22</lastmod>
+        <lastmod>2026-11-21</lastmod>
         <priority>0.3</priority>
     </url>
     <url>
         <loc>https://ops-box.net/tools/base64-encoder</loc>
-        <lastmod>2026-11-22</lastmod>
+        <lastmod>2026-11-21</lastmod>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://ops-box.net/tools/bcrypt</loc>
-        <lastmod>2026-11-22</lastmod>
+        <lastmod>2026-11-21</lastmod>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://ops-box.net/tools/bgp-asn-lookup</loc>
-        <lastmod>2026-11-22</lastmod>
+        <lastmod>2026-11-21</lastmod>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://ops-box.net/tools/certificate-decoder</loc>
-        <lastmod>2026-11-22</lastmod>
+        <lastmod>2026-11-21</lastmod>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://ops-box.net/tools/chmod-calculator</loc>
-        <lastmod>2026-11-22</lastmod>
+        <lastmod>2026-11-21</lastmod>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://ops-box.net/tools/cidr-aggregator</loc>
-        <lastmod>2026-11-22</lastmod>
+        <lastmod>2026-11-21</lastmod>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://ops-box.net/tools/cron-explainer</loc>
-        <lastmod>2026-11-22</lastmod>
+        <lastmod>2026-11-21</lastmod>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://ops-box.net/tools/csr-decoder</loc>
-        <lastmod>2026-11-22</lastmod>
+        <lastmod>2026-11-21</lastmod>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://ops-box.net/tools/csr-generator</loc>
-        <lastmod>2026-11-22</lastmod>
+        <lastmod>2026-11-21</lastmod>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://ops-box.net/tools/dns-lookup</loc>
-        <lastmod>2026-11-22</lastmod>
+        <lastmod>2026-11-21</lastmod>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://ops-box.net/tools/email-dns-checker</loc>
-        <lastmod>2026-11-22</lastmod>
+        <lastmod>2026-11-21</lastmod>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://ops-box.net/tools/fortigate-cli-builder</loc>
-        <lastmod>2026-11-22</lastmod>
+        <lastmod>2026-11-21</lastmod>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://ops-box.net/tools/hash-generator</loc>
-        <lastmod>2026-11-22</lastmod>
+        <lastmod>2026-11-21</lastmod>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://ops-box.net/tools/hmac-generator</loc>
-        <lastmod>2026-11-22</lastmod>
+        <lastmod>2026-11-21</lastmod>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://ops-box.net/tools/http-status-codes</loc>
-        <lastmod>2026-11-22</lastmod>
+        <lastmod>2026-11-21</lastmod>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://ops-box.net/tools/ip-location</loc>
-        <lastmod>2026-11-22</lastmod>
+        <lastmod>2026-11-21</lastmod>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://ops-box.net/tools/ipv6-subnet-calculator</loc>
-        <lastmod>2026-11-22</lastmod>
+        <lastmod>2026-11-21</lastmod>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://ops-box.net/tools/json-formatter</loc>
-        <lastmod>2026-11-22</lastmod>
+        <lastmod>2026-11-21</lastmod>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://ops-box.net/tools/jwt-decoder</loc>
-        <lastmod>2026-11-22</lastmod>
+        <lastmod>2026-11-21</lastmod>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://ops-box.net/tools/jwt-generator</loc>
-        <lastmod>2026-11-22</lastmod>
+        <lastmod>2026-11-21</lastmod>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://ops-box.net/tools/mac-address-formatter</loc>
-        <lastmod>2026-11-22</lastmod>
+        <lastmod>2026-11-21</lastmod>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://ops-box.net/tools/mac-vendor-lookup</loc>
-        <lastmod>2026-11-22</lastmod>
+        <lastmod>2026-11-21</lastmod>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://ops-box.net/tools/mtu-mss-calculator</loc>
-        <lastmod>2026-11-22</lastmod>
+        <lastmod>2026-11-21</lastmod>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://ops-box.net/tools/openssl-command-generator</loc>
-        <lastmod>2026-11-22</lastmod>
+        <lastmod>2026-11-21</lastmod>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://ops-box.net/tools/password-generator</loc>
-        <lastmod>2026-11-22</lastmod>
+        <lastmod>2026-11-21</lastmod>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://ops-box.net/tools/regex-tester</loc>
-        <lastmod>2026-11-22</lastmod>
+        <lastmod>2026-11-21</lastmod>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://ops-box.net/tools/ssl-checker</loc>
-        <lastmod>2026-11-22</lastmod>
+        <lastmod>2026-11-21</lastmod>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://ops-box.net/tools/subdomain-finder</loc>
-        <lastmod>2026-11-22</lastmod>
+        <lastmod>2026-11-21</lastmod>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://ops-box.net/tools/subnet-calculator</loc>
-        <lastmod>2026-11-22</lastmod>
+        <lastmod>2026-11-21</lastmod>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://ops-box.net/tools/timestamp-converter</loc>
-        <lastmod>2026-11-22</lastmod>
+        <lastmod>2026-11-21</lastmod>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://ops-box.net/tools/totp-generator</loc>
-        <lastmod>2026-11-22</lastmod>
+        <lastmod>2026-11-21</lastmod>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://ops-box.net/tools/url-encoder</loc>
-        <lastmod>2026-11-22</lastmod>
+        <lastmod>2026-11-21</lastmod>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://ops-box.net/tools/uuid-generator</loc>
-        <lastmod>2026-11-22</lastmod>
+        <lastmod>2026-11-21</lastmod>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://ops-box.net/tools/wifi-qr-generator</loc>
-        <lastmod>2026-11-22</lastmod>
+        <lastmod>2026-11-21</lastmod>
         <priority>0.8</priority>
     </url>
     <url>
         <loc>https://ops-box.net/tools/wildcard-acl-generator</loc>
-        <lastmod>2026-11-22</lastmod>
+        <lastmod>2026-11-21</lastmod>
         <priority>0.8</priority>
     </url>
 </urlset>

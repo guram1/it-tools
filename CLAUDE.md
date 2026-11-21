@@ -74,7 +74,7 @@ Absolute self-URLs (canonical, `og:url`, JSON-LD `url`, `sitemap.xml` `<loc>`) a
 
 Contact email across the site is `contact@ops-box.net` (not a personal address — see commit `49d8184`).
 
-## Site-wide conventions (2026-11-22 overhaul)
+## Site-wide conventions (2026-11-21 overhaul)
 
 - Every page loads `/css/base.css?v=<ver>` LAST in `<head>` (self-hosted fonts from `/fonts/`, WCAG-AA `--text-muted`, unified header + mobile menu) and `/js/nav.js?v=<ver>` (defer) before the final `</body>`. The `<header>` markup is identical on every page; change it with a script across all files, never per page.
 - `js/common.js` also provides `getToolParams()`, `setToolParams(obj)`, `copyShareLink()`, `debounce(fn, ms)`. Tools prefill an example, update live, and keep shareable state in the query string.
