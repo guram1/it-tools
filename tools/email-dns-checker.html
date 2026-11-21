@@ -1,0 +1,1288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-FH74PGMNYD"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-FH74PGMNYD');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPF, DKIM &amp; DMARC Checker and Generator | OPS-BOX</title>
+    <meta name="description" content="Check a domain's SPF, DKIM, DMARC and MX records over DNS-over-HTTPS. Counts SPF lookups against the RFC 7208 limit, rates DMARC policy, sizes DKIM keys.">
+    <meta name="keywords" content="SPF checker, DMARC checker, DKIM checker, SPF lookup limit, SPF 10 lookups, void lookups, DMARC record generator, SPF record generator, DKIM key size, email authentication">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://ops-box.net/tools/email-dns-checker">
+
+    <meta property="og:title" content="SPF, DKIM &amp; DMARC Checker — Email DNS Audit">
+    <meta property="og:description" content="Audit SPF (10-lookup and void limits), DMARC policy strength, DKIM key size and MX for any domain, then generate corrected SPF and DMARC records.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ops-box.net/tools/email-dns-checker">
+    <meta property="og:image" content="https://ops-box.net/og-image.png">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="SPF, DKIM &amp; DMARC Checker — Email DNS Audit">
+    <meta name="twitter:description" content="Check SPF lookup count, DMARC policy and DKIM keys for any domain, in your browser.">
+    <meta name="twitter:image" content="https://ops-box.net/og-image.png">
+
+    <link rel="stylesheet" href="../css/style.css?v=20261122">
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "SPF, DKIM & DMARC Checker",
+        "url": "https://ops-box.net/tools/email-dns-checker",
+        "description": "Check a domain's MX, SPF, DMARC and DKIM records over DNS-over-HTTPS, count SPF DNS lookups against the RFC 7208 limit, and generate SPF and DMARC records.",
+        "applicationCategory": "NetworkingApplication",
+        "operatingSystem": "Any",
+        "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {
+                "@type": "Question",
+                "name": "Why does my SPF record fail with too many DNS lookups?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "RFC 7208 section 4.6.4 caps the include, a, mx, ptr and exists mechanisms plus the redirect modifier at 10 per SPF evaluation, counted globally across every nested include. ip4, ip6, all and exp do not count. Above 10 the receiver returns permerror, which DMARC treats as an SPF failure. Remove unused includes, replace a and mx with ip4/ip6 where the addresses are stable, or move bulk senders to their own subdomain."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Can a domain have two SPF records?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "No. RFC 7208 section 4.5 says that if more than one TXT record starting with v=spf1 exists at a name, the result is permerror. This usually happens when a second vendor's setup guide tells you to add a new record. Merge the mechanisms into one record with a single all at the end."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Why can't the checker find my DKIM key?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "DKIM keys live at selector._domainkey.domain, and the selector is chosen by the signer, so it cannot be listed from DNS. The tool tries common selectors such as google, selector1 and selector2. If yours is different, open a message you sent, read the s= value in the DKIM-Signature header, and enter it in the selector field."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Which DMARC policy should I publish?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Start with p=none and an rua address to collect aggregate reports. Once the reports show that every legitimate sender passes SPF or DKIM with alignment, move to p=quarantine and then p=reject. p=none on its own does not stop spoofing; it only gives you visibility."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Is my domain data sent to a server?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "The page sends DNS questions directly from your browser to Cloudflare's public DNS-over-HTTPS resolver at cloudflare-dns.com, and only when you press Check or open a link that contains a domain. OPS-BOX does not receive or store the domain. The record validator and the generators run entirely in your browser and make no network requests."
+                }
+            }
+        ]
+    }
+    </script>
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1924789684268835" crossorigin="anonymous"></script>
+    <style>
+        .ec-form { display: grid; grid-template-columns: 2fr 2fr auto; gap: 0.75rem; align-items: end; }
+        .ec-form .form-group { margin-bottom: 0; }
+        .ec-status { margin-top: 1rem; color: var(--text-muted); font-size: 0.9rem; }
+        .ec-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin: 1.25rem 0; }
+        .ec-card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem 1rem; }
+        .ec-card-label { color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        .ec-card-val { font-size: 1rem; font-weight: 600; margin-top: 0.25rem; }
+        .ec-section { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 10px; padding: 1rem 1.25rem; margin-top: 1rem; }
+        .ec-section h2 { font-size: 1.1rem; margin-bottom: 0.75rem; display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+        .ec-section h3 { font-size: 0.95rem; margin: 0.75rem 0 0.4rem; color: var(--text-secondary); }
+        .ec-rec { font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 6px; padding: 0.6rem 0.75rem; white-space: pre-wrap; word-break: break-all; margin: 0.4rem 0; }
+        .ec-row { display: flex; gap: 0.5rem; align-items: flex-start; }
+        .ec-row .ec-rec { flex: 1; }
+        .pill { display: inline-block; padding: 0.1rem 0.55rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; border: 1px solid; white-space: nowrap; }
+        .pill.ok { color: var(--accent); border-color: rgba(34,197,94,.4); background: rgba(34,197,94,.1); }
+        .pill.warn { color: var(--warning); border-color: rgba(245,158,11,.4); background: rgba(245,158,11,.1); }
+        .pill.bad { color: var(--danger); border-color: rgba(239,68,68,.4); background: rgba(239,68,68,.1); }
+        .pill.info { color: var(--info); border-color: rgba(59,130,246,.4); background: rgba(59,130,246,.1); }
+        .ec-issues { list-style: none; margin: 0.4rem 0; padding: 0; }
+        .ec-issues li { padding: 0.3rem 0 0.3rem 1.4rem; position: relative; font-size: 0.88rem; color: var(--text-secondary); }
+        .ec-issues li::before { position: absolute; left: 0; top: 0.3rem; }
+        .ec-issues li.bad::before { content: '✖'; color: var(--danger); }
+        .ec-issues li.warn::before { content: '▲'; color: var(--warning); }
+        .ec-issues li.info::before { content: 'ℹ'; color: var(--info); }
+        .ec-issues li.ok::before { content: '✔'; color: var(--accent); }
+        .ec-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        .ec-table th, .ec-table td { text-align: left; padding: 0.45rem 0.5rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+        .ec-table th { color: var(--text-muted); font-weight: 500; font-size: 0.75rem; text-transform: uppercase; }
+        .ec-table td code, .ec-tree code { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; word-break: break-all; }
+        .ec-scroll { overflow-x: auto; }
+        .ec-tree, .ec-tree ul { list-style: none; padding-left: 1rem; margin: 0; }
+        .ec-tree { padding-left: 0; }
+        .ec-tree li { margin: 0.2rem 0; font-size: 0.85rem; color: var(--text-secondary); }
+        .ec-tree .node { border-left: 2px solid var(--border); padding-left: 0.6rem; margin: 0.35rem 0; }
+        .ec-lk { display: inline-block; min-width: 2.2rem; text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; border-radius: 4px; background: rgba(59,130,246,.15); color: var(--info); margin-right: 0.35rem; }
+        .ec-lk.over { background: rgba(239,68,68,.15); color: var(--danger); }
+        .ec-muted { color: var(--text-muted); font-size: 0.8rem; }
+        .ec-meter { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; margin: 0.4rem 0 0.2rem; }
+        .ec-meter > div { height: 100%; }
+        .ec-gen { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .ec-gen .form-group { margin-bottom: 0.9rem; }
+        .ec-check { display: flex; gap: 1rem; flex-wrap: wrap; color: var(--text-secondary); font-size: 0.9rem; }
+        .ec-check label { display: flex; gap: 0.35rem; align-items: center; cursor: pointer; }
+        .ec-h2 { font-size: 1.15rem; margin: 2rem 0 0.25rem; }
+        .ec-sub { color: var(--text-muted); font-size: 0.88rem; margin-bottom: 1rem; }
+        .btn-sm { padding: 0.35rem 0.7rem; font-size: 0.78rem; }
+        @media (max-width: 760px) {
+            .ec-form, .ec-gen { grid-template-columns: 1fr; }
+            .ec-summary { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+    <link rel="icon" href="/favicon.ico" sizes="48x48">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="preload" href="/fonts/Outfit-latin.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/css/base.css?v=20261122">
+    <script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://ops-box.net/"}, {"@type": "ListItem", "position": 2, "name": "SPF, DKIM & DMARC Checker", "item": "https://ops-box.net/tools/email-dns-checker"}]}</script>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <a href="/" class="logo" aria-label="OPS-BOX home"><span class="logo-icon">⚡</span><span class="logo-text">OPS<span>-BOX</span></span></a>
+            <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Open menu">☰</button>
+            <nav class="header-nav" id="site-nav" aria-label="Main">
+                <a href="/#network">Network</a>
+                <a href="/#security">Security</a>
+                <a href="/#developer">Developer</a>
+                <a href="/tools/subnet-calculator.html">Subnet Calculator</a>
+                <a href="/tools/mac-vendor-lookup.html">MAC Lookup</a>
+                <a href="/about.html">About</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <nav class="breadcrumb">
+            <a href="/">Home</a><span>›</span><span class="breadcrumb-current">SPF, DKIM &amp; DMARC Checker</span>
+        </nav>
+
+        <div class="tool-container">
+            <div class="tool-header">
+                <h1 class="tool-title">SPF, DKIM &amp; DMARC Checker</h1>
+                <p class="tool-description">Audit a domain's mail authentication records: MX, SPF (with the RFC 7208 10-lookup and void-lookup limits followed through every include and redirect), DMARC policy strength, and DKIM keys for your selectors. Then generate corrected SPF and DMARC records.</p>
+            </div>
+            <div class="tool-content">
+                <form id="checkForm" class="ec-form" autocomplete="off">
+                    <div class="form-group">
+                        <label class="form-label" for="domainInput">Domain</label>
+                        <input id="domainInput" class="form-input" type="text" inputmode="url" spellcheck="false" placeholder="example.com" value="github.com">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="selInput">Extra DKIM selectors (optional, comma separated)</label>
+                        <input id="selInput" class="form-input" type="text" spellcheck="false" placeholder="e.g. smtp, mta1, pm">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Check domain</button>
+                </form>
+                <div class="btn-group" style="margin-top:0.75rem;">
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="copyShareLink()">Copy link</button>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="copyToClipboard('reportText')">Copy report</button>
+                </div>
+                <div id="checkStatus" class="ec-status">Press <strong>Check domain</strong> (or Enter). DNS queries go from your browser to Cloudflare DNS-over-HTTPS only when you check.</div>
+                <div id="results"></div>
+                <pre id="reportText" style="display:none;"></pre>
+
+                <h2 class="ec-h2">Validate a pasted record</h2>
+                <p class="ec-sub">Paste an SPF, DMARC or DKIM record to lint it offline before you publish it. Results update as you type; nothing is queried.</p>
+                <div class="form-group">
+                    <label class="form-label" for="recInput">Record (TXT value)</label>
+                    <textarea id="recInput" class="form-input form-textarea" rows="3" spellcheck="false" style="min-height:80px;">v=spf1 a mx ip4:203.0.113.0/24 include:_spf.google.com include:spf.protection.outlook.com ptr ?all</textarea>
+                </div>
+                <div id="recOut"></div>
+
+                <h2 class="ec-h2">SPF record generator</h2>
+                <p class="ec-sub">Build a single, valid SPF record. Output updates live.</p>
+                <div class="ec-gen">
+                    <div>
+                        <div class="form-group">
+                            <label class="form-label" for="gDomain">Domain (for the zone-file line)</label>
+                            <input id="gDomain" class="form-input" type="text" spellcheck="false" value="example.com">
+                        </div>
+                        <div class="form-group ec-check">
+                            <label><input type="checkbox" id="sA"> <code>a</code> (domain's A/AAAA)</label>
+                            <label><input type="checkbox" id="sMx" checked> <code>mx</code> (domain's MX hosts)</label>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="sIp4">ip4 networks</label>
+                            <input id="sIp4" class="form-input" type="text" spellcheck="false" value="203.0.113.10, 198.51.100.0/24">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="sIp6">ip6 networks</label>
+                            <input id="sIp6" class="form-input" type="text" spellcheck="false" value="2001:db8:1::/48">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="sInc">include domains (third-party senders)</label>
+                            <input id="sInc" class="form-input" type="text" spellcheck="false" value="_spf.google.com">
+                            <div class="ec-muted" style="margin-top:0.35rem;">Add:
+                                <a href="#" data-inc="_spf.google.com">Google Workspace</a> ·
+                                <a href="#" data-inc="spf.protection.outlook.com">Microsoft 365</a> ·
+                                <a href="#" data-inc="amazonses.com">Amazon SES</a> ·
+                                <a href="#" data-inc="servers.mcsv.net">Mailchimp</a> ·
+                                <a href="#" data-inc="_spf.salesforce.com">Salesforce</a> ·
+                                <a href="#" data-inc="mail.zendesk.com">Zendesk</a>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="sAll">Default for everything else</label>
+                            <select id="sAll" class="form-select">
+                                <option value="-all">-all (fail)</option>
+                                <option value="~all" selected>~all (softfail)</option>
+                                <option value="?all">?all (neutral, not recommended)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="form-label">SPF TXT value</label>
+                        <div class="ec-row"><div id="spfGenOut" class="ec-rec"></div><button type="button" class="btn btn-secondary btn-sm" onclick="copyToClipboard('spfGenOut')">Copy</button></div>
+                        <label class="form-label" style="margin-top:0.75rem;">Zone-file line (BIND)</label>
+                        <div class="ec-row"><div id="spfGenZone" class="ec-rec"></div><button type="button" class="btn btn-secondary btn-sm" onclick="copyToClipboard('spfGenZone')">Copy</button></div>
+                        <ul id="spfGenNotes" class="ec-issues"></ul>
+                    </div>
+                </div>
+
+                <h2 class="ec-h2">DMARC record generator</h2>
+                <p class="ec-sub">Publish the result as a TXT record at <code>_dmarc.&lt;domain&gt;</code>.</p>
+                <div class="ec-gen">
+                    <div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label" for="dP">Policy (p)</label>
+                                <select id="dP" class="form-select"><option value="none" selected>none</option><option value="quarantine">quarantine</option><option value="reject">reject</option></select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="dSp">Subdomains (sp)</label>
+                                <select id="dSp" class="form-select"><option value="" selected>same as p</option><option value="none">none</option><option value="quarantine">quarantine</option><option value="reject">reject</option></select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="dNp">Non-existent subdomains (np)</label>
+                                <select id="dNp" class="form-select"><option value="" selected>not set</option><option value="none">none</option><option value="quarantine">quarantine</option><option value="reject">reject</option></select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="dRua">Aggregate reports (rua) — addresses</label>
+                            <input id="dRua" class="form-input" type="text" spellcheck="false" value="dmarc-reports@example.com">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="dRuf">Failure reports (ruf) — optional</label>
+                            <input id="dRuf" class="form-input" type="text" spellcheck="false" value="">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label" for="dAdkim">DKIM alignment</label>
+                                <select id="dAdkim" class="form-select"><option value="r" selected>relaxed</option><option value="s">strict</option></select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="dAspf">SPF alignment</label>
+                                <select id="dAspf" class="form-select"><option value="r" selected>relaxed</option><option value="s">strict</option></select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="dFo">Failure options (fo)</label>
+                                <select id="dFo" class="form-select"><option value="0" selected>0 (all fail)</option><option value="1">1 (any fail)</option><option value="d">d (DKIM)</option><option value="s">s (SPF)</option><option value="1:d:s">1:d:s</option></select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="dT">Test mode (t)</label>
+                                <select id="dT" class="form-select"><option value="n" selected>off</option><option value="y">t=y</option></select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="dPct">pct (legacy)</label>
+                                <input id="dPct" class="form-input" type="number" min="0" max="100" value="100">
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="form-label">DMARC TXT value</label>
+                        <div class="ec-row"><div id="dmarcGenOut" class="ec-rec"></div><button type="button" class="btn btn-secondary btn-sm" onclick="copyToClipboard('dmarcGenOut')">Copy</button></div>
+                        <label class="form-label" style="margin-top:0.75rem;">Zone-file line (BIND)</label>
+                        <div class="ec-row"><div id="dmarcGenZone" class="ec-rec"></div><button type="button" class="btn btn-secondary btn-sm" onclick="copyToClipboard('dmarcGenZone')">Copy</button></div>
+                        <ul id="dmarcGenNotes" class="ec-issues"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <section class="seo-content">
+            <h2>What this checker does</h2>
+            <p>Mail receivers decide whether a message that claims to come from your domain is genuine by combining three DNS-published mechanisms. <strong>SPF</strong> (RFC 7208) lists the hosts allowed to use the domain in the SMTP envelope sender. <strong>DKIM</strong> (RFC 6376) publishes public keys that verify a cryptographic signature on the message. <strong>DMARC</strong> (RFC 7489, now RFC 9989) tells the receiver what to do when neither SPF nor DKIM passes <em>and</em> aligns with the visible From: domain, and where to send reports. This tool queries all of them, plus MX, over DNS-over-HTTPS and applies the limits that real receivers enforce, not just a syntax check.</p>
+
+            <h3>How the SPF evaluation works</h3>
+            <p>The checker fetches the TXT records at the domain and keeps only those that begin with exactly <code>v=spf1</code> (so <code>v=spf10</code> is discarded). Zero records means the SPF result is <em>none</em>; more than one is a <em>permerror</em> (RFC 7208 §4.5). Long records published as several 255-byte strings are joined without spaces, as §3.3 requires. It then walks the record the way a receiver does for a sender that matches nothing, which is the worst case:</p>
+            <ul>
+                <li><strong>Counted against the limit of 10:</strong> <code>include</code>, <code>a</code>, <code>mx</code>, <code>ptr</code>, <code>exists</code> and the <code>redirect</code> modifier. The counter is global: terms inside every nested include add to the same budget.</li>
+                <li><strong>Not counted:</strong> <code>ip4</code>, <code>ip6</code>, <code>all</code> and <code>exp</code>.</li>
+                <li><strong>Void lookups:</strong> a query that returns NXDOMAIN or an empty answer. RFC 7208 says implementations SHOULD stop at two; the third is a permerror. Typical causes are an <code>include</code> to a vendor domain that was shut down, or <code>a:</code> pointing to a decommissioned host.</li>
+                <li><strong>Per-mechanism limits:</strong> each <code>mx</code> mechanism must not require more than 10 address lookups, so a domain with 11 MX hosts breaks <code>mx</code> by itself.</li>
+                <li><strong>Targets without SPF:</strong> an <code>include</code> or <code>redirect</code> to a name with no SPF record is a permerror, not a silent pass-through.</li>
+                <li><strong>Ordering rules:</strong> terms after <code>all</code> are never evaluated, and <code>redirect</code> is ignored when the record contains <code>all</code>.</li>
+            </ul>
+
+            <h3>Worked example: github.com</h3>
+            <p>When we checked on 21 November 2026, github.com published <code>v=spf1 ip4:192.30.252.0/22 include:spf.protection.outlook.com include:_netblocks.google.com include:_netblocks2.google.com include:mail.zendesk.com include:_spf.salesforce.com include:servers.mcsv.net include:mktomail.com include:sendgrid.net ip4:62.253.227.114 … ~all</code>. That is 8 includes. Two of the included records contain one more include each (<code>_spf.salesforce.com</code> and <code>sendgrid.net</code>), so the total is <strong>10 of 10</strong>. The record is valid today, but one extra include added by any of those vendors would push every message to permerror. The ip4 entries cost nothing. Compare google.com: <code>v=spf1 include:_spf.google.com ~all</code> uses one lookup, because <code>_spf.google.com</code> lists only ip4/ip6 ranges.</p>
+
+            <h3>Reading the DMARC result</h3>
+            <p>The tool queries <code>_dmarc.&lt;domain&gt;</code>. If there is no record it walks up the DNS tree (capped at eight queries, the RFC 9989 method) to find an inherited organizational policy. It then checks that <code>v=DMARC1</code> is the first tag and that <code>p</code> is valid, parses <code>sp</code>, <code>np</code>, <code>pct</code>, <code>adkim</code>, <code>aspf</code>, <code>fo</code>, <code>t</code>, <code>rua</code> and <code>ruf</code>, and rates enforcement:</p>
+            <ul>
+                <li><code>p=reject</code> is full enforcement. <code>p=quarantine</code> sends failures to spam. <code>p=none</code> is monitoring only.</li>
+                <li>An <code>sp</code> weaker than <code>p</code> leaves existing subdomains open to spoofing even when the main domain is at reject.</li>
+                <li>Under RFC 7489, <code>pct=25</code> applies the policy to a quarter of failing mail and treats the rest one level lower. RFC 9989 (Standards Track, May 2026) obsoletes RFC 7489, removes <code>pct</code>, and adds <code>t=y</code> as the testing signal, plus <code>np</code> for non-existent subdomains. Receivers are migrating, so the tool reports both readings.</li>
+                <li>A <code>rua</code> address in another organization's domain only receives reports if that domain publishes <code>&lt;yourdomain&gt;._report._dmarc.&lt;reportdomain&gt;</code> with <code>v=DMARC1</code>. The checker queries this record.</li>
+            </ul>
+
+            <h3>DKIM selectors and key sizes</h3>
+            <p>Keys are published at <code>selector._domainkey.domain</code>. The checker tries your selectors plus <code>google</code>, <code>selector1</code>, <code>selector2</code>, <code>k1</code>, <code>default</code>, <code>s1</code>, <code>s2</code>, <code>mail</code> and <code>dkim</code>. It decodes the <code>p=</code> value and reads the RSA modulus length from the DER structure, or confirms a 32-byte Ed25519 key (RFC 8463). RFC 8301 requires RSA keys of at least 1024 bits and recommends 2048 or more. An empty <code>p=</code> means the key has been revoked. Vendor defaults differ. Google Workspace's default selector is <code>google</code> and offers 2048-bit or 1024-bit keys. Microsoft 365 uses the fixed host names <code>selector1._domainkey</code> and <code>selector2._domainkey</code> as CNAMEs into its own zone, and its <code>New-DkimSigningConfig</code> cmdlet defaults to a 1024-bit key unless you pass <code>-KeySize 2048</code>. A selector that is not found here does not prove DKIM is off, only that it is not one of the names tried.</p>
+
+            <h3>Common mistakes we see</h3>
+            <ul>
+                <li><strong>Adding a second SPF record</strong> for a new vendor instead of merging it into the first. Both records become permerror.</li>
+                <li><strong>Counting only includes.</strong> Google's setup page says an SPF record "can have up to 10 include: tags", but the RFC limit covers <code>a</code>, <code>mx</code>, <code>exists</code>, <code>ptr</code> and <code>redirect</code> too, recursively.</li>
+                <li><strong><code>+all</code> or <code>?all</code></strong>. <code>+all</code> authorizes the whole Internet. <code>?all</code> returns neutral and protects nothing.</li>
+                <li><strong>Leaving <code>ptr</code> in the record.</strong> RFC 7208 §5.5 says it SHOULD NOT be published: it is slow and depends on reverse DNS that the connecting party controls.</li>
+                <li><strong>Staying on <code>p=none</code> for years</strong>, or publishing <code>p=reject</code> before reports confirm that every sender aligns.</li>
+                <li><strong>Forgetting parked domains.</strong> A domain that sends no mail should publish <code>v=spf1 -all</code>, a DMARC <code>p=reject</code>, and a null MX (<code>0 .</code>, RFC 7505) if it also receives none.</li>
+            </ul>
+            <div class="faq">
+                <h3>Frequently Asked Questions</h3>
+                <div class="faq-item"><button class="faq-question">Why does my SPF record fail with too many DNS lookups?</button><div class="faq-answer">RFC 7208 section 4.6.4 caps the include, a, mx, ptr and exists mechanisms plus the redirect modifier at 10 per SPF evaluation, counted globally across every nested include. ip4, ip6, all and exp do not count. Above 10 the receiver returns permerror, which DMARC treats as an SPF failure. Remove unused includes, replace a and mx with ip4/ip6 where the addresses are stable, or move bulk senders to their own subdomain.</div></div>
+                <div class="faq-item"><button class="faq-question">Can a domain have two SPF records?</button><div class="faq-answer">No. RFC 7208 section 4.5 says that if more than one TXT record starting with v=spf1 exists at a name, the result is permerror. This usually happens when a second vendor's setup guide tells you to add a new record. Merge the mechanisms into one record with a single all at the end.</div></div>
+                <div class="faq-item"><button class="faq-question">Why can't the checker find my DKIM key?</button><div class="faq-answer">DKIM keys live at selector._domainkey.domain, and the selector is chosen by the signer, so it cannot be listed from DNS. The tool tries common selectors such as google, selector1 and selector2. If yours is different, open a message you sent, read the s= value in the DKIM-Signature header, and enter it in the selector field.</div></div>
+                <div class="faq-item"><button class="faq-question">Which DMARC policy should I publish?</button><div class="faq-answer">Start with p=none and an rua address to collect aggregate reports. Once the reports show that every legitimate sender passes SPF or DKIM with alignment, move to p=quarantine and then p=reject. p=none on its own does not stop spoofing; it only gives you visibility.</div></div>
+                <div class="faq-item"><button class="faq-question">Is my domain data sent to a server?</button><div class="faq-answer">The page sends DNS questions directly from your browser to Cloudflare's public DNS-over-HTTPS resolver at cloudflare-dns.com, and only when you press Check or open a link that contains a domain. OPS-BOX does not receive or store the domain. The record validator and the generators run entirely in your browser and make no network requests.</div></div>
+            </div>
+        </section>
+
+        <section class="related-tools">
+            <h2>Related Tools</h2>
+            <div class="related-grid">
+                <a href="/tools/dns-lookup.html" class="related-card"><h3>DNS Lookup</h3><p>Query A, MX, TXT, NS, CNAME records.</p></a>
+                <a href="/tools/ssl-checker.html" class="related-card"><h3>SSL Checker</h3><p>Inspect a server's TLS certificate chain.</p></a>
+                <a href="/tools/subdomain-finder.html" class="related-card"><h3>Subdomain Finder</h3><p>Discover subdomains that may send mail.</p></a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section"><h3>Network Tools</h3><a href="/tools/dns-lookup.html">DNS Lookup</a><a href="/tools/email-dns-checker.html">SPF, DKIM &amp; DMARC Checker</a><a href="/tools/subnet-calculator.html">Subnet Calculator</a></div>
+            <div class="footer-section"><h3>Security Tools</h3><a href="/tools/ssl-checker.html">SSL Checker</a><a href="/tools/password-generator.html">Password Generator</a><a href="/tools/hash-generator.html">Hash Generator</a></div>
+            <div class="footer-section"><h3>Developer Tools</h3><a href="/tools/json-formatter.html">JSON Formatter</a><a href="/tools/regex-tester.html">Regex Tester</a><a href="/tools/cron-explainer.html">Cron Explainer</a></div>
+        </div>
+        <div class="footer-bottom"><p>&copy; 2026 OPS-BOX.net — Free IT utilities for professionals. | <a href="/about.html" style="color:inherit;text-decoration:underline;">About</a> · <a href="/contact.html" style="color:inherit;text-decoration:underline;">Contact</a> · <a href="/terms-of-service.html" style="color:inherit;text-decoration:underline;">Terms</a> · <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p></div>
+    </footer>
+
+    <div class="toast" id="toast">Copied to clipboard!</div>
+
+    <script src="../js/common.js?v=20261122"></script>
+    <script>
+/* CORE-START */
+const DOH_URL = 'https://cloudflare-dns.com/dns-query';
+const COMMON_SELECTORS = ['google', 'selector1', 'selector2', 'k1', 'default', 's1', 's2', 'mail', 'dkim'];
+const SPF_LOOKUP_LIMIT = 10;
+const SPF_VOID_LIMIT = 2;
+const MAX_QUERIES = 80;
+
+function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+// Cloudflare's JSON API returns TXT RDATA as one or more quoted character-strings,
+// e.g. "v=spf1 ... ip4:62.253.2" "27.114 ~all". RFC 7208 s3.3: concatenate without spaces.
+function txtJoin(data) {
+    data = String(data);
+    if (data.indexOf('"') === -1) return data;
+    let out = '', i = 0, inq = false;
+    while (i < data.length) {
+        const c = data[i];
+        if (!inq) { if (c === '"') inq = true; i++; continue; }
+        if (c === '\\' && i + 1 < data.length) {
+            const m = /^\d{3}/.exec(data.slice(i + 1, i + 4));
+            if (m) { out += String.fromCharCode(parseInt(m[0], 10)); i += 4; continue; }
+            out += data[i + 1]; i += 2; continue;
+        }
+        if (c === '"') { inq = false; i++; continue; }
+        out += c; i++;
+    }
+    return out;
+}
+
+const RR_TYPES = { A: 1, CNAME: 5, MX: 15, TXT: 16, AAAA: 28 };
+
+// resolve(name, type) -> {status, answers[], cname[]}; status = DNS RCODE (0 NOERROR, 2 SERVFAIL, 3 NXDOMAIN)
+function makeDohResolver(fetchFn) {
+    const cache = new Map();
+    const r = function resolve(name, type) {
+        const key = String(name).toLowerCase() + '|' + type;
+        if (cache.has(key)) return cache.get(key);
+        r.count++;
+        const p = (async () => {
+            const resp = await fetchFn(DOH_URL + '?name=' + encodeURIComponent(name) + '&type=' + type, { headers: { accept: 'application/dns-json' } });
+            if (!resp.ok) throw new Error('DoH HTTP ' + resp.status);
+            const j = await resp.json();
+            return parseDohJson(j, type);
+        })();
+        cache.set(key, p);
+        return p;
+    };
+    r.count = 0;
+    return r;
+}
+function parseDohJson(j, type) {
+    const want = RR_TYPES[type];
+    const ans = (j.Answer || []);
+    return {
+        status: j.Status,
+        answers: ans.filter(a => a.type === want).map(a => type === 'TXT' ? txtJoin(a.data) : String(a.data)),
+        cname: ans.filter(a => a.type === 5).map(a => String(a.data).replace(/\.$/, ''))
+    };
+}
+function isVoid(res) { return res.status === 3 || (res.status === 0 && res.answers.length === 0); }
+function isDnsError(res) { return res.status !== 0 && res.status !== 3; }
+const RCODES = { 0: 'NOERROR', 1: 'FORMERR', 2: 'SERVFAIL', 3: 'NXDOMAIN', 4: 'NOTIMP', 5: 'REFUSED' };
+
+function normalizeDomain(input) {
+    let d = String(input || '').trim().toLowerCase();
+    d = d.replace(/^[a-z]+:\/\//, '').replace(/[\/?#].*$/, '');
+    if (d.includes('@')) d = d.split('@').pop();
+    d = d.replace(/\.$/, '');
+    if (!d) return { error: 'Enter a domain name.' };
+    if (/[^a-z0-9.\-_]/.test(d)) {
+        try { d = new URL('http://' + d).hostname; } catch (e) { return { error: 'Invalid domain name: ' + input }; }
+    }
+    if (d.length > 253) return { error: 'Domain name longer than 253 characters.' };
+    const labels = d.split('.');
+    if (labels.length < 2) return { error: 'Enter a fully qualified domain (e.g. example.com).' };
+    for (const l of labels) {
+        if (!/^[a-z0-9_]([a-z0-9_-]{0,61}[a-z0-9_])?$/.test(l)) return { error: 'Invalid label "' + l + '" in ' + d };
+    }
+    if (/^\d+$/.test(labels[labels.length - 1])) return { error: 'That looks like an IP address, not a domain.' };
+    return { domain: d };
+}
+
+/* ---------------- SPF (RFC 7208) ---------------- */
+const SPF_MECHS = ['all', 'include', 'a', 'mx', 'ptr', 'ip4', 'ip6', 'exists'];
+function isSpfRecord(s) { return /^v=spf1( |$)/i.test(s); }
+
+function validIp4(s) {
+    const p = s.split('.');
+    if (p.length !== 4) return false;
+    return p.every(o => /^(0|[1-9]\d{0,2})$/.test(o) && +o <= 255);
+}
+function validIp6(s) {
+    if (!/^[0-9a-f:.]+$/i.test(s) || s.indexOf(':') === -1) return false;
+    let tail4 = 0;
+    const lastColon = s.lastIndexOf(':');
+    if (s.indexOf('.') !== -1) { if (!validIp4(s.slice(lastColon + 1))) return false; s = s.slice(0, lastColon + 1) + '0:0'; tail4 = 1; }
+    const dbl = s.split('::');
+    if (dbl.length > 2) return false;
+    const grp = x => x === '' ? [] : x.split(':');
+    const head = grp(dbl[0]), tail = dbl.length === 2 ? grp(dbl[1]) : [];
+    const all = head.concat(tail);
+    if (!all.every(g => /^[0-9a-f]{1,4}$/i.test(g))) return false;
+    return dbl.length === 2 ? all.length <= 7 : all.length === 8;
+}
+function validCidrLen(s, max) { return /^(0|[1-9]\d{0,2})$/.test(s) && +s <= max; }
+
+// domain-spec = macro-string domain-end (RFC 7208 s7.1). Macros are accepted but not expanded here.
+function hasMacro(s) { return s.indexOf('%') !== -1; }
+function validMacroString(s) {
+    const stripped = s.replace(/%\{[slodiphcrtv]\d*r?[.\-+,\/_=]*\}/gi, 'x').replace(/%[%_-]/g, 'x');
+    return stripped.indexOf('%') === -1 && /^[\x21-\x7e]+$/.test(stripped);
+}
+function validDomainSpec(s) {
+    if (!s) return false;
+    if (hasMacro(s)) return validMacroString(s);
+    const d = s.replace(/\.$/, '');
+    const labels = d.split('.');
+    if (labels.length < 2) return false;
+    if (!labels.every(l => /^[a-z0-9_]([a-z0-9_-]{0,61}[a-z0-9_])?$/i.test(l))) return false;
+    return /[a-z]/i.test(labels[labels.length - 1]);
+}
+
+// Parse one SPF record into terms. Returns {terms, errors (=> permerror), warnings}.
+function parseSpf(rec) {
+    const errors = [], warnings = [], terms = [];
+    if (!isSpfRecord(rec)) return { terms, errors: ['Record does not start with "v=spf1".'], warnings };
+    if (/[^\x20-\x7e]/.test(rec)) errors.push('Record contains non-printable or non-ASCII characters.');
+    if (/\t|  /.test(rec)) warnings.push('Record contains tabs or repeated spaces; terms must be separated by single spaces.');
+    const toks = rec.slice(6).split(/[ \t]+/).filter(Boolean);
+    let redirects = 0, exps = 0, seenAll = false;
+    for (const raw of toks) {
+        const mod = /^([a-z][a-z0-9_.\-]*)=(.*)$/i.exec(raw);
+        if (mod) {
+            const name = mod[1].toLowerCase(), value = mod[2];
+            const t = { kind: 'modifier', name, value, raw };
+            if (name === 'redirect') {
+                redirects++;
+                if (!validDomainSpec(value)) errors.push('Invalid domain in "' + raw + '".');
+            } else if (name === 'exp') {
+                exps++;
+                if (!validDomainSpec(value)) errors.push('Invalid domain in "' + raw + '".');
+            } else {
+                t.unknown = true;
+                warnings.push('Unknown modifier "' + raw + '" is ignored (RFC 7208 s6).');
+            }
+            t.afterAll = seenAll;
+            terms.push(t);
+            continue;
+        }
+        let q = '+', s = raw, explicitQ = false;
+        if ('+-~?'.indexOf(s[0]) !== -1) { q = s[0]; s = s.slice(1); explicitQ = true; }
+        const nm = /^[a-z0-9]+/i.exec(s);
+        const name = nm ? nm[0].toLowerCase() : '';
+        const rest = s.slice(name.length);
+        const t = { kind: 'mechanism', q, explicitQ, name, raw, value: '', cidr: '', afterAll: seenAll };
+        if (SPF_MECHS.indexOf(name) === -1) {
+            errors.push('Unknown mechanism "' + raw + '".');
+            t.invalid = true; terms.push(t); continue;
+        }
+        if (name === 'all') {
+            if (rest) { errors.push('"all" takes no argument: "' + raw + '".'); t.invalid = true; }
+        } else if (name === 'include' || name === 'exists') {
+            if (rest[0] !== ':' || !validDomainSpec(rest.slice(1))) { errors.push('"' + name + '" needs a valid domain: "' + raw + '".'); t.invalid = true; }
+            t.value = rest.slice(1);
+        } else if (name === 'ip4' || name === 'ip6') {
+            const m = /^:([^\/]+)(?:\/(\d+))?$/.exec(rest);
+            const ok = m && (name === 'ip4' ? validIp4(m[1]) : validIp6(m[1])) && (m[2] === undefined || validCidrLen(m[2], name === 'ip4' ? 32 : 128));
+            if (!ok) { errors.push('Invalid ' + name + ' network: "' + raw + '".'); t.invalid = true; }
+            else { t.value = m[1]; t.cidr = m[2] === undefined ? '' : m[2]; }
+        } else { // a, mx, ptr
+            let r2 = rest, dom = '';
+            if (r2[0] === ':') {
+                const m = /^:(.*?)((?:\/\d+)?(?:\/\/\d+)?)$/.exec(r2);
+                dom = m[1]; r2 = m[2];
+                if (!validDomainSpec(dom)) { errors.push('Invalid domain in "' + raw + '".'); t.invalid = true; }
+            }
+            if (r2) {
+                const c = /^(?:\/(\d+))?(?:\/\/(\d+))?$/.exec(r2);
+                if (name === 'ptr' || !c || (c[1] !== undefined && !validCidrLen(c[1], 32)) || (c[2] !== undefined && !validCidrLen(c[2], 128))) {
+                    errors.push('Invalid CIDR length in "' + raw + '".'); t.invalid = true;
+                }
+                t.cidr = r2;
+            }
+            t.value = dom;
+        }
+        if (name === 'all') seenAll = true;
+        terms.push(t);
+    }
+    if (redirects > 1) errors.push('"redirect" appears more than once (RFC 7208 s6).');
+    if (exps > 1) errors.push('"exp" appears more than once (RFC 7208 s6).');
+    const allTerm = terms.find(t => t.kind === 'mechanism' && t.name === 'all');
+    const redirect = terms.find(t => t.kind === 'modifier' && t.name === 'redirect');
+    if (terms.some(t => t.afterAll && t.kind === 'mechanism')) warnings.push('Mechanisms after "all" are never evaluated (RFC 7208 s5.1).');
+    if (allTerm && redirect) warnings.push('"redirect" is ignored because the record contains "all" (RFC 7208 s6.1).');
+    if (terms.some(t => t.name === 'ptr' && t.kind === 'mechanism')) warnings.push('"ptr" mechanism: RFC 7208 s5.5 says it SHOULD NOT be published (slow, unreliable). Replace with ip4/ip6 or a.');
+    if (rec.length > 450) warnings.push('Record is ' + rec.length + ' characters; RFC 7208 s3.4 advises keeping SPF answers under 450 octets to fit in one UDP packet.');
+    return { terms, errors, warnings, allTerm: allTerm || null, redirect: (!allTerm && redirect) ? redirect : null };
+}
+
+// Number of DNS-querying terms in ONE record (RFC 7208 s4.6.4), without following includes.
+function countDirectLookups(parsed) {
+    let n = 0;
+    for (const t of parsed.terms) {
+        if (t.afterAll) continue;
+        if (t.kind === 'mechanism' && ['include', 'a', 'mx', 'ptr', 'exists'].indexOf(t.name) !== -1) n++;
+    }
+    if (parsed.redirect) n++;
+    return n;
+}
+
+function allVerdict(q) {
+    return {
+        '+': { level: 'bad', text: '+all authorizes every host on the Internet to send as this domain. Never publish it.' },
+        '?': { level: 'warn', text: '?all returns "neutral": unlisted senders are neither authorized nor rejected. Offers no protection.' },
+        '~': { level: 'ok', text: '~all returns "softfail" for unlisted senders. Common and acceptable when DMARC enforces policy.' },
+        '-': { level: 'ok', text: '-all returns "fail" for unlisted senders (strictest).' }
+    }[q];
+}
+
+// Recursively walk the SPF tree from domain. Counts lookups and void lookups as one global budget.
+async function checkSpf(domain, resolve) {
+    const st = { lookups: 0, voids: 0, queries: 0, truncated: false, temperror: false, permerrors: [] };
+    const root = await spfNode(domain, resolve, st, 0, 'root', []);
+    if (st.lookups > SPF_LOOKUP_LIMIT) st.permerrors.push('DNS-querying terms: ' + st.lookups + ' > ' + SPF_LOOKUP_LIMIT + ' (RFC 7208 s4.6.4). Receivers return permerror.');
+    if (st.voids > SPF_VOID_LIMIT) st.permerrors.push('Void lookups: ' + st.voids + ' > ' + SPF_VOID_LIMIT + ' (RFC 7208 s4.6.4). Receivers that enforce the limit return permerror.');
+    // Effective "all": top record, or follow the redirect chain.
+    let n = root, eff = null, hops = 0;
+    while (n && hops < 12) {
+        if (n.parsed && n.parsed.allTerm) { eff = { q: n.parsed.allTerm.q, domain: n.domain }; break; }
+        if (n.parsed && n.parsed.redirect) { n = n.redirectChild; hops++; continue; }
+        break;
+    }
+    return { root, lookups: st.lookups, voids: st.voids, queries: st.queries, truncated: st.truncated, temperror: st.temperror, permerrors: st.permerrors, effectiveAll: eff };
+}
+
+async function dnsQ(resolve, st, name, type) {
+    st.queries++;
+    if (st.queries > MAX_QUERIES) { st.truncated = true; return null; }
+    try {
+        const r = await resolve(name, type);
+        if (isDnsError(r)) st.temperror = true;
+        return r;
+    } catch (e) { st.temperror = true; return { status: -1, answers: [], cname: [], error: e.message }; }
+}
+
+async function spfNode(domain, resolve, st, depth, via, chain) {
+    const node = { domain, via, records: [], record: null, parsed: null, terms: [], errors: [], warnings: [], none: false };
+    if (chain.indexOf(domain.toLowerCase()) !== -1) { node.errors.push('Loop: ' + domain + ' is already in the evaluation chain.'); st.permerrors.push('SPF loop via ' + domain); return node; }
+    if (depth > 10) { node.errors.push('Nesting too deep.'); return node; }
+    const res = await dnsQ(resolve, st, domain, 'TXT');
+    if (!res) { node.errors.push('Not queried: tool query budget exhausted.'); return node; }
+    if (res.status === -1 || isDnsError(res)) { node.errors.push('DNS error for ' + domain + ': ' + (res.error || RCODES[res.status] || res.status) + ' (temperror)'); return node; }
+    node.void = isVoid(res);
+    node.rcode = RCODES[res.status];
+    node.records = res.answers.filter(isSpfRecord);
+    if (node.records.length === 0) {
+        node.none = true;
+        if (via !== 'root') {
+            node.errors.push('No SPF record at ' + domain + ' (' + (node.void ? node.rcode + ', void' : 'TXT exists but no v=spf1') + '). An ' + via + ' to a domain without SPF is a permerror (RFC 7208 s5.2/s6.1).');
+            st.permerrors.push(via + ':' + domain + ' has no SPF record');
+        }
+        return node;
+    }
+    if (node.records.length > 1) {
+        node.errors.push(node.records.length + ' v=spf1 records at ' + domain + ' — RFC 7208 s4.5 requires exactly one; receivers return permerror.');
+        st.permerrors.push('Multiple SPF records at ' + domain);
+    }
+    node.record = node.records[0];
+    const parsed = parseSpf(node.record);
+    node.parsed = parsed;
+    node.errors.push(...parsed.errors);
+    node.warnings.push(...parsed.warnings);
+    if (parsed.errors.length) st.permerrors.push('Syntax error in SPF record of ' + domain);
+    if (node.records.length > 1) return node;
+    const nextChain = chain.concat(domain.toLowerCase());
+    for (const t of parsed.terms) {
+        const view = { t, lookup: 0, info: '', child: null, void: false };
+        node.terms.push(view);
+        if (t.afterAll || t.invalid) continue;
+        const isMech = t.kind === 'mechanism';
+        if (isMech && ['include', 'a', 'mx', 'ptr', 'exists'].indexOf(t.name) === -1) continue;
+        if (!isMech && !(t.name === 'redirect' && parsed.redirect === t)) continue;
+        st.lookups++;
+        view.lookup = st.lookups;
+        const target = t.value || domain;
+        if (hasMacro(target)) { view.info = 'contains macros; evaluated per message, not expanded here'; continue; }
+        if (t.name === 'ptr') { view.info = 'PTR evaluation depends on the connecting IP; deprecated'; continue; }
+        if (t.name === 'include' || t.name === 'redirect') {
+            const child = await spfNode(target, resolve, st, depth + 1, t.name, nextChain);
+            view.child = child;
+            if (t.name === 'redirect') node.redirectChild = child;
+            if (child.void) { st.voids++; view.void = true; }
+            continue;
+        }
+        if (t.name === 'a') {
+            const a4 = await dnsQ(resolve, st, target, 'A');
+            const a6 = await dnsQ(resolve, st, target, 'AAAA');
+            if (!a4 || !a6) { view.info = 'not queried (budget)'; continue; }
+            const n4 = a4.answers.length, n6 = a6.answers.length;
+            view.info = n4 + ' A, ' + n6 + ' AAAA';
+            if (isVoid(a4) && isVoid(a6)) { st.voids++; view.void = true; }
+            else if (!n4 || !n6) view.info += ' (void for ' + (!n4 ? 'IPv4' : 'IPv6') + ' senders)';
+            continue;
+        }
+        if (t.name === 'mx') {
+            const mx = await dnsQ(resolve, st, target, 'MX');
+            if (!mx) { view.info = 'not queried (budget)'; continue; }
+            if (isVoid(mx)) { st.voids++; view.void = true; view.info = 'no MX records'; continue; }
+            const hosts = mx.answers.map(parseMx).filter(m => m && m.host !== '');
+            view.info = hosts.length + ' MX host(s), each resolved to A/AAAA at evaluation';
+            if (hosts.length > 10) { node.errors.push('"' + t.raw + '" has ' + hosts.length + ' MX hosts; more than 10 address lookups is a permerror (RFC 7208 s4.6.4).'); st.permerrors.push('mx with >10 hosts'); }
+            continue;
+        }
+        if (t.name === 'exists') {
+            const a = await dnsQ(resolve, st, target, 'A');
+            if (!a) { view.info = 'not queried (budget)'; continue; }
+            if (isVoid(a)) { st.voids++; view.void = true; view.info = 'no A record'; } else view.info = 'A record exists (match)';
+        }
+    }
+    return node;
+}
+
+/* ---------------- MX ---------------- */
+function parseMx(data) {
+    const m = /^(\d+)\s+(\S+)$/.exec(String(data).trim());
+    if (!m) return null;
+    return { pref: +m[1], host: m[2] === '.' ? '' : m[2].replace(/\.$/, '') };
+}
+async function checkMx(domain, resolve) {
+    const res = await resolve(domain, 'MX');
+    const out = { rcode: RCODES[res.status] || String(res.status), records: [], nullMx: false, warnings: [] };
+    if (isDnsError(res)) { out.error = 'DNS error: ' + out.rcode; return out; }
+    out.records = res.answers.map(parseMx).filter(Boolean).sort((a, b) => a.pref - b.pref);
+    if (out.records.length === 1 && out.records[0].host === '' && out.records[0].pref === 0) out.nullMx = true;
+    else if (out.records.some(r => r.host === '')) out.warnings.push('A null MX ("0 .") must be the only MX record (RFC 7505 s3).');
+    for (const r of out.records) if (r.host && (validIp4(r.host) || validIp6(r.host))) out.warnings.push('MX target ' + r.host + ' is an IP address; MX must point to a host name.');
+    return out;
+}
+
+/* ---------------- DMARC (RFC 7489, updated by RFC 9989) ---------------- */
+function parseTagList(rec) {
+    const tags = {}, order = [], dups = [];
+    String(rec).split(';').forEach(part => {
+        const p = part.trim();
+        if (!p) return;
+        const i = p.indexOf('=');
+        if (i === -1) { order.push({ name: p, value: null }); return; }
+        const name = p.slice(0, i).trim(), value = p.slice(i + 1).trim();
+        const key = name.toLowerCase();
+        if (Object.prototype.hasOwnProperty.call(tags, key)) dups.push(key);
+        tags[key] = value;
+        order.push({ name: key, value, rawName: name });
+    });
+    return { tags, order, dups };
+}
+function isDmarcRecord(s) { return /^\s*v\s*=\s*DMARC1\s*(;|$)/.test(s); }
+const POLICIES = ['none', 'quarantine', 'reject'];
+const DMARC_KNOWN = ['v', 'p', 'sp', 'np', 'pct', 'rua', 'ruf', 'adkim', 'aspf', 'fo', 'rf', 'ri', 't', 'psd'];
+
+function parseDmarcUris(v) {
+    return String(v || '').split(',').map(s => s.trim()).filter(Boolean).map(u => {
+        const m = /^([a-z][a-z0-9+.\-]*):([^!]+)(?:!(\d+[kmgt]?))?$/i.exec(u);
+        if (!m) return { raw: u, valid: false };
+        const scheme = m[1].toLowerCase();
+        const o = { raw: u, scheme, target: m[2], size: m[3] || '', valid: true };
+        if (scheme === 'mailto') {
+            const am = /^[^@\s]+@([a-z0-9.\-_]+\.[a-z0-9\-]+)$/i.exec(decodeURIComponentSafe(m[2]));
+            if (!am) o.valid = false; else o.host = am[1].toLowerCase();
+        }
+        return o;
+    });
+}
+function decodeURIComponentSafe(s) { try { return decodeURIComponent(s); } catch (e) { return s; } }
+
+function parseDmarc(rec) {
+    const errors = [], warnings = [], info = [];
+    const { tags, order, dups } = parseTagList(rec);
+    if (!order.length || order[0].name !== 'v' || order[0].value !== 'DMARC1') errors.push('First tag must be exactly "v=DMARC1" (case-sensitive).');
+    dups.forEach(d => warnings.push('Tag "' + d + '" appears more than once; only one value is used.'));
+    order.forEach(o => { if (o.value === null) errors.push('Malformed tag "' + o.name + '" (no "=").'); });
+    Object.keys(tags).forEach(k => { if (DMARC_KNOWN.indexOf(k) === -1) warnings.push('Unknown tag "' + k + '" is ignored.'); });
+    const p = tags.p !== undefined ? tags.p.toLowerCase() : undefined;
+    if (p === undefined) errors.push('Missing "p" tag. RFC 7489 treats the record as invalid unless rua is set (then p=none); RFC 9989 treats it as p=none.');
+    else if (POLICIES.indexOf(p) === -1) errors.push('Invalid p="' + tags.p + '" (none | quarantine | reject).');
+    else if (order.length > 1 && order[1].name !== 'p') warnings.push('RFC 7489 requires "p" to be the second tag, right after v=DMARC1.');
+    ['sp', 'np'].forEach(k => { if (tags[k] !== undefined && POLICIES.indexOf(tags[k].toLowerCase()) === -1) errors.push('Invalid ' + k + '="' + tags[k] + '".'); });
+    ['adkim', 'aspf'].forEach(k => { if (tags[k] !== undefined && ['r', 's'].indexOf(tags[k].toLowerCase()) === -1) errors.push('Invalid ' + k + '="' + tags[k] + '" (r | s).'); });
+    let pct = 100;
+    if (tags.pct !== undefined) {
+        if (!/^\d{1,3}$/.test(tags.pct) || +tags.pct > 100) errors.push('Invalid pct="' + tags.pct + '" (integer 0-100).');
+        else pct = +tags.pct;
+        info.push('pct is defined in RFC 7489 but was removed by RFC 9989 (May 2026); receivers that follow RFC 9989 ignore it. Use t=y for testing instead.');
+    }
+    if (tags.t !== undefined && ['y', 'n'].indexOf(tags.t.toLowerCase()) === -1) errors.push('Invalid t="' + tags.t + '" (y | n).');
+    if (tags.psd !== undefined && ['y', 'n', 'u'].indexOf(tags.psd.toLowerCase()) === -1) errors.push('Invalid psd="' + tags.psd + '" (y | n | u).');
+    if (tags.fo !== undefined) {
+        const fos = tags.fo.split(':').map(s => s.trim());
+        if (!fos.every(f => ['0', '1', 'd', 's'].indexOf(f) !== -1)) errors.push('Invalid fo="' + tags.fo + '" (colon-separated 0, 1, d, s).');
+        if (tags.ruf === undefined) warnings.push('fo is ignored because no ruf is set.');
+    }
+    if (tags.ri !== undefined && !/^\d+$/.test(tags.ri)) errors.push('Invalid ri="' + tags.ri + '".');
+    if (tags.rf !== undefined && tags.rf.toLowerCase() !== 'afrf') warnings.push('rf="' + tags.rf + '": only "afrf" is defined.');
+    const rua = parseDmarcUris(tags.rua), ruf = parseDmarcUris(tags.ruf);
+    rua.concat(ruf).forEach(u => { if (!u.valid) errors.push('Invalid report URI "' + u.raw + '" (expected mailto:user@domain).'); });
+    if (!rua.length) warnings.push('No rua: you receive no aggregate reports, so you cannot see who sends mail as your domain.');
+    return { tags, order, errors, warnings, info, p, sp: tags.sp ? tags.sp.toLowerCase() : undefined, np: tags.np ? tags.np.toLowerCase() : undefined, pct, rua, ruf, t: (tags.t || 'n').toLowerCase(), adkim: (tags.adkim || 'r').toLowerCase(), aspf: (tags.aspf || 'r').toLowerCase() };
+}
+
+function dmarcStrength(d) {
+    const pts = [];
+    if (!d.p || POLICIES.indexOf(d.p) === -1) return { level: 'bad', label: 'Invalid', points: ['No valid policy.'] };
+    const rank = { none: 0, quarantine: 1, reject: 2 };
+    let level, label;
+    if (d.p === 'none') { level = 'warn'; label = 'Monitoring only (p=none)'; pts.push('p=none asks receivers to take no action. Spoofed mail is still delivered; use it only while you collect reports.'); }
+    else if (d.p === 'quarantine') { level = 'ok'; label = 'Enforced: quarantine'; pts.push('Failing mail is treated as suspicious (usually the spam folder).'); }
+    else { level = 'ok'; label = 'Enforced: reject'; pts.push('Failing mail should be rejected during SMTP. Strongest policy.'); }
+    if (d.p !== 'none' && d.t === 'y') { level = 'warn'; label += ' (test mode t=y)'; pts.push('t=y: RFC 9989 receivers apply one level below the stated policy.'); }
+    if (d.p !== 'none' && d.pct < 100) { level = 'warn'; label += ', pct=' + d.pct; pts.push('pct=' + d.pct + ': under RFC 7489 only ' + d.pct + '% of failing mail gets p=' + d.p + '; the rest gets one level lower. RFC 9989 drops pct, so newer receivers may apply 100%.'); }
+    const subP = d.sp || d.p;
+    if (rank[subP] < rank[d.p]) { pts.push('sp=' + subP + ' is weaker than p=' + d.p + ': existing subdomains can be spoofed more easily than the main domain.'); if (subP === 'none') level = 'warn'; }
+    if (d.np && rank[d.np] !== undefined) pts.push('np=' + d.np + ' applies to non-existent subdomains (RFC 9989).');
+    if (d.adkim === 's' || d.aspf === 's') pts.push('Strict alignment (' + (d.adkim === 's' ? 'adkim=s ' : '') + (d.aspf === 's' ? 'aspf=s' : '') + ') requires an exact domain match; subdomain senders will fail.');
+    return { level, label, points: pts };
+}
+
+function sameOrgApprox(a, b) { return a === b || a.endsWith('.' + b) || b.endsWith('.' + a); }
+
+async function checkDmarc(domain, resolve) {
+    const out = { domain, queried: [], records: [], record: null, parsed: null, foundAt: null, inherited: false, errors: [], external: [] };
+    const labels = domain.split('.');
+    const targets = [domain];
+    let cur = labels.slice(1);
+    if (labels.length >= 8) cur = labels.slice(labels.length - 7);
+    while (cur.length >= 1 && targets.length < 8) { targets.push(cur.join('.')); cur = cur.slice(1); }
+    for (const t of targets) {
+        const name = '_dmarc.' + t;
+        const res = await resolve(name, 'TXT');
+        out.queried.push(name + ' → ' + (RCODES[res.status] || res.status) + (res.answers.length ? ' (' + res.answers.length + ' TXT)' : ''));
+        if (isDnsError(res)) { out.errors.push('DNS error for ' + name + ': ' + RCODES[res.status]); return out; }
+        const recs = res.answers.filter(isDmarcRecord);
+        if (!recs.length) continue;
+        out.records = recs; out.foundAt = t; out.inherited = t !== domain;
+        if (recs.length > 1) { out.errors.push(recs.length + ' DMARC records at ' + name + '; all are discarded and no DMARC policy applies (RFC 7489 s6.6.3).'); return out; }
+        out.record = recs[0];
+        out.parsed = parseDmarc(out.record);
+        break;
+    }
+    if (!out.record) return out;
+    const hosts = [];
+    out.parsed.rua.concat(out.parsed.ruf).forEach(u => { if (u.host && !sameOrgApprox(u.host, out.foundAt) && hosts.indexOf(u.host) === -1) hosts.push(u.host); });
+    for (const h of hosts) {
+        const name = out.foundAt + '._report._dmarc.' + h;
+        const r = await resolve(name, 'TXT');
+        out.external.push({ host: h, name, authorized: r.answers.some(isDmarcRecord), rcode: RCODES[r.status] });
+    }
+    return out;
+}
+
+/* ---------------- DKIM (RFC 6376, 8301, 8463) ---------------- */
+function b64ToBytes(s) {
+    s = String(s).replace(/\s+/g, '');
+    if (!/^[A-Za-z0-9+\/]*={0,2}$/.test(s) || s.length % 4 === 1) throw new Error('invalid base64');
+    const bin = atob(s);
+    const u = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+    return u;
+}
+function derTlv(b, off) {
+    if (off + 2 > b.length) throw new Error('truncated DER');
+    const tag = b[off];
+    let len = b[off + 1], hdr = 2;
+    if (len & 0x80) {
+        const n = len & 0x7f;
+        if (n < 1 || n > 4) throw new Error('bad DER length');
+        len = 0;
+        for (let i = 0; i < n; i++) len = len * 256 + b[off + 2 + i];
+        hdr = 2 + n;
+    }
+    const start = off + hdr, end = start + len;
+    if (end > b.length) throw new Error('truncated DER');
+    return { tag, start, end, len };
+}
+function intBits(b, tlv) {
+    let s = tlv.start;
+    while (s < tlv.end && b[s] === 0) s++;
+    if (s === tlv.end) return 0;
+    let bits = (tlv.end - s - 1) * 8, top = b[s];
+    while (top) { bits++; top >>= 1; }
+    return bits;
+}
+// Accepts SubjectPublicKeyInfo (what DKIM signers publish in practice) or a bare PKCS#1 RSAPublicKey.
+function rsaKeyBits(bytes) {
+    const top = derTlv(bytes, 0);
+    if (top.tag !== 0x30) throw new Error('not a DER SEQUENCE');
+    const first = derTlv(bytes, top.start);
+    let mod;
+    if (first.tag === 0x30) {
+        const oid = derTlv(bytes, first.start);
+        const hex = Array.from(bytes.slice(oid.start, oid.end)).map(x => x.toString(16).padStart(2, '0')).join('');
+        if (oid.tag !== 0x06 || hex !== '2a864886f70d010101') throw new Error('not an rsaEncryption key');
+        const bs = derTlv(bytes, first.end);
+        if (bs.tag !== 0x03) throw new Error('missing BIT STRING');
+        const seq = derTlv(bytes, bs.start + 1);
+        mod = derTlv(bytes, seq.start);
+    } else if (first.tag === 0x02) mod = first;
+    else throw new Error('unrecognised key structure');
+    if (mod.tag !== 0x02) throw new Error('missing modulus');
+    return intBits(bytes, mod);
+}
+
+function parseDkim(rec) {
+    const errors = [], warnings = [];
+    const { tags, order } = parseTagList(rec);
+    if (tags.v !== undefined) {
+        if (tags.v !== 'DKIM1') errors.push('v="' + tags.v + '" — must be exactly DKIM1; record is discarded.');
+        else if (order[0].name !== 'v') errors.push('v=DKIM1 must be the first tag (RFC 6376 s3.6.1).');
+    }
+    const k = (tags.k || 'rsa').toLowerCase();
+    const out = { tags, k, bits: null, revoked: false, testing: false, errors, warnings };
+    if (tags.p === undefined) { errors.push('Missing p= (public key) tag.'); return out; }
+    const p = tags.p.replace(/\s+/g, '');
+    if (p === '') { out.revoked = true; warnings.push('Empty p=: key revoked (RFC 6376 s3.6.1). Signatures with this selector fail.'); return out; }
+    let bytes;
+    try { bytes = b64ToBytes(p); } catch (e) { errors.push('p= is not valid base64.'); return out; }
+    if (k === 'rsa') {
+        try { out.bits = rsaKeyBits(bytes); } catch (e) { errors.push('Cannot parse RSA key: ' + e.message + '.'); }
+        if (out.bits) {
+            if (out.bits < 1024) errors.push(out.bits + '-bit RSA: RFC 8301 forbids keys under 1024 bits; verifiers treat signatures as failed.');
+            else if (out.bits < 2048) warnings.push(out.bits + '-bit RSA: allowed, but RFC 8301 says signers SHOULD use at least 2048 bits.');
+        }
+    } else if (k === 'ed25519') {
+        out.bits = bytes.length * 8;
+        if (bytes.length !== 32) errors.push('Ed25519 key must be 32 bytes (RFC 8463), got ' + bytes.length + '.');
+    } else warnings.push('Unknown key type k=' + k + '; verifiers ignore unrecognised types.');
+    if (tags.t) {
+        const flags = tags.t.split(':').map(s => s.trim().toLowerCase());
+        if (flags.indexOf('y') !== -1) { out.testing = true; warnings.push('t=y: domain is testing DKIM; verifiers must not treat signed mail differently from unsigned.'); }
+    }
+    if (tags.h) {
+        const hs = tags.h.split(':').map(s => s.trim().toLowerCase());
+        if (hs.indexOf('sha256') === -1) errors.push('h=' + tags.h + ' excludes sha256; RFC 8301 forbids rsa-sha1 signing.');
+    }
+    if (tags.s && tags.s.split(':').map(s => s.trim()).every(s => s !== '*' && s.toLowerCase() !== 'email')) warnings.push('s=' + tags.s + ' does not include email or *; key is not usable for mail.');
+    return out;
+}
+
+function validSelector(s) { return /^[a-z0-9_]([a-z0-9_-]*[a-z0-9_])?(\.[a-z0-9_]([a-z0-9_-]*[a-z0-9_])?)*$/i.test(s) && s.length <= 63 * 4; }
+
+async function checkDkim(domain, selectors, resolve) {
+    return Promise.all(selectors.map(async sel => {
+        const name = sel + '._domainkey.' + domain;
+        const r = { selector: sel, name, found: false };
+        try {
+            const res = await resolve(name, 'TXT');
+            r.rcode = RCODES[res.status] || String(res.status);
+            r.cname = res.cname;
+            if (isDnsError(res)) { r.error = 'DNS error ' + r.rcode; return r; }
+            const recs = res.answers.filter(a => /(^|;)\s*p\s*=/.test(a) || /^\s*v\s*=\s*DKIM1/.test(a));
+            if (!recs.length) return r;
+            r.found = true; r.record = recs[0]; r.multiple = recs.length > 1;
+            r.parsed = parseDkim(recs[0]);
+            if (r.multiple) r.parsed.warnings.push(recs.length + ' key records at this selector; verifiers may pick any one of them.');
+        } catch (e) { r.error = e.message; }
+        return r;
+    }));
+}
+
+/* ---------------- Generators ---------------- */
+function splitList(s) { return String(s || '').split(/[\s,;]+/).map(x => x.trim()).filter(Boolean); }
+function txtZoneValue(rec) {
+    const parts = [];
+    for (let i = 0; i < rec.length; i += 255) parts.push('"' + rec.slice(i, i + 255).replace(/(["\\])/g, '\\$1') + '"');
+    return parts.join(' ');
+}
+function buildSpf(o) {
+    const errors = [], warnings = [], terms = ['v=spf1'];
+    if (o.a) terms.push('a');
+    if (o.mx) terms.push('mx');
+    splitList(o.ip4).forEach(x => {
+        const v = x.replace(/^ip4:/i, ''), m = /^([^\/]+)(?:\/(\d+))?$/.exec(v);
+        if (!m || !validIp4(m[1]) || (m[2] !== undefined && !validCidrLen(m[2], 32))) errors.push('Invalid IPv4 network: ' + x); else terms.push('ip4:' + v);
+    });
+    splitList(o.ip6).forEach(x => {
+        const v = x.replace(/^ip6:/i, ''), i = v.lastIndexOf('/');
+        const ip = i === -1 ? v : v.slice(0, i), len = i === -1 ? undefined : v.slice(i + 1);
+        if (!validIp6(ip) || (len !== undefined && !validCidrLen(len, 128))) errors.push('Invalid IPv6 network: ' + x); else terms.push('ip6:' + v.toLowerCase());
+    });
+    const inc = [];
+    splitList(o.include).forEach(x => {
+        const v = x.replace(/^include:/i, '').toLowerCase();
+        if (!validDomainSpec(v)) errors.push('Invalid include domain: ' + x);
+        else if (inc.indexOf(v) === -1) { inc.push(v); terms.push('include:' + v); }
+        else warnings.push('Duplicate include removed: ' + v);
+    });
+    const all = ['-all', '~all', '?all'].indexOf(o.all) !== -1 ? o.all : '~all';
+    terms.push(all);
+    const rec = terms.join(' ');
+    const lookups = (o.a ? 1 : 0) + (o.mx ? 1 : 0) + inc.length;
+    if (lookups > SPF_LOOKUP_LIMIT) errors.push(lookups + ' DNS-querying terms in this record alone exceed the limit of 10 (RFC 7208 s4.6.4).');
+    else if (inc.length) warnings.push('This record uses ' + lookups + ' lookup(s) directly. Lookups inside each include also count toward 10 — check the published record with the checker above.');
+    if (all === '?all') warnings.push('?all (neutral) gives no protection against spoofing.');
+    if (terms.length === 2) warnings.push('No senders listed: "v=spf1 ' + all + '" means this domain sends no mail. Correct for parked domains only.');
+    if (rec.length > 255) warnings.push('Record is ' + rec.length + ' characters; it must be split into 255-character strings (zone-file form below). Many DNS panels do this automatically.');
+    if (rec.length > 450) warnings.push('Record exceeds 450 characters (RFC 7208 s3.4 guidance).');
+    const dom = (o.domain || 'example.com').replace(/\.$/, '');
+    return { record: rec, lookups, errors, warnings, zone: dom + '. 3600 IN TXT ' + txtZoneValue(rec) };
+}
+function buildDmarc(o) {
+    const errors = [], warnings = [];
+    const p = POLICIES.indexOf(o.p) !== -1 ? o.p : 'none';
+    const parts = ['v=DMARC1', 'p=' + p];
+    if (o.sp && POLICIES.indexOf(o.sp) !== -1) parts.push('sp=' + o.sp);
+    if (o.np && POLICIES.indexOf(o.np) !== -1) parts.push('np=' + o.np);
+    if (o.pct !== undefined && o.pct !== '' && +o.pct !== 100) {
+        if (!/^\d{1,3}$/.test(String(o.pct)) || +o.pct > 100) errors.push('pct must be an integer 0-100.');
+        else { parts.push('pct=' + (+o.pct)); warnings.push('pct was removed by RFC 9989; newer receivers ignore it. Prefer t=y while testing.'); }
+    }
+    const uri = (list, tag) => {
+        const out = [];
+        splitList(list).forEach(x => {
+            let u = x.toLowerCase().startsWith('mailto:') ? x : 'mailto:' + x;
+            if (!/^mailto:[^@\s]+@[a-z0-9.\-_]+\.[a-z0-9\-]+(!\d+[kmgt]?)?$/i.test(u)) errors.push('Invalid ' + tag + ' address: ' + x); else out.push(u);
+        });
+        if (out.length) parts.push(tag + '=' + out.join(','));
+        return out;
+    };
+    const rua = uri(o.rua, 'rua'), ruf = uri(o.ruf, 'ruf');
+    if (o.adkim === 's') parts.push('adkim=s');
+    if (o.aspf === 's') parts.push('aspf=s');
+    if (ruf.length && o.fo && o.fo !== '0') parts.push('fo=' + o.fo);
+    if (o.t === 'y') parts.push('t=y');
+    const dom = (o.domain || 'example.com').replace(/\.$/, '');
+    if (!rua.length) warnings.push('Add an rua address: without aggregate reports you cannot safely move from p=none to enforcement.');
+    rua.concat(ruf).forEach(u => {
+        const h = u.replace(/^mailto:[^@]+@/i, '').replace(/!.*$/, '').toLowerCase();
+        if (!sameOrgApprox(h, dom)) warnings.push(h + ' is outside ' + dom + ': it must publish "' + dom + '._report._dmarc.' + h + ' TXT v=DMARC1" or receivers will not send reports there (RFC 7489 s7.1).');
+    });
+    if (ruf.length) warnings.push('Many large receivers do not send failure (ruf) reports, and those that do may include message content; treat the mailbox as sensitive.');
+    if (p === 'none') warnings.push('p=none is monitoring only. Plan the move to quarantine, then reject, once reports show all legitimate senders pass.');
+    const rec = parts.join('; ');
+    return { record: rec, errors, warnings, zone: '_dmarc.' + dom + '. 3600 IN TXT ' + txtZoneValue(rec) };
+}
+/* CORE-END */
+
+        /* ---------------- UI ---------------- */
+        const $ = id => document.getElementById(id);
+        const pill = (level, text) => '<span class="pill ' + level + '">' + esc(text) + '</span>';
+        const li = (level, text) => '<li class="' + level + '">' + esc(text) + '</li>';
+        let runId = 0;
+
+        function selectorsFrom(input) {
+            const extra = String(input || '').split(/[\s,;]+/).map(s => s.trim().toLowerCase()).filter(Boolean);
+            const bad = extra.filter(s => !validSelector(s));
+            const list = [];
+            extra.filter(validSelector).concat(COMMON_SELECTORS).forEach(s => { if (list.indexOf(s) === -1) list.push(s); });
+            return { list, bad, user: extra.filter(validSelector) };
+        }
+
+        async function runCheck() {
+            const nd = normalizeDomain($('domainInput').value);
+            const status = $('checkStatus'), out = $('results');
+            if (nd.error) { status.innerHTML = pill('bad', 'Input') + ' ' + esc(nd.error); out.innerHTML = ''; return; }
+            const domain = nd.domain;
+            $('domainInput').value = domain;
+            const sels = selectorsFrom($('selInput').value);
+            setToolParams({ domain, sel: sels.user.join(',') });
+            const my = ++runId;
+            status.textContent = 'Querying ' + domain + ' via Cloudflare DoH…';
+            out.innerHTML = '';
+            const resolve = makeDohResolver(fetch.bind(window));
+            const t0 = performance.now();
+            try {
+                const [mx, spf, dmarc, dkim] = await Promise.all([
+                    checkMx(domain, resolve).catch(e => ({ error: e.message, records: [] })),
+                    checkSpf(domain, resolve),
+                    checkDmarc(domain, resolve).catch(e => ({ errors: [e.message], queried: [], external: [] })),
+                    checkDkim(domain, sels.list, resolve)
+                ]);
+                if (my !== runId) return;
+                const ms = Math.round(performance.now() - t0);
+                status.innerHTML = 'Checked <strong>' + esc(domain) + '</strong> with ' + resolve.count + ' DNS queries in ' + ms + ' ms.' + (sels.bad.length ? ' ' + pill('warn', 'Ignored invalid selector(s): ' + sels.bad.join(', ')) : '');
+                out.innerHTML = renderSummary(mx, spf, dmarc, dkim) + renderMx(mx, domain) + renderSpf(spf) + renderDmarc(dmarc, domain) + renderDkim(dkim, sels.user);
+                $('reportText').textContent = buildReport(domain, mx, spf, dmarc, dkim);
+            } catch (e) {
+                if (my !== runId) return;
+                status.innerHTML = pill('bad', 'Error') + ' ' + esc(e.message) + ' — DoH request failed (network, ad-blocker or rate limit). Try again.';
+            }
+        }
+
+        function spfState(spf) {
+            if (spf.temperror && !spf.root.record) return ['warn', 'DNS error'];
+            if (spf.root.none) return ['bad', 'Missing'];
+            if (spf.permerrors.length) return ['bad', 'PermError'];
+            if (spf.effectiveAll && spf.effectiveAll.q === '+') return ['bad', '+all'];
+            if (!spf.effectiveAll || spf.effectiveAll.q === '?') return ['warn', 'Neutral'];
+            return ['ok', 'Valid (' + spf.lookups + '/10)'];
+        }
+        function dmarcState(d) {
+            if (!d.record) return (d.errors && d.errors.length) ? ['bad', 'Invalid'] : ['bad', 'Missing'];
+            if (d.parsed.errors.length) return ['bad', 'Errors'];
+            const s = dmarcStrength(d.parsed);
+            return [s.level, 'p=' + d.parsed.p + (d.inherited ? ' (inherited)' : '')];
+        }
+        function renderSummary(mx, spf, dmarc, dkim) {
+            const mxS = mx.error ? ['warn', 'DNS error'] : mx.nullMx ? ['info', 'Null MX'] : mx.records.length ? ['ok', mx.records.length + ' host(s)'] : ['warn', 'None'];
+            const found = dkim.filter(k => k.found && !k.parsed.revoked && !k.parsed.errors.length).length;
+            const dkS = found ? ['ok', found + ' key(s) found'] : ['warn', 'Not found'];
+            const card = (label, s) => '<div class="ec-card"><div class="ec-card-label">' + label + '</div><div class="ec-card-val">' + pill(s[0], s[1]) + '</div></div>';
+            return '<div class="ec-summary">' + card('MX', mxS) + card('SPF', spfState(spf)) + card('DMARC', dmarcState(dmarc)) + card('DKIM', dkS) + '</div>';
+        }
+        function renderMx(mx, domain) {
+            let h = '<div class="ec-section"><h2>MX records</h2>';
+            if (mx.error) return h + '<ul class="ec-issues">' + li('warn', mx.error) + '</ul></div>';
+            if (mx.nullMx) h += '<ul class="ec-issues">' + li('info', 'Null MX ("0 ."): ' + domain + ' explicitly accepts no mail (RFC 7505). Pair it with "v=spf1 -all" and p=reject if the domain also sends none.') + '</ul>';
+            else if (!mx.records.length) h += '<ul class="ec-issues">' + li('warn', 'No MX records (' + mx.rcode + '). Senders fall back to the domain\'s A/AAAA record (implicit MX). Publish a null MX if the domain receives no mail.') + '</ul>';
+            else h += '<div class="ec-scroll"><table class="ec-table"><tr><th>Pref</th><th>Mail exchanger</th></tr>' + mx.records.map(r => '<tr><td>' + r.pref + '</td><td><code>' + esc(r.host || '.') + '</code></td></tr>').join('') + '</table></div>';
+            if (mx.warnings.length) h += '<ul class="ec-issues">' + mx.warnings.map(w => li('warn', w)).join('') + '</ul>';
+            return h + '</div>';
+        }
+        function renderSpfNode(n) {
+            let h = '<div class="node"><div><strong>' + esc(n.domain) + '</strong> <span class="ec-muted">' + (n.via === 'root' ? '' : esc(n.via)) + '</span></div>';
+            if (n.records.length > 1) h += n.records.map(r => '<div class="ec-rec">' + esc(r) + '</div>').join('');
+            else if (n.record) h += '<div class="ec-rec">' + esc(n.record) + '</div>';
+            if (n.errors.length || n.warnings.length) h += '<ul class="ec-issues">' + n.errors.map(e => li('bad', e)).join('') + n.warnings.map(w => li('warn', w)).join('') + '</ul>';
+            const items = n.terms.filter(v => v.lookup || v.t.afterAll).map(v => {
+                let s = '<li>' + (v.lookup ? '<span class="ec-lk' + (v.lookup > SPF_LOOKUP_LIMIT ? ' over' : '') + '">#' + v.lookup + '</span>' : '<span class="ec-lk">—</span>') + '<code>' + esc(v.t.raw) + '</code>';
+                if (v.t.afterAll) s += ' <span class="ec-muted">ignored (after all)</span>';
+                if (v.void) s += ' ' + pill('warn', 'void');
+                if (v.info) s += ' <span class="ec-muted">' + esc(v.info) + '</span>';
+                if (v.child) s += renderSpfNode(v.child);
+                return s + '</li>';
+            });
+            if (items.length) h += '<ul class="ec-tree">' + items.join('') + '</ul>';
+            return h + '</div>';
+        }
+        function renderSpf(spf) {
+            const st = spfState(spf);
+            let h = '<div class="ec-section"><h2>SPF ' + pill(st[0], st[1]) + '</h2>';
+            if (spf.root.none) {
+                h += '<ul class="ec-issues">' + (spf.root.errors.length ? spf.root.errors.map(e => li('warn', e)).join('') : '') + li('bad', 'No v=spf1 TXT record at ' + spf.root.domain + '. Receivers get SPF result "none". Use the generator below; for a domain that never sends mail publish "v=spf1 -all".') + '</ul></div>';
+                return h;
+            }
+            const pctL = Math.min(100, spf.lookups * 10), col = spf.lookups > 10 ? 'var(--danger)' : spf.lookups >= 9 ? 'var(--warning)' : 'var(--accent)';
+            h += '<div class="ec-summary" style="grid-template-columns:repeat(3,1fr)">' +
+                '<div class="ec-card"><div class="ec-card-label">DNS lookups (limit 10)</div><div class="ec-card-val" style="color:' + col + '">' + spf.lookups + ' / 10</div><div class="ec-meter"><div style="width:' + pctL + '%;background:' + col + '"></div></div></div>' +
+                '<div class="ec-card"><div class="ec-card-label">Void lookups (limit 2)</div><div class="ec-card-val" style="color:' + (spf.voids > 2 ? 'var(--danger)' : spf.voids ? 'var(--warning)' : 'var(--accent)') + '">' + spf.voids + ' / 2</div></div>' +
+                '<div class="ec-card"><div class="ec-card-label">Default (all)</div><div class="ec-card-val">' + (spf.effectiveAll ? esc((spf.effectiveAll.q === '+' ? '+' : spf.effectiveAll.q) + 'all') : 'none') + '</div></div></div>';
+            const issues = [];
+            spf.permerrors.forEach(e => issues.push(li('bad', e)));
+            if (spf.effectiveAll) { const v = allVerdict(spf.effectiveAll.q); issues.push(li(v.level, v.text + (spf.effectiveAll.domain !== spf.root.domain ? ' (from redirect target ' + spf.effectiveAll.domain + ')' : ''))); }
+            else issues.push(li('warn', 'No "all" and no redirect: unmatched senders get "neutral" (RFC 7208 s4.7). End the record with -all or ~all.'));
+            if (spf.lookups >= 8 && spf.lookups <= 10) issues.push(li('warn', spf.lookups + ' of 10 lookups used: one more include from a vendor change breaks SPF for all mail. Remove unused includes or move senders to subdomains.'));
+            if (spf.temperror) issues.push(li('warn', 'At least one DNS query failed; receivers would return temperror. Results may be incomplete.'));
+            if (spf.truncated) issues.push(li('warn', 'Stopped after ' + MAX_QUERIES + ' queries (tool safety limit).'));
+            issues.push(li('info', 'Count is the worst case: every DNS-querying term is evaluated, as happens for a sender that matches nothing. Lookups for MX host addresses are separate per-mechanism limits and are not counted here.'));
+            h += '<ul class="ec-issues">' + issues.join('') + '</ul><h3>Evaluation tree</h3>' + renderSpfNode(spf.root);
+            return h + '</div>';
+        }
+        function renderDmarcBody(p, extra) {
+            const s = dmarcStrength(p);
+            let h = '<ul class="ec-issues">' + p.errors.map(e => li('bad', e)).join('') + p.warnings.map(w => li('warn', w)).join('') + p.info.map(w => li('info', w)).join('') + (p.errors.length ? '' : s.points.map(x => li(s.level === 'ok' ? 'ok' : s.level, x)).join('')) + (extra || '') + '</ul>';
+            const desc = { v: 'Version', p: 'Policy for the domain', sp: 'Policy for existing subdomains', np: 'Policy for non-existent subdomains (RFC 9989)', pct: 'Percent of failing mail the policy applies to (RFC 7489 only)', rua: 'Aggregate report destinations', ruf: 'Failure report destinations', adkim: 'DKIM alignment: r relaxed, s strict', aspf: 'SPF alignment: r relaxed, s strict', fo: 'Failure report options', rf: 'Failure report format', ri: 'Aggregate report interval (s)', t: 'Test mode (RFC 9989)', psd: 'Public suffix domain flag (RFC 9989)' };
+            h += '<div class="ec-scroll"><table class="ec-table"><tr><th>Tag</th><th>Value</th><th>Meaning</th></tr>' + p.order.map(o => '<tr><td><code>' + esc(o.name) + '</code></td><td><code>' + esc(o.value == null ? '(malformed)' : o.value) + '</code></td><td>' + esc(desc[o.name] || 'Unknown tag (ignored)') + '</td></tr>').join('') + '</table></div>';
+            return h;
+        }
+        function renderDmarc(d, domain) {
+            const st = dmarcState(d);
+            let h = '<div class="ec-section"><h2>DMARC ' + pill(st[0], st[1]) + '</h2>';
+            if (!d.record) {
+                h += '<ul class="ec-issues">' + (d.errors || []).map(e => li('bad', e)).join('') + (d.records && d.records.length > 1 ? '' : li('bad', 'No DMARC record at _dmarc.' + domain + ' or any parent domain. Receivers apply no DMARC policy; spoofed From: ' + domain + ' is judged on SPF/DKIM alone.')) + '</ul>';
+                if (d.records && d.records.length > 1) h += d.records.map(r => '<div class="ec-rec">' + esc(r) + '</div>').join('');
+            } else {
+                h += '<div class="ec-muted">Found at <code>_dmarc.' + esc(d.foundAt) + '</code>' + (d.inherited ? ' (inherited by ' + esc(domain) + ' via the DNS tree walk)' : '') + '</div><div class="ec-rec">' + esc(d.record) + '</div>';
+                const ext = (d.external || []).map(e => li(e.authorized ? 'ok' : 'warn', 'External report host ' + e.host + (e.authorized ? ' authorizes reports (' + e.name + ' has v=DMARC1).' : ' has no ' + e.name + ' record; receivers drop reports to it (RFC 7489 s7.1). Ignore this if it is in your own organizational domain.'))).join('');
+                h += renderDmarcBody(d.parsed, ext);
+            }
+            h += '<div class="ec-muted" style="margin-top:0.5rem;">Queried: ' + esc((d.queried || []).join(' · ')) + '</div>';
+            return h + '</div>';
+        }
+        function renderDkim(list, user) {
+            const found = list.filter(k => k.found);
+            let h = '<div class="ec-section"><h2>DKIM ' + pill(found.length ? 'ok' : 'warn', found.length + ' of ' + list.length + ' selectors found') + '</h2>';
+            h += '<div class="ec-scroll"><table class="ec-table"><tr><th>Selector</th><th>Status</th><th>Key</th><th>Notes</th></tr>';
+            const rows = list.slice().sort((a, b) => (b.found - a.found));
+            rows.forEach(k => {
+                if (!k.found && user.indexOf(k.selector) === -1 && !k.error) return;
+                let status, key = '', notes = [];
+                if (k.error) { status = pill('warn', 'error'); notes.push(k.error); }
+                else if (!k.found) { status = pill('warn', 'not found'); notes.push(k.rcode === 'NXDOMAIN' ? 'NXDOMAIN' : 'no DKIM TXT record'); }
+                else {
+                    const p = k.parsed;
+                    status = p.errors.length ? pill('bad', 'invalid') : p.revoked ? pill('warn', 'revoked') : (p.bits && p.k === 'rsa' && p.bits < 2048) ? pill('warn', 'weak') : pill('ok', 'valid');
+                    key = esc(p.k.toUpperCase()) + (p.bits ? ' ' + (p.k === 'rsa' ? '≈' : '') + p.bits + '-bit' : '');
+                    notes = p.errors.concat(p.warnings);
+                    if (k.cname && k.cname.length) notes.unshift('CNAME → ' + k.cname[k.cname.length - 1]);
+                }
+                h += '<tr><td><code>' + esc(k.selector) + '</code></td><td>' + status + '</td><td style="white-space:nowrap">' + key + '</td><td>' + notes.map(esc).join('<br>') + (k.found ? '<details><summary class="ec-muted">record</summary><div class="ec-rec">' + esc(k.record) + '</div></details>' : '') + '</td></tr>';
+            });
+            h += '</table></div>';
+            const miss = list.filter(k => !k.found && user.indexOf(k.selector) === -1).map(k => k.selector);
+            if (miss.length) h += '<div class="ec-muted" style="margin-top:0.5rem;">Also tried (not found): ' + esc(miss.join(', ')) + '. DKIM selectors cannot be enumerated from DNS; read the <code>s=</code> value from a DKIM-Signature header of a real message and add it above.</div>';
+            return h + '</div>';
+        }
+        function buildReport(domain, mx, spf, dmarc, dkim) {
+            const L = ['Email DNS report for ' + domain + ' (' + new Date().toISOString() + ')'];
+            L.push('MX: ' + (mx.nullMx ? 'null MX' : mx.records.map(r => r.pref + ' ' + r.host).join(', ') || 'none'));
+            L.push('SPF: ' + (spf.root.record || 'none') + ' | lookups ' + spf.lookups + '/10, void ' + spf.voids + '/2' + (spf.permerrors.length ? ' | PERMERROR: ' + spf.permerrors.join('; ') : ''));
+            L.push('DMARC: ' + (dmarc.record ? dmarc.record + ' (at _dmarc.' + dmarc.foundAt + ')' : 'none'));
+            dkim.filter(k => k.found).forEach(k => L.push('DKIM ' + k.selector + ': ' + k.parsed.k + (k.parsed.bits ? ' ' + k.parsed.bits + '-bit' : '') + (k.parsed.revoked ? ' revoked' : '')));
+            return L.join('\n');
+        }
+
+        function renderRecord() {
+            let v = $('recInput').value.trim();
+            if (v.indexOf('"') !== -1) v = txtJoin(v);
+            const out = $('recOut');
+            if (!v) { out.innerHTML = ''; return; }
+            let h = '<div class="ec-section">';
+            if (isSpfRecord(v)) {
+                const p = parseSpf(v), n = countDirectLookups(p);
+                h += '<h2>SPF ' + pill(p.errors.length ? 'bad' : 'ok', p.errors.length ? 'PermError' : 'Syntax OK') + ' ' + pill(n > 10 ? 'bad' : 'info', n + ' direct lookup(s)') + '</h2><ul class="ec-issues">' +
+                    p.errors.map(e => li('bad', e)).join('') + p.warnings.map(w => li('warn', w)).join('') +
+                    (p.allTerm ? li(allVerdict(p.allTerm.q).level, allVerdict(p.allTerm.q).text) : p.redirect ? li('info', 'Policy comes from redirect=' + p.redirect.value) : li('warn', 'No "all" and no redirect: default result is neutral.')) +
+                    li('info', 'Nested lookups inside include/redirect targets also count toward 10; run the domain checker after publishing.') + '</ul>';
+                h += '<div class="ec-scroll"><table class="ec-table"><tr><th>Term</th><th>Type</th><th>Lookup</th></tr>' + p.terms.map(t => '<tr><td><code>' + esc(t.raw) + '</code></td><td>' + esc(t.kind === 'modifier' ? 'modifier' : ({ '+': 'pass', '-': 'fail', '~': 'softfail', '?': 'neutral' }[t.q]) + ' · ' + t.name) + (t.afterAll ? ' <span class="ec-muted">(ignored)</span>' : '') + '</td><td>' + ((t.kind === 'mechanism' && ['include', 'a', 'mx', 'ptr', 'exists'].indexOf(t.name) !== -1) || (t.kind === 'modifier' && t === p.redirect) ? 'yes' : '—') + '</td></tr>').join('') + '</table></div>';
+            } else if (isDmarcRecord(v) || /^v\s*=\s*dmarc1/i.test(v)) {
+                const p = parseDmarc(v), s = dmarcStrength(p);
+                h += '<h2>DMARC ' + pill(p.errors.length ? 'bad' : s.level, p.errors.length ? 'Errors' : s.label) + '</h2>' + renderDmarcBody(p);
+            } else if (/(^|;)\s*p\s*=/.test(v) || /^v\s*=\s*DKIM1/i.test(v)) {
+                const p = parseDkim(v);
+                h += '<h2>DKIM key ' + pill(p.errors.length ? 'bad' : p.revoked ? 'warn' : 'ok', p.errors.length ? 'Invalid' : p.revoked ? 'Revoked' : p.k.toUpperCase() + (p.bits ? ' ' + p.bits + '-bit' : '')) + '</h2><ul class="ec-issues">' + p.errors.map(e => li('bad', e)).join('') + p.warnings.map(w => li('warn', w)).join('') + (!p.errors.length && !p.warnings.length ? li('ok', 'Key record is well-formed.') : '') + '</ul>';
+            } else {
+                h += '<ul class="ec-issues">' + li('warn', 'Not recognised. SPF starts with "v=spf1", DMARC with "v=DMARC1", a DKIM key record contains "p=".') + '</ul>';
+            }
+            out.innerHTML = h + '</div>';
+        }
+
+        function notes(el, r) { $(el).innerHTML = r.errors.map(e => li('bad', e)).join('') + r.warnings.map(w => li('warn', w)).join('') + (!r.errors.length && !r.warnings.length ? li('ok', 'No issues.') : ''); }
+        function renderGen() {
+            const domain = (normalizeDomain($('gDomain').value).domain) || 'example.com';
+            const s = buildSpf({ domain, a: $('sA').checked, mx: $('sMx').checked, ip4: $('sIp4').value, ip6: $('sIp6').value, include: $('sInc').value, all: $('sAll').value });
+            $('spfGenOut').textContent = s.record; $('spfGenZone').textContent = s.zone; notes('spfGenNotes', s);
+            const d = buildDmarc({ domain, p: $('dP').value, sp: $('dSp').value, np: $('dNp').value, pct: $('dPct').value, rua: $('dRua').value, ruf: $('dRuf').value, adkim: $('dAdkim').value, aspf: $('dAspf').value, fo: $('dFo').value, t: $('dT').value });
+            $('dmarcGenOut').textContent = d.record; $('dmarcGenZone').textContent = d.zone; notes('dmarcGenNotes', d);
+        }
+
+        // Shareable state: generator/validator fields stored only when they differ from defaults.
+        const STATE_FIELDS = { rec: 'recInput', gd: 'gDomain', sa: 'sA', smx: 'sMx', s4: 'sIp4', s6: 'sIp6', si: 'sInc', sall: 'sAll', dp: 'dP', dsp: 'dSp', dnp: 'dNp', drua: 'dRua', druf: 'dRuf', dadkim: 'dAdkim', daspf: 'dAspf', dfo: 'dFo', dt: 'dT', dpct: 'dPct' };
+        const DEFAULTS = {};
+        function fieldVal(el) { return el.type === 'checkbox' ? (el.checked ? '1' : '0') : el.value; }
+        function saveState() {
+            const o = {};
+            Object.keys(STATE_FIELDS).forEach(k => { const v = fieldVal($(STATE_FIELDS[k])); o[k] = v === DEFAULTS[k] ? '' : v; });
+            setToolParams(o);
+        }
+        function loadState(params) {
+            Object.keys(STATE_FIELDS).forEach(k => {
+                if (params[k] === undefined) return;
+                const el = $(STATE_FIELDS[k]);
+                if (el.type === 'checkbox') el.checked = params[k] === '1';
+                else if (el.tagName === 'SELECT') { if (Array.from(el.options).some(o => o.value === params[k])) el.value = params[k]; }
+                else el.value = params[k];
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            Object.keys(STATE_FIELDS).forEach(k => { DEFAULTS[k] = fieldVal($(STATE_FIELDS[k])); });
+            const params = getToolParams();
+            loadState(params);
+            if (params.sel) $('selInput').value = params.sel;
+            const liveRec = debounce(() => { renderRecord(); saveState(); }, 200);
+            const liveGen = debounce(() => { renderGen(); saveState(); }, 200);
+            $('recInput').addEventListener('input', liveRec);
+            ['gDomain', 'sA', 'sMx', 'sIp4', 'sIp6', 'sInc', 'sAll', 'dP', 'dSp', 'dNp', 'dRua', 'dRuf', 'dAdkim', 'dAspf', 'dFo', 'dT', 'dPct'].forEach(id => {
+                $(id).addEventListener('input', liveGen); $(id).addEventListener('change', liveGen);
+            });
+            document.querySelectorAll('[data-inc]').forEach(a => a.addEventListener('click', e => {
+                e.preventDefault();
+                const cur = splitList($('sInc').value);
+                if (cur.indexOf(a.dataset.inc) === -1) cur.push(a.dataset.inc);
+                $('sInc').value = cur.join(' ');
+                renderGen(); saveState();
+            }));
+            $('checkForm').addEventListener('submit', e => { e.preventDefault(); runCheck(); });
+            renderRecord();
+            renderGen();
+            if (params.domain) { $('domainInput').value = params.domain; runCheck(); }
+        });
+    </script>
+    <script>
+        document.querySelectorAll('.faq-question').forEach(function(btn) {
+            btn.addEventListener('click', function() { btn.parentElement.classList.toggle('open'); });
+        });
+    </script>
+    <script src="/js/nav.js?v=20261122" defer></script>
+</body>
+</html>

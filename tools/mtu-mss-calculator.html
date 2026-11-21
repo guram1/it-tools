@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-FH74PGMNYD"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-FH74PGMNYD');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tunnel MTU &amp; TCP MSS Calculator: IPsec, GRE, VXLAN | OPS-BOX</title>
+    <meta name="description" content="Exact tunnel MTU and TCP MSS for IPsec ESP (AES-CBC/GCM, NAT-T), GRE, GRE over IPsec, VXLAN and WireGuard, with Cisco IOS, FortiOS and Junos config lines.">
+    <meta name="keywords" content="MTU calculator, TCP MSS calculator, IPsec overhead, ESP overhead, GRE over IPsec MTU, VXLAN MTU, WireGuard MTU, ip tcp adjust-mss, tcp-mss FortiGate, NAT-T overhead">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://ops-box.net/tools/mtu-mss-calculator">
+
+    <meta property="og:title" content="Tunnel MTU &amp; TCP MSS Calculator — Exact IPsec, GRE, VXLAN, WireGuard Overhead">
+    <meta property="og:description" content="Exact per-layer overhead, largest inner packet, TCP MSS for IPv4/IPv6, and Cisco, FortiOS and Junos config lines.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ops-box.net/tools/mtu-mss-calculator">
+    <meta property="og:image" content="https://ops-box.net/og-image.png">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Tunnel MTU &amp; TCP MSS Calculator">
+    <meta name="twitter:description" content="Exact IPsec ESP padding, GRE, VXLAN and WireGuard overhead with ready MTU/MSS config lines.">
+    <meta name="twitter:image" content="https://ops-box.net/og-image.png">
+
+    <link rel="stylesheet" href="../css/style.css?v=20261122">
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Tunnel MTU & TCP MSS Calculator",
+        "url": "https://ops-box.net/tools/mtu-mss-calculator",
+        "description": "Compute exact encapsulation overhead, the largest inner IP packet and the TCP MSS for IPsec ESP, GRE, GRE over IPsec, VXLAN and WireGuard tunnels, with Cisco IOS, FortiOS and Junos configuration lines.",
+        "applicationCategory": "NetworkingApplication",
+        "operatingSystem": "Any",
+        "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {
+                "@type": "Question",
+                "name": "Why is the ESP overhead not a fixed number?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "ESP pads the encrypted part (payload, padding and the 2-byte trailer) to a multiple of the cipher block size and to a 4-byte boundary (RFC 4303). With AES-CBC the padding is 0 to 15 bytes, so the overhead changes with packet size. With AES-GCM it is 0 to 3 bytes. The calculator searches for the largest inner packet whose encapsulated size still fits the underlay MTU instead of subtracting an average."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "How is the TCP MSS derived from the tunnel MTU?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "MSS = inner MTU minus the fixed inner IP header and the 20-byte TCP header: MTU minus 40 for IPv4 and MTU minus 60 for IPv6. RFC 6691 says TCP and IP options should not be subtracted, so the value does not change when timestamps or SACK are in use."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Should I use GRE over IPsec in transport or tunnel mode?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Transport mode protects the GRE packet and reuses its delivery IP header, so it saves 20 bytes with an IPv4 underlay and 40 with IPv6. Tunnel mode adds a second outer IP header. Use transport mode when the GRE endpoints are the IPsec peers. Behind NAT, check that your platform supports transport mode with NAT-T."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Does NAT-T change the MTU?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Yes. When a NAT is detected, ESP is carried in UDP port 4500 (RFC 3948), which adds an 8-byte UDP header to every packet. Because of AES-CBC block padding, those 8 bytes can cost up to 16 bytes of inner MTU. For example, AES-CBC with SHA-256 drops from 1438 to 1422 on a 1500-byte link."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Why does WireGuard default to an MTU of 1420?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "wg-quick sets the interface MTU to the underlay MTU minus 80 bytes: a 40-byte IPv6 header, 8 bytes UDP, a 16-byte data header and a 16-byte Poly1305 tag. That value is safe for IPv4 and IPv6 endpoints. With an IPv4-only underlay the real limit is 1440 on a 1500-byte link."
+                }
+            }
+        ]
+    }
+    </script>
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1924789684268835" crossorigin="anonymous"></script>
+    <style>
+        .stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin: 1rem 0; }
+        .stat-card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem 1rem; }
+        .stat-label { color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        .stat-val { color: var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 1.2rem; font-weight: 600; margin-top: 0.25rem; }
+        .stat-sub { color: var(--text-muted); font-size: 0.75rem; margin-top: 0.2rem; }
+        .opt-box { border: 1px solid var(--border); border-radius: 8px; padding: 1rem; margin-bottom: 1.25rem; background: var(--bg-secondary); }
+        .opt-box legend { color: var(--text-secondary); font-size: 0.8rem; padding: 0 0.4rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        .preset-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem; }
+        .preset-row .btn { padding: 0.4rem 0.75rem; font-size: 0.8rem; }
+        .ovh-table { width: 100%; border-collapse: collapse; font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; }
+        .ovh-table th, .ovh-table td { text-align: left; padding: 0.45rem 0.6rem; border-bottom: 1px solid var(--border); color: var(--text-secondary); }
+        .ovh-table th { color: var(--text-muted); font-weight: 500; text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.05em; }
+        .ovh-table td.num { text-align: right; color: var(--text-primary); white-space: nowrap; }
+        .ovh-table tr.inner td { color: var(--accent); }
+        .ovh-table tr.total td { color: var(--text-primary); font-weight: 600; border-top: 1px solid var(--border-hover); }
+        .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-secondary); }
+        .pkt-bar { display: flex; height: 22px; border-radius: 6px; overflow: hidden; margin: 0.75rem 0 0.25rem; border: 1px solid var(--border); }
+        .pkt-bar span { display: block; height: 100%; }
+        .msg { margin-top: 0.75rem; padding: 0.6rem 0.9rem; border-radius: 8px; font-size: 0.85rem; }
+        .msg.err { color: #ef4444; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); }
+        .msg.warn { color: var(--warning); background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.3); }
+        .msg.note { color: var(--text-secondary); background: var(--bg-secondary); border: 1px solid var(--border); }
+        .cfg-head { display: flex; justify-content: space-between; align-items: center; margin-top: 1.25rem; }
+        .cfg-head .form-label { margin: 0; }
+        .seo-content table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.85rem; }
+        .seo-content th, .seo-content td { border-bottom: 1px solid var(--border); padding: 0.4rem 0.5rem; text-align: left; color: var(--text-secondary); }
+        .seo-content th { color: var(--text-primary); }
+        @media (max-width: 700px) { .stat-row { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 420px) { .stat-row { grid-template-columns: 1fr; } }
+    </style>
+    <link rel="icon" href="/favicon.ico" sizes="48x48">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="preload" href="/fonts/Outfit-latin.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/css/base.css?v=20261122">
+    <script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://ops-box.net/"}, {"@type": "ListItem", "position": 2, "name": "Tunnel MTU & TCP MSS Calculator", "item": "https://ops-box.net/tools/mtu-mss-calculator"}]}</script>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <a href="/" class="logo" aria-label="OPS-BOX home"><span class="logo-icon">⚡</span><span class="logo-text">OPS<span>-BOX</span></span></a>
+            <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Open menu">☰</button>
+            <nav class="header-nav" id="site-nav" aria-label="Main">
+                <a href="/#network">Network</a>
+                <a href="/#security">Security</a>
+                <a href="/#developer">Developer</a>
+                <a href="/tools/subnet-calculator.html">Subnet Calculator</a>
+                <a href="/tools/mac-vendor-lookup.html">MAC Lookup</a>
+                <a href="/about.html">About</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <nav class="breadcrumb">
+            <a href="/">Home</a><span>›</span><span class="breadcrumb-current">Tunnel MTU &amp; TCP MSS Calculator</span>
+        </nav>
+
+        <div class="tool-container">
+            <div class="tool-header">
+                <h1 class="tool-title">Tunnel MTU &amp; TCP MSS Calculator</h1>
+                <p class="tool-description">Stack IPsec ESP, GRE, GRE over IPsec, VXLAN or WireGuard on an underlay link and get the exact per-layer overhead, the largest inner IP packet that fits (ESP block padding included), the TCP MSS for IPv4 and IPv6, and ready config lines for Cisco IOS, FortiOS and Junos.</p>
+            </div>
+            <div class="tool-content">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="mtu">Underlay IP MTU (bytes)</label>
+                        <input id="mtu" class="form-input" type="number" min="68" max="65535" step="1" value="1500" inputmode="numeric">
+                        <div class="preset-row">
+                            <button type="button" class="btn btn-secondary" data-mtu="1500">Ethernet 1500</button>
+                            <button type="button" class="btn btn-secondary" data-mtu="1492">PPPoE 1492</button>
+                            <button type="button" class="btn btn-secondary" data-mtu="9000">Jumbo 9000</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="ip">Outer (underlay) IP version</label>
+                        <select id="ip" class="form-select">
+                            <option value="4">IPv4 (20-byte header)</option>
+                            <option value="6">IPv6 (40-byte header)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="mpls">MPLS labels on the underlay path</label>
+                        <select id="mpls" class="form-select">
+                            <option value="0">0 (none)</option><option value="1">1 label (4 B)</option><option value="2">2 labels (8 B)</option><option value="3">3 labels (12 B)</option><option value="4">4 labels (16 B)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="enc">Encapsulation</label>
+                        <select id="enc" class="form-select">
+                            <option value="ipsec">IPsec ESP tunnel mode (VTI / route-based)</option>
+                            <option value="gre">GRE</option>
+                            <option value="greipsec">GRE over IPsec</option>
+                            <option value="vxlan">VXLAN</option>
+                            <option value="wireguard">WireGuard</option>
+                            <option value="none">None (plain link / MSS only)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <fieldset class="opt-box" id="boxIpsec">
+                    <legend>IPsec ESP</legend>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="cipher">Cipher</label>
+                            <select id="cipher" class="form-select">
+                                <option value="aes-gcm">AES-GCM (AEAD, IV 8 B)</option>
+                                <option value="aes-cbc">AES-CBC (IV 16 B, block 16 B)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="integ">Integrity</label>
+                            <select id="integ" class="form-select">
+                                <option value="none">none (built into GCM)</option>
+                                <option value="sha1">HMAC-SHA1-96 (12 B)</option>
+                                <option value="sha256">HMAC-SHA-256-128 (16 B)</option>
+                                <option value="sha384">HMAC-SHA-384-192 (24 B)</option>
+                                <option value="sha512">HMAC-SHA-512-256 (32 B)</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="grpIcv">
+                            <label class="form-label" for="icv">GCM ICV length</label>
+                            <select id="icv" class="form-select">
+                                <option value="16">16 bytes (default)</option>
+                                <option value="12">12 bytes</option>
+                                <option value="8">8 bytes</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="grpMode">
+                            <label class="form-label" for="mode">ESP mode for GRE</label>
+                            <select id="mode" class="form-select">
+                                <option value="transport">Transport (GRE header reused)</option>
+                                <option value="tunnel">Tunnel (extra IP header)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <label class="checkbox-label"><input type="checkbox" id="natt"> NAT-T: ESP in UDP 4500 (+8 bytes)</label>
+                </fieldset>
+
+                <fieldset class="opt-box" id="boxGre">
+                    <legend>GRE options</legend>
+                    <div class="checkbox-group">
+                        <label class="checkbox-label"><input type="checkbox" id="gkey"> Key (+4)</label>
+                        <label class="checkbox-label"><input type="checkbox" id="gseq"> Sequence number (+4)</label>
+                        <label class="checkbox-label"><input type="checkbox" id="gcsum"> Checksum (+4)</label>
+                    </div>
+                </fieldset>
+
+                <fieldset class="opt-box" id="boxVxlan">
+                    <legend>VXLAN options</legend>
+                    <label class="checkbox-label"><input type="checkbox" id="vlan"> Inner frame carries an 802.1Q tag (+4)</label>
+                </fieldset>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="margin">Safety margin subtracted from the result (bytes)</label>
+                        <input id="margin" class="form-input" type="number" min="0" max="1000" step="1" value="0" inputmode="numeric">
+                    </div>
+                </div>
+
+                <div class="btn-group" style="margin-top:0;">
+                    <button type="button" class="btn btn-secondary" onclick="copyShareLink()">🔗 Copy link</button>
+                    <button type="button" class="btn btn-secondary" onclick="resetExample()">Reset example</button>
+                </div>
+
+                <div id="msgs"></div>
+
+                <div id="results">
+                    <div class="stat-row">
+                        <div class="stat-card"><div class="stat-label">Inner IP MTU</div><div class="stat-val" id="sMtu">-</div><div class="stat-sub" id="sMtuSub"></div></div>
+                        <div class="stat-card"><div class="stat-label">Overhead</div><div class="stat-val" id="sOvh">-</div><div class="stat-sub" id="sOvhSub"></div></div>
+                        <div class="stat-card"><div class="stat-label">TCP MSS IPv4</div><div class="stat-val" id="sMss4">-</div><div class="stat-sub">MTU − 20 IP − 20 TCP</div></div>
+                        <div class="stat-card"><div class="stat-label">TCP MSS IPv6</div><div class="stat-val" id="sMss6">-</div><div class="stat-sub">MTU − 40 IP − 20 TCP</div></div>
+                    </div>
+
+                    <label class="form-label">Per-layer breakdown at the largest packet that fits (outer → inner)</label>
+                    <div class="pkt-bar" id="pktBar" aria-hidden="true"></div>
+                    <div class="table-wrap">
+                        <table class="ovh-table">
+                            <thead><tr><th>Layer</th><th style="text-align:right;">Bytes</th><th>Defined in</th></tr></thead>
+                            <tbody id="ovhBody"></tbody>
+                        </table>
+                    </div>
+                    <p id="edgeNote" style="color:var(--text-muted);font-size:0.8rem;margin-top:0.5rem;"></p>
+
+                    <div class="cfg-head"><label class="form-label">Cisco IOS / IOS XE</label><button type="button" class="copy-btn" onclick="copyToClipboard('cfgCisco')">Copy</button></div>
+                    <div class="bulk-output" style="margin-top:0.5rem;"><pre id="cfgCisco"></pre></div>
+                    <div class="cfg-head"><label class="form-label">FortiOS (FortiGate)</label><button type="button" class="copy-btn" onclick="copyToClipboard('cfgForti')">Copy</button></div>
+                    <div class="bulk-output" style="margin-top:0.5rem;"><pre id="cfgForti"></pre></div>
+                    <div class="cfg-head"><label class="form-label">Junos (SRX / MX)</label><button type="button" class="copy-btn" onclick="copyToClipboard('cfgJunos')">Copy</button></div>
+                    <div class="bulk-output" style="margin-top:0.5rem;"><pre id="cfgJunos"></pre></div>
+                    <div class="cfg-head"><label class="form-label">Linux (iproute2 / iptables)</label><button type="button" class="copy-btn" onclick="copyToClipboard('cfgLinux')">Copy</button></div>
+                    <div class="bulk-output" style="margin-top:0.5rem;"><pre id="cfgLinux"></pre></div>
+                    <p style="color:var(--text-muted);font-size:0.8rem;margin-top:0.75rem;">Interface names, policy IDs and tunnel names are placeholders. Review the lines against your platform and release before applying them in a change window.</p>
+                </div>
+            </div>
+        </div>
+
+        <section class="seo-content">
+            <h2>How tunnel MTU and TCP MSS are calculated</h2>
+            <p>Every encapsulation adds bytes in front of (and sometimes behind) the original packet, but the underlay link still carries at most its MTU. The <strong>inner IP MTU</strong> is the largest original IP packet that still fits after encapsulation, and the <strong>TCP MSS</strong> is that MTU minus the fixed inner IP header (20 bytes for IPv4, 40 for IPv6) and the 20-byte TCP header. RFC 6691 says the MSS should be reduced only by the fixed IP and TCP headers, not by options, so timestamps and SACK do not change the value you clamp to.</p>
+            <p>For GRE, VXLAN and WireGuard the overhead is a constant, so subtraction is enough. ESP is different: the encrypted part (payload + padding + 2-byte trailer) must be a multiple of the cipher block size and must end on a 4-byte boundary (RFC 4303 §2.4). The padding, and so the overhead, changes with the size of the packet. This calculator does not assume a "typical" ESP overhead. It builds the packet layer by layer for every candidate size and returns the largest inner packet whose encapsulated size is still ≤ the underlay MTU.</p>
+
+            <h3>Overhead sources used</h3>
+            <ul>
+                <li><strong>Outer IP header:</strong> 20 bytes IPv4, 40 bytes IPv6 (no options or extension headers).</li>
+                <li><strong>ESP header:</strong> SPI 4 + sequence number 4 (RFC 4303). With Extended Sequence Numbers the high-order 32 bits are not transmitted, so ESN adds nothing on the wire.</li>
+                <li><strong>IV:</strong> 16 bytes for AES-CBC (RFC 3602), 8 bytes for AES-GCM (RFC 4106).</li>
+                <li><strong>Padding:</strong> 0–15 bytes for AES-CBC (16-byte blocks), 0–3 bytes for AES-GCM (4-byte alignment only), plus the 2-byte Pad Length / Next Header trailer.</li>
+                <li><strong>ICV:</strong> HMAC-SHA1-96 = 12 (RFC 2404), HMAC-SHA-256-128 = 16, SHA-384-192 = 24, SHA-512-256 = 32 (RFC 4868, truncated to half the hash output); the AES-GCM tag is 16 by default, 8 or 12 optional (RFC 4106 §6).</li>
+                <li><strong>NAT-T:</strong> 8-byte UDP header, port 4500 (RFC 3948).</li>
+                <li><strong>GRE:</strong> 4-byte base header (RFC 2784), +4 each for checksum, key and sequence number (RFC 2784 / RFC 2890).</li>
+                <li><strong>VXLAN:</strong> UDP 8 + VXLAN 8 + the inner Ethernet header 14 (18 with an 802.1Q tag) (RFC 7348). The outer Ethernet header is not part of the IP MTU.</li>
+                <li><strong>WireGuard:</strong> UDP 8 + 16-byte data header (type, reserved, receiver index, 64-bit counter) + 16-byte Poly1305 tag (WireGuard whitepaper §5.4.6).</li>
+                <li><strong>MPLS:</strong> 4 bytes per label stack entry (RFC 3032), counted against the underlay MTU.</li>
+            </ul>
+
+            <h3>Worked example: AES-CBC + HMAC-SHA-256, ESP tunnel mode, 1500-byte IPv4 underlay</h3>
+            <p>Fixed bytes: outer IPv4 20 + ESP header 8 + IV 16 + ICV 16 = 60. That leaves 1440 bytes for the encrypted block, and 1440 is exactly 90 AES blocks. Payload + padding + 2 must equal 1440, so the largest inner packet is <code>1438</code> with zero padding: 20 + 8 + 16 + 1438 + 0 + 2 + 16 = 1500. A 1439-byte packet needs 1441 encrypted bytes, which rounds up to 1456, and the result is a 1516-byte packet that no longer fits. The MSS is 1438 − 40 = <code>1398</code> for IPv4 and 1438 − 60 = <code>1378</code> for IPv6.</p>
+            <p>Padding can make the result look wrong at first. Add NAT-T and the budget becomes 1432. The largest multiple of 16 that fits is 1424, so the inner MTU drops to 1422. On a 1492-byte PPPoE link without NAT-T the budget is also 1432, so the answer is again 1422: ten bytes less underlay MTU gives the same tunnel MTU. With AES-GCM the alignment is only 4 bytes, so the same 1500-byte link gives 1446 (1438 with NAT-T).</p>
+
+            <h3>Reference values (1500-byte IPv4 underlay, computed by this tool)</h3>
+            <table>
+                <thead><tr><th>Encapsulation</th><th>Inner MTU</th><th>MSS v4</th><th>MSS v6</th></tr></thead>
+                <tbody>
+                    <tr><td>GRE</td><td>1476</td><td>1436</td><td>1416</td></tr>
+                    <tr><td>ESP tunnel, AES-GCM (16-byte ICV)</td><td>1446</td><td>1406</td><td>1386</td></tr>
+                    <tr><td>ESP tunnel, AES-GCM + NAT-T</td><td>1438</td><td>1398</td><td>1378</td></tr>
+                    <tr><td>ESP tunnel, AES-CBC + SHA-1 or SHA-256</td><td>1438</td><td>1398</td><td>1378</td></tr>
+                    <tr><td>ESP tunnel, AES-CBC + SHA-256 + NAT-T</td><td>1422</td><td>1382</td><td>1362</td></tr>
+                    <tr><td>GRE over IPsec transport, AES-GCM</td><td>1442</td><td>1402</td><td>1382</td></tr>
+                    <tr><td>GRE over IPsec transport, AES-CBC + SHA-256</td><td>1434</td><td>1394</td><td>1374</td></tr>
+                    <tr><td>GRE over IPsec tunnel, AES-CBC + SHA-256</td><td>1414</td><td>1374</td><td>1354</td></tr>
+                    <tr><td>VXLAN</td><td>1450</td><td>1410</td><td>1390</td></tr>
+                    <tr><td>WireGuard, IPv4 / IPv6 underlay</td><td>1440 / 1420</td><td>1400 / 1380</td><td>1380 / 1360</td></tr>
+                </tbody>
+            </table>
+            <p>Cisco's GRE/IPsec fragmentation guide lists 1440 (transport mode) and 1420 (tunnel mode) as the specific MTU needed on a 1500-byte link and recommends 1400 for both. AES-CBC with SHA-256 needs slightly less (1434 / 1414) because of its 16-byte IV and block padding, which is why many engineers use the round 1400 / MSS 1360 and accept a few unused bytes. Use the safety-margin field if you want to standardise on a value like that.</p>
+
+            <h3>Vendor notes</h3>
+            <ul>
+                <li><strong>Cisco IOS / IOS XE:</strong> <code>ip mtu</code> on the tunnel interface sets the IP MTU. Cisco's command reference documents <code>ip tcp adjust-mss</code> with a range of 500–1460 and notes that it affects only TCP connections passing through the router. For IPv6 the equivalent is <code>ipv6 tcp adjust-mss</code>. By default the GRE tunnel <code>ip mtu</code> is the physical MTU minus the GRE overhead only, so with tunnel protection you must lower it yourself.</li>
+                <li><strong>FortiOS:</strong> on a route-based IPsec tunnel interface, <code>set mtu-override enable</code>, <code>set mtu</code> and <code>set tcp-mss</code> take precedence over the per-policy <code>tcp-mss-sender</code> / <code>tcp-mss-receiver</code> values (Fortinet technical tip). Both default to 0 in the FortiOS CLI reference. Set both of them.</li>
+                <li><strong>Junos:</strong> <code>family inet mtu</code> is the IP MTU. The physical (media) MTU includes the Layer 2 header (1514 for standard Ethernet), so do not copy IP MTU values into the physical <code>mtu</code> statement. On SRX, <code>set security flow tcp-mss ipsec-vpn mss</code> clamps traffic entering IPsec. <code>gre-out</code> applies to GRE going into an IPsec tunnel and <code>gre-in</code> to GRE coming out of one. Juniper warns that MSS may not be rewritten for GRE over IPsec, so verify with a packet capture.</li>
+                <li><strong>WireGuard:</strong> wg-quick sets the interface MTU to the route MTU minus 80, the IPv6-underlay worst case. That gives the familiar 1420. The 16-byte zero padding is capped at the interface MTU by the Linux implementation, so it never pushes a full-size packet over the limit.</li>
+                <li><strong>VXLAN:</strong> RFC 7348 says VTEPs must not fragment VXLAN packets. The normal fix is to raise the underlay MTU (for example 9000/9216 in the fabric) rather than shrink the tenant MTU to 1450.</li>
+            </ul>
+
+            <h3>Common mistakes</h3>
+            <ul>
+                <li><strong>Forgetting NAT-T.</strong> A tunnel that worked on a public IP loses 8 bytes when one peer moves behind NAT. Size for NAT-T if it can ever happen.</li>
+                <li><strong>Using the IPv4 MSS for IPv6.</strong> IPv6 needs an MSS 20 bytes lower. A tunnel under 1280 bytes cannot carry IPv6 at all.</li>
+                <li><strong>Treating MSS clamping as a full fix.</strong> Clamping rewrites only TCP SYNs. UDP, QUIC, GRE keepalives and nested VPNs still depend on a correct tunnel MTU and working PMTUD. Do not block ICMP "fragmentation needed" (type 3 code 4) or ICMPv6 Packet Too Big.</li>
+                <li><strong>Stacking PPPoE and a VPN without recalculating.</strong> Start from 1492, not 1500, on PPPoE links.</li>
+                <li><strong>Clamping in one direction only.</strong> Each TCP endpoint advertises its own MSS in its SYN or SYN-ACK. If only one of them is rewritten, the other side can still send full-size segments into the tunnel. On FortiOS set both <code>tcp-mss-sender</code> and <code>tcp-mss-receiver</code>, and on any platform confirm with a capture that both SYN and SYN-ACK leave with the clamped value.</li>
+            </ul>
+
+            <div class="faq">
+                <h3>Frequently Asked Questions</h3>
+                <div class="faq-item"><button class="faq-question">Why is the ESP overhead not a fixed number?</button><div class="faq-answer">ESP pads the encrypted part (payload, padding and the 2-byte trailer) to a multiple of the cipher block size and to a 4-byte boundary (RFC 4303). With AES-CBC the padding is 0 to 15 bytes, so the overhead changes with packet size. With AES-GCM it is 0 to 3 bytes. The calculator searches for the largest inner packet whose encapsulated size still fits the underlay MTU instead of subtracting an average.</div></div>
+                <div class="faq-item"><button class="faq-question">How is the TCP MSS derived from the tunnel MTU?</button><div class="faq-answer">MSS = inner MTU minus the fixed inner IP header and the 20-byte TCP header: MTU minus 40 for IPv4 and MTU minus 60 for IPv6. RFC 6691 says TCP and IP options should not be subtracted, so the value does not change when timestamps or SACK are in use.</div></div>
+                <div class="faq-item"><button class="faq-question">Should I use GRE over IPsec in transport or tunnel mode?</button><div class="faq-answer">Transport mode protects the GRE packet and reuses its delivery IP header, so it saves 20 bytes with an IPv4 underlay and 40 with IPv6. Tunnel mode adds a second outer IP header. Use transport mode when the GRE endpoints are the IPsec peers. Behind NAT, check that your platform supports transport mode with NAT-T.</div></div>
+                <div class="faq-item"><button class="faq-question">Does NAT-T change the MTU?</button><div class="faq-answer">Yes. When a NAT is detected, ESP is carried in UDP port 4500 (RFC 3948), which adds an 8-byte UDP header to every packet. Because of AES-CBC block padding, those 8 bytes can cost up to 16 bytes of inner MTU. For example, AES-CBC with SHA-256 drops from 1438 to 1422 on a 1500-byte link.</div></div>
+                <div class="faq-item"><button class="faq-question">Why does WireGuard default to an MTU of 1420?</button><div class="faq-answer">wg-quick sets the interface MTU to the underlay MTU minus 80 bytes: a 40-byte IPv6 header, 8 bytes UDP, a 16-byte data header and a 16-byte Poly1305 tag. That value is safe for IPv4 and IPv6 endpoints. With an IPv4-only underlay the real limit is 1440 on a 1500-byte link.</div></div>
+            </div>
+        </section>
+
+
+        <section class="related-tools">
+            <h2>Related Tools</h2>
+            <div class="related-grid">
+                <a href="/tools/subnet-calculator.html" class="related-card"><h3>Subnet Calculator</h3><p>Plan subnets with VLSM and CIDR.</p></a>
+                <a href="/tools/ipv6-subnet-calculator.html" class="related-card"><h3>IPv6 Subnet Calculator</h3><p>Split and summarise IPv6 prefixes.</p></a>
+                <a href="/tools/cidr-aggregator.html" class="related-card"><h3>CIDR Aggregator</h3><p>Merge prefixes into a minimal CIDR set.</p></a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section"><h3>Network Tools</h3><a href="/tools/subnet-calculator.html">Subnet Calculator</a><a href="/tools/mtu-mss-calculator.html">MTU &amp; MSS Calculator</a><a href="/tools/cidr-aggregator.html">CIDR Aggregator</a><a href="/tools/mac-vendor-lookup.html">MAC Vendor Lookup</a></div>
+            <div class="footer-section"><h3>Security Tools</h3><a href="/tools/password-generator.html">Password Generator</a><a href="/tools/hash-generator.html">Hash Generator</a><a href="/tools/jwt-decoder.html">JWT Decoder</a></div>
+            <div class="footer-section"><h3>Developer Tools</h3><a href="/tools/json-formatter.html">JSON Formatter</a><a href="/tools/regex-tester.html">Regex Tester</a><a href="/tools/cron-explainer.html">Cron Explainer</a></div>
+        </div>
+        <div class="footer-bottom"><p>&copy; 2026 OPS-BOX.net — Free IT utilities for professionals. | <a href="/about.html" style="color:inherit;text-decoration:underline;">About</a> · <a href="/contact.html" style="color:inherit;text-decoration:underline;">Contact</a> · <a href="/terms-of-service.html" style="color:inherit;text-decoration:underline;">Terms</a> · <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p></div>
+    </footer>
+
+    <div class="toast" id="toast">Copied to clipboard!</div>
+
+    <script src="../js/common.js?v=20261122"></script>
+    <script id="mtu-core">
+        // MTU core logic (draft, copied verbatim into the page's <script id="mtu-core">)
+        var MTU = (function () {
+            var IPHDR = { 4: 20, 6: 40 };
+            var CIPHERS = {
+                'aes-cbc': { label: 'AES-CBC', iv: 16, block: 16, aead: false, ref: 'RFC 3602' },
+                'aes-gcm': { label: 'AES-GCM', iv: 8, block: 4, aead: true, ref: 'RFC 4106' }
+            };
+            var INTEG = {
+                'sha1': { label: 'HMAC-SHA1-96', icv: 12, ref: 'RFC 2404' },
+                'sha256': { label: 'HMAC-SHA-256-128', icv: 16, ref: 'RFC 4868' },
+                'sha384': { label: 'HMAC-SHA-384-192', icv: 24, ref: 'RFC 4868' },
+                'sha512': { label: 'HMAC-SHA-512-256', icv: 32, ref: 'RFC 4868' },
+                'none': { label: 'none (AEAD)', icv: 0, ref: '' }
+            };
+            var ENCAPS = ['ipsec', 'gre', 'greipsec', 'vxlan', 'wireguard', 'none'];
+
+            function int(v, d) { var n = parseInt(v, 10); return Number.isFinite(n) ? n : d; }
+
+            // Normalise and validate a config object. Returns {cfg, errors, notes}.
+            function normalize(raw) {
+                raw = raw || {};
+                var errors = [], notes = [];
+                var c = {
+                    mtu: int(raw.mtu, NaN),
+                    mpls: int(raw.mpls, 0),
+                    ip: String(raw.ip) === '6' ? 6 : 4,
+                    enc: ENCAPS.indexOf(raw.enc) >= 0 ? raw.enc : 'ipsec',
+                    cipher: CIPHERS[raw.cipher] ? raw.cipher : 'aes-gcm',
+                    integ: INTEG[raw.integ] ? raw.integ : 'none',
+                    icv: [8, 12, 16].indexOf(int(raw.icv, 16)) >= 0 ? int(raw.icv, 16) : 16,
+                    natt: raw.natt === true || raw.natt === '1' || raw.natt === 1,
+                    mode: raw.mode === 'tunnel' ? 'tunnel' : 'transport',
+                    gkey: raw.gkey === true || raw.gkey === '1' || raw.gkey === 1,
+                    gseq: raw.gseq === true || raw.gseq === '1' || raw.gseq === 1,
+                    gcsum: raw.gcsum === true || raw.gcsum === '1' || raw.gcsum === 1,
+                    vlan: raw.vlan === true || raw.vlan === '1' || raw.vlan === 1,
+                    margin: int(raw.margin, 0)
+                };
+                if (!Number.isFinite(c.mtu) || String(raw.mtu).trim() === '' || !/^\s*\d+\s*$/.test(String(raw.mtu))) {
+                    errors.push('Underlay MTU must be a whole number of bytes.');
+                } else if (c.mtu < 68 || c.mtu > 65535) {
+                    errors.push('Underlay MTU must be between 68 and 65535 bytes.');
+                } else if (c.ip === 6 && c.mtu < 1280) {
+                    errors.push('An IPv6 underlay needs a link MTU of at least 1280 bytes (RFC 8200).');
+                }
+                if (c.mpls < 0 || c.mpls > 10) { errors.push('MPLS label count must be 0-10.'); c.mpls = Math.max(0, Math.min(10, c.mpls)); }
+                if (c.margin < 0 || c.margin > 1000) { errors.push('Safety margin must be 0-1000 bytes.'); c.margin = Math.max(0, Math.min(1000, c.margin)); }
+                // Cipher / integrity consistency
+                if (CIPHERS[c.cipher].aead) {
+                    if (c.integ !== 'none') { notes.push('AES-GCM is an AEAD cipher: no separate HMAC is negotiated, integrity set to none.'); c.integ = 'none'; }
+                } else if (c.integ === 'none') {
+                    notes.push('AES-CBC requires an integrity algorithm: using HMAC-SHA-256-128.');
+                    c.integ = 'sha256';
+                }
+                return { cfg: c, errors: errors, notes: notes };
+            }
+
+            function espLayers(payloadLen, c) {
+                var ci = CIPHERS[c.cipher];
+                var icv = ci.aead ? c.icv : INTEG[c.integ].icv;
+                // RFC 4303 2.4: plaintext = payload + padding + 2 (Pad Length, Next Header)
+                // must be a multiple of the cipher block size and end on a 4-byte boundary.
+                var align = Math.max(ci.block, 4);
+                var pad = (align - ((payloadLen + 2) % align)) % align;
+                return {
+                    head: [
+                        { name: 'ESP header (SPI 4 + Sequence 4)', bytes: 8, ref: 'RFC 4303 §2.1-2.2' },
+                        { name: 'ESP IV (' + ci.label + ')', bytes: ci.iv, ref: ci.ref }
+                    ],
+                    tail: [
+                        { name: 'ESP padding (to ' + align + '-byte boundary)', bytes: pad, ref: 'RFC 4303 §2.4', pad: true },
+                        { name: 'ESP trailer (Pad Length 1 + Next Header 1)', bytes: 2, ref: 'RFC 4303 §2.5-2.6' },
+                        { name: 'ESP ICV (' + (ci.aead ? 'GCM tag ' + icv * 8 + ' bit' : INTEG[c.integ].label) + ')', bytes: icv, ref: ci.aead ? 'RFC 4106 §6' : INTEG[c.integ].ref }
+                    ]
+                };
+            }
+
+            function greLayer(c) {
+                var b = 4 + (c.gcsum ? 4 : 0) + (c.gkey ? 4 : 0) + (c.gseq ? 4 : 0);
+                var parts = ['base 4'];
+                if (c.gcsum) parts.push('checksum 4');
+                if (c.gkey) parts.push('key 4');
+                if (c.gseq) parts.push('sequence 4');
+                return { name: 'GRE header (' + parts.join(' + ') + ')', bytes: b, ref: (c.gkey || c.gseq) ? 'RFC 2784 / RFC 2890' : 'RFC 2784' };
+            }
+
+            // Build the full outer packet for an inner IP packet of L bytes.
+            // Returns {layers: [...outer->inner, inner, ...trailers], total, ipTotal}
+            // total = bytes counted against the underlay MTU (outer IP packet + MPLS labels).
+            function build(L, c) {
+                var ipH = IPHDR[c.ip];
+                var head = [], tail = [];
+                if (c.mpls > 0) head.push({ name: 'MPLS label stack (' + c.mpls + ' x 4)', bytes: 4 * c.mpls, ref: 'RFC 3032 §2.1' });
+                var outerIP = { name: 'Outer IPv' + c.ip + ' header', bytes: ipH, ref: c.ip === 4 ? 'RFC 791' : 'RFC 8200' };
+                var natt = { name: 'UDP header (NAT-T, port 4500)', bytes: 8, ref: 'RFC 3948 §2.1' };
+                var inner = { name: 'Inner IP packet (payload)', bytes: L, ref: '', inner: true };
+                switch (c.enc) {
+                    case 'ipsec': {
+                        head.push(outerIP);
+                        if (c.natt) head.push(natt);
+                        var e = espLayers(L, c);
+                        head = head.concat(e.head); tail = e.tail;
+                        break;
+                    }
+                    case 'greipsec': {
+                        var gre = greLayer(c);
+                        head.push(outerIP);
+                        if (c.natt) head.push(natt);
+                        var espPayload = gre.bytes + L + (c.mode === 'tunnel' ? ipH : 0);
+                        var e2 = espLayers(espPayload, c);
+                        head = head.concat(e2.head);
+                        if (c.mode === 'tunnel') head.push({ name: 'GRE delivery IPv' + c.ip + ' header (ESP tunnel mode)', bytes: ipH, ref: 'RFC 4303 §3.1.2' });
+                        head.push(gre);
+                        tail = e2.tail;
+                        break;
+                    }
+                    case 'gre':
+                        head.push(outerIP); head.push(greLayer(c));
+                        break;
+                    case 'vxlan':
+                        head.push(outerIP);
+                        head.push({ name: 'UDP header (VXLAN, port 4789)', bytes: 8, ref: 'RFC 7348 §5' });
+                        head.push({ name: 'VXLAN header', bytes: 8, ref: 'RFC 7348 §5' });
+                        head.push({ name: 'Inner Ethernet header' + (c.vlan ? ' + 802.1Q tag' : ''), bytes: c.vlan ? 18 : 14, ref: 'RFC 7348 §5' });
+                        break;
+                    case 'wireguard':
+                        head.push(outerIP);
+                        head.push({ name: 'UDP header', bytes: 8, ref: 'WireGuard §5.4.6' });
+                        head.push({ name: 'WireGuard data header (type 1 + reserved 3 + receiver 4 + counter 8)', bytes: 16, ref: 'WireGuard §5.4.6' });
+                        tail = [
+                            { name: 'Zero padding to 16 bytes (capped at interface MTU)', bytes: 0, ref: 'WireGuard §5.4.6', pad: true },
+                            { name: 'Poly1305 authentication tag', bytes: 16, ref: 'WireGuard §5.4.6' }
+                        ];
+                        break;
+                    case 'none':
+                        break;
+                }
+                var layers = head.concat([inner]).concat(tail);
+                var total = 0;
+                layers.forEach(function (x) { total += x.bytes; });
+                return { layers: layers, total: total };
+            }
+
+            // Largest inner IP packet L such that build(L).total <= underlay MTU.
+            // ESP padding makes overhead non-constant, so search instead of subtracting a fixed number.
+            function maxInner(c) {
+                for (var L = c.mtu; L >= 0; L--) {
+                    if (build(L, c).total <= c.mtu) return L;
+                }
+                return -1;
+            }
+
+            function calc(raw) {
+                var n = normalize(raw);
+                var c = n.cfg;
+                if (n.errors.length) return { ok: false, errors: n.errors, notes: n.notes, cfg: c };
+                var L = maxInner(c);
+                if (L < 0) return { ok: false, errors: ['The encapsulation overhead is larger than the underlay MTU; nothing fits.'], notes: n.notes, cfg: c };
+                var b = build(L, c);
+                var next = build(L + 1, c);
+                // Overhead range across inner sizes (padding varies by up to block-1)
+                var minOv = Infinity, maxOv = 0;
+                for (var k = Math.max(0, L - 31); k <= L; k++) {
+                    var ov = build(k, c).total - k;
+                    if (ov < minOv) minOv = ov; if (ov > maxOv) maxOv = ov;
+                }
+                var rec = L - c.margin;
+                if (rec < 68) return { ok: false, errors: ['Inner MTU after the safety margin (' + rec + ') is below the IPv4 minimum of 68 bytes (RFC 791).'], notes: n.notes, cfg: c };
+                var warnings = [];
+                if (rec < 1280) warnings.push('Inner MTU ' + rec + ' is below 1280: IPv6 cannot run over this tunnel (RFC 8200 §5).');
+                var mss4 = rec - 40, mss6 = rec - 60;
+                if (mss4 > 1460) warnings.push('MSS ' + mss4 + ' is above 1460, the documented maximum of Cisco IOS ip tcp adjust-mss (500-1460); clamping is usually unnecessary on jumbo paths.');
+                if (mss4 < 500 && mss4 > 0) warnings.push('MSS ' + mss4 + ' is below 500, the documented minimum of Cisco IOS ip tcp adjust-mss.');
+                return {
+                    ok: true, cfg: c, notes: n.notes, warnings: warnings,
+                    underlayIp: c.mtu - 4 * c.mpls,
+                    maxInner: L, recMtu: rec,
+                    overhead: b.total - L, overheadMin: minOv, overheadMax: maxOv,
+                    layers: b.layers, total: b.total, nextTotal: next.total,
+                    mss4: mss4, mss6: mss6
+                };
+            }
+
+            function configs(r) {
+                var c = r.cfg, m = r.recMtu, s4 = r.mss4, s6 = r.mss6;
+                var v6ok = m >= 1280;
+                        var cisco = [], forti = [], junos = [], linux = [];
+                var underlayNote = c.mtu !== 1500;
+
+                // ---------- Cisco IOS / IOS XE ----------
+                if (underlayNote && c.enc !== 'none') cisco.push('! Underlay (WAN) interface carries ' + c.mtu + '-byte packets', 'interface GigabitEthernet0/0', ' ip mtu ' + (c.mtu - 4 * c.mpls), '!');
+                if (c.enc === 'vxlan') {
+                    cisco.push('! VXLAN: raise the underlay MTU instead of shrinking the overlay.',
+                        '! Each VTEP uplink needs IP MTU >= inner MTU + ' + r.overhead + ' bytes.',
+                        '! Overlay SVI / host-facing MTU that fits the current underlay:',
+                        'interface Vlan10', ' ip mtu ' + m);
+                    if (v6ok) cisco.push(' ipv6 mtu ' + m);
+                } else if (c.enc === 'wireguard') {
+                    cisco.push('! Cisco IOS / IOS XE has no WireGuard implementation.',
+                        '! If a Cisco router only forwards traffic towards a WireGuard peer,',
+                        '! clamp MSS on the LAN-facing interface:',
+                        'interface GigabitEthernet0/1', ' ip tcp adjust-mss ' + s4);
+                    if (v6ok) cisco.push(' ipv6 tcp adjust-mss ' + s6);
+                } else {
+                    var ifc = c.enc === 'ipsec' ? '! IPsec VTI (tunnel mode ipsec)' : (c.enc === 'greipsec' ? '! GRE tunnel with tunnel protection ipsec profile' : (c.enc === 'gre' ? '! GRE tunnel' : '! Plain interface'));
+                                var ifn = c.enc === 'none' ? 'GigabitEthernet0/0' : 'Tunnel0';
+                                cisco.push(ifc, 'interface ' + ifn, ' ip mtu ' + m, ' ip tcp adjust-mss ' + s4);
+                    if (v6ok) cisco.push(' ipv6 mtu ' + m, ' ipv6 tcp adjust-mss ' + s6);
+                    else cisco.push(' ! inner MTU < 1280: IPv6 not possible on this tunnel');
+                }
+
+                // ---------- FortiOS ----------
+                var fIf = c.enc === 'ipsec' ? 'vpn-hq' : (c.enc === 'none' ? 'wan1' : (c.enc === 'vxlan' ? 'vxlan1' : (c.enc === 'wireguard' ? 'port2' : 'gre-hq')));
+                if (underlayNote && c.enc !== 'none') {
+                    forti.push('config system interface', '    edit "wan1"', '        set mtu-override enable', '        set mtu ' + c.mtu, '    next', 'end');
+                }
+                if (c.enc === 'wireguard') {
+                    forti.push('# FortiOS has no native WireGuard; clamp MSS on the policy towards the WG router:');
+                } else if (c.enc === 'vxlan') {
+                    forti.push('# VXLAN on FortiOS: raise the underlay MTU (wan1 mtu >= ' + (m + r.overhead) + ') or lower the overlay:');
+                }
+                if (c.enc !== 'wireguard') {
+                    forti.push('config system interface', '    edit "' + fIf + '"', '        set mtu-override enable', '        set mtu ' + m);
+                    if (c.enc !== 'vxlan') forti.push('        set tcp-mss ' + s4);
+                    forti.push('    next', 'end');
+                }
+                forti.push('config firewall policy', '    edit 10', '        set tcp-mss-sender ' + s4, '        set tcp-mss-receiver ' + s4, '    next', 'end');
+
+                // ---------- Junos ----------
+                if (c.enc === 'ipsec') {
+                    junos.push('set interfaces st0 unit 0 family inet mtu ' + m);
+                    if (v6ok) junos.push('set interfaces st0 unit 0 family inet6 mtu ' + m);
+                    junos.push('set security flow tcp-mss ipsec-vpn mss ' + s4);
+                } else if (c.enc === 'gre' || c.enc === 'greipsec') {
+                    junos.push('set interfaces gr-0/0/0 unit 0 family inet mtu ' + m);
+                    if (v6ok) junos.push('set interfaces gr-0/0/0 unit 0 family inet6 mtu ' + m);
+                    if (c.enc === 'greipsec') {
+                        junos.push('# SRX: gre-out = GRE going into IPsec, gre-in = GRE coming out of IPsec',
+                            'set security flow tcp-mss gre-out mss ' + s4,
+                            'set security flow tcp-mss gre-in mss ' + s4);
+                    } else {
+                        junos.push('set interfaces gr-0/0/0 unit 0 family inet tcp-mss ' + s4);
+                        if (v6ok) junos.push('set interfaces gr-0/0/0 unit 0 family inet6 tcp-mss ' + s6);
+                    }
+                } else if (c.enc === 'vxlan') {
+                    junos.push('# VXLAN: physical (media) MTU includes the 14-byte Ethernet header',
+                        'set interfaces et-0/0/48 mtu ' + (c.mtu + 14),
+                        '# Overlay IRB MTU that fits the current underlay:',
+                        'set interfaces irb unit 10 family inet mtu ' + m);
+                } else if (c.enc === 'wireguard') {
+                    junos.push('# Junos has no WireGuard; clamp transit TCP on the SRX towards the WG peer:',
+                        'set security flow tcp-mss all-tcp mss ' + s4);
+                } else {
+                    junos.push('# Plain link: family MTU is the IP MTU, media MTU adds the L2 header',
+                        'set interfaces ge-0/0/0 unit 0 family inet mtu ' + m,
+                        'set interfaces ge-0/0/0 unit 0 family inet tcp-mss ' + s4);
+                }
+                if (underlayNote && c.enc !== 'none' && c.enc !== 'vxlan') junos.unshift('set interfaces ge-0/0/0 unit 0 family inet mtu ' + (c.mtu - 4 * c.mpls));
+
+                // ---------- Linux ----------
+                var lif = c.enc === 'wireguard' ? 'wg0' : (c.enc === 'vxlan' ? 'vxlan10' : (c.enc === 'none' ? 'eth0' : (c.enc === 'ipsec' ? 'vti0' : 'gre1')));
+                linux.push('ip link set dev ' + lif + ' mtu ' + m);
+                if (c.enc === 'wireguard') linux.push('# or in wg-quick: [Interface] MTU = ' + m);
+                linux.push('iptables  -t mangle -A FORWARD -o ' + lif + ' -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss ' + s4);
+                if (v6ok) linux.push('ip6tables -t mangle -A FORWARD -o ' + lif + ' -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss ' + s6);
+                return { cisco: cisco.join('\n'), forti: forti.join('\n'), junos: junos.join('\n'), linux: linux.join('\n') };
+            }
+
+            return { normalize: normalize, build: build, maxInner: maxInner, calc: calc, configs: configs, CIPHERS: CIPHERS, INTEG: INTEG };
+        })();
+        if (typeof module !== 'undefined') module.exports = MTU;
+
+    </script>
+    <script>
+        (function () {
+            var FIELDS = ['mtu', 'ip', 'mpls', 'enc', 'cipher', 'integ', 'icv', 'mode', 'natt', 'gkey', 'gseq', 'gcsum', 'vlan', 'margin'];
+            var CHECKS = { natt: 1, gkey: 1, gseq: 1, gcsum: 1, vlan: 1 };
+            var EXAMPLE = { mtu: '1500', ip: '4', mpls: '0', enc: 'greipsec', cipher: 'aes-cbc', integ: 'sha256', icv: '16', mode: 'transport', natt: '0', gkey: '0', gseq: '0', gcsum: '0', vlan: '0', margin: '0' };
+            var COLORS = { outer: '#3b82f6', esp: '#f59e0b', gre: '#a855f7', inner: '#22c55e', pad: '#ef4444', other: '#71717a' };
+            function $(id) { return document.getElementById(id); }
+            function esc(s) { return String(s).replace(/[&<>"']/g, function (ch) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]; }); }
+
+            function readForm() {
+                var o = {};
+                FIELDS.forEach(function (f) { var el = $(f); o[f] = CHECKS[f] ? (el.checked ? '1' : '0') : el.value; });
+                return o;
+            }
+            function writeForm(o) {
+                FIELDS.forEach(function (f) {
+                    if (o[f] === undefined) return;
+                    var el = $(f);
+                    if (CHECKS[f]) el.checked = o[f] === '1';
+                    else if (el.tagName === 'SELECT') { if (Array.prototype.some.call(el.options, function (op) { return op.value === o[f]; })) el.value = o[f]; }
+                    else el.value = o[f];
+                });
+            }
+            function syncVisibility() {
+                var enc = $('enc').value, aead = $('cipher').value === 'aes-gcm';
+                $('boxIpsec').style.display = (enc === 'ipsec' || enc === 'greipsec') ? '' : 'none';
+                $('boxGre').style.display = (enc === 'gre' || enc === 'greipsec') ? '' : 'none';
+                $('boxVxlan').style.display = enc === 'vxlan' ? '' : 'none';
+                $('grpMode').style.display = enc === 'greipsec' ? '' : 'none';
+                $('grpIcv').style.display = aead ? '' : 'none';
+                Array.prototype.forEach.call($('integ').options, function (op) { op.disabled = aead ? op.value !== 'none' : op.value === 'none'; });
+                if (aead) $('integ').value = 'none';
+                else if ($('integ').value === 'none') $('integ').value = 'sha256';
+            }
+            function colorFor(l) {
+                if (l.inner) return COLORS.inner;
+                if (l.pad) return COLORS.pad;
+                if (/^ESP|UDP header \(NAT/.test(l.name)) return COLORS.esp;
+                if (/^GRE|VXLAN|WireGuard|Poly1305|Inner Ethernet|UDP header/.test(l.name)) return COLORS.gre;
+                if (/IPv|MPLS/.test(l.name)) return COLORS.outer;
+                return COLORS.other;
+            }
+            function render() {
+                syncVisibility();
+                var o = readForm();
+                setToolParams(o);
+                var r = MTU.calc(o);
+                var msgs = [];
+                (r.errors || []).forEach(function (e) { msgs.push('<div class="msg err">' + esc(e) + '</div>'); });
+                (r.notes || []).forEach(function (e) { msgs.push('<div class="msg note">' + esc(e) + '</div>'); });
+                (r.warnings || []).forEach(function (e) { msgs.push('<div class="msg warn">' + esc(e) + '</div>'); });
+                $('msgs').innerHTML = msgs.join('');
+                $('results').style.display = r.ok ? '' : 'none';
+                if (!r.ok) return;
+                $('sMtu').textContent = r.recMtu;
+                $('sMtuSub').textContent = r.cfg.margin ? ('max fit ' + r.maxInner + ', minus ' + r.cfg.margin + ' margin') : ('largest packet that fits ' + r.cfg.mtu);
+                $('sOvh').textContent = r.overhead + ' B';
+                $('sOvhSub').textContent = r.overheadMin === r.overheadMax ? 'constant for every packet size' : ('varies ' + r.overheadMin + '-' + r.overheadMax + ' B with ESP padding');
+                $('sMss4').textContent = r.mss4 > 0 ? r.mss4 : 'n/a';
+                $('sMss6').textContent = r.recMtu >= 1280 ? r.mss6 : 'n/a (<1280)';
+                var rows = r.layers.map(function (l) {
+                    return '<tr class="' + (l.inner ? 'inner' : '') + '"><td>' + esc(l.name) + '</td><td class="num">' + esc(l.bytes) + '</td><td>' + esc(l.ref || '') + '</td></tr>';
+                });
+                rows.push('<tr class="total"><td>Total on the underlay (must be ≤ ' + esc(r.cfg.mtu) + ')</td><td class="num">' + esc(r.total) + '</td><td></td></tr>');
+                $('ovhBody').innerHTML = rows.join('');
+                $('pktBar').innerHTML = r.layers.filter(function (l) { return l.bytes > 0; }).map(function (l) {
+                    var w = Math.max(0.6, 100 * l.bytes / r.total);
+                    return '<span title="' + esc(l.name + ': ' + l.bytes + ' B') + '" style="width:' + w.toFixed(2) + '%;background:' + colorFor(l) + ';"></span>';
+                }).join('');
+                $('edgeNote').textContent = 'A ' + (r.maxInner + 1) + '-byte inner packet would become ' + r.nextTotal + ' bytes (' + (r.nextTotal - r.cfg.mtu) + ' over the ' + r.cfg.mtu + '-byte underlay), so ' + r.maxInner + ' is the exact limit.';
+                var cf = MTU.configs(r);
+                $('cfgCisco').textContent = cf.cisco;
+                $('cfgForti').textContent = cf.forti;
+                $('cfgJunos').textContent = cf.junos;
+                $('cfgLinux').textContent = cf.linux;
+            }
+            var debounced = debounce(render, 200);
+            window.resetExample = function () { writeForm(EXAMPLE); render(); };
+            document.addEventListener('DOMContentLoaded', function () {
+                var p = getToolParams(), init = {};
+                Object.keys(EXAMPLE).forEach(function (k) { init[k] = p[k] !== undefined ? p[k] : EXAMPLE[k]; });
+                writeForm(init);
+                FIELDS.forEach(function (f) {
+                    var el = $(f);
+                    el.addEventListener(el.tagName === 'INPUT' && !CHECKS[f] ? 'input' : 'change', CHECKS[f] || el.tagName === 'SELECT' ? render : debounced);
+                });
+                Array.prototype.forEach.call(document.querySelectorAll('[data-mtu]'), function (b) {
+                    b.addEventListener('click', function () { $('mtu').value = b.getAttribute('data-mtu'); render(); });
+                });
+                render();
+            });
+        })();
+    </script>
+    <script>
+        document.querySelectorAll('.faq-question').forEach(function(btn) {
+            btn.addEventListener('click', function() { btn.parentElement.classList.toggle('open'); });
+        });
+    </script>
+    <script src="/js/nav.js?v=20261122" defer></script>
+</body>
+</html>

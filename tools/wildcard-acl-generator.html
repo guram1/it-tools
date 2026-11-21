@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-FH74PGMNYD"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-FH74PGMNYD');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wildcard Mask &amp; ACL Generator: IOS, Junos, FortiOS | OPS-BOX</title>
+    <meta name="description" content="Free wildcard mask and ACL generator. Turn IPv4 prefixes into Cisco IOS ACLs and prefix-lists (ge/le), Junos prefix-lists and filters, and FortiOS addrgrp.">
+    <meta name="keywords" content="wildcard mask calculator, ACL generator, Cisco access-list, ip prefix-list ge le, Junos prefix-list, firewall filter, FortiOS address group, inverse mask">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://ops-box.net/tools/wildcard-acl-generator">
+
+    <meta property="og:title" content="Wildcard Mask &amp; ACL Generator for Cisco, Junos and FortiOS">
+    <meta property="og:description" content="Turn IPv4 prefixes into wildcard masks, Cisco ACLs and prefix-lists, Junos prefix-lists and filters, and FortiOS address groups.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ops-box.net/tools/wildcard-acl-generator">
+    <meta property="og:image" content="https://ops-box.net/og-image.png">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Wildcard Mask &amp; ACL Generator for Cisco, Junos and FortiOS">
+    <meta name="twitter:description" content="IPv4 prefixes to wildcard masks, ACLs, prefix-lists, Junos filters and FortiOS address groups.">
+    <meta name="twitter:image" content="https://ops-box.net/og-image.png">
+
+    <link rel="stylesheet" href="../css/style.css?v=20261122">
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Wildcard Mask & ACL Generator",
+        "url": "https://ops-box.net/tools/wildcard-acl-generator",
+        "description": "Convert IPv4 prefixes to wildcard masks and generate Cisco IOS ACLs and prefix-lists, Junos prefix-lists and firewall filters, and FortiOS address objects and groups.",
+        "applicationCategory": "NetworkingApplication",
+        "operatingSystem": "Any",
+        "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {
+                "@type": "Question",
+                "name": "How do I calculate a wildcard mask from a subnet mask?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Subtract each octet of the subnet mask from 255. 255.255.255.0 becomes 0.0.0.255, 255.255.252.0 becomes 0.0.3.255 and 255.255.255.192 becomes 0.0.0.63. Bitwise it is the inverse (NOT) of the mask: a 0 bit in the wildcard means the address bit must match, a 1 bit means it is ignored."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Does Aggregate first change what the ACL matches?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Not for packet filtering. The aggregated list covers exactly the same addresses as the input, so an ACL, a Junos firewall filter or a FortiOS address group built from it matches the same packets with fewer entries. For route filtering it does change behaviour: a prefix-list or route-filter matches route prefixes and lengths, so 10.0.0.0/23 does not match the routes 10.0.0.0/24 and 10.0.1.0/24 unless you also set le 24."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "What do ge and le mean in an ip prefix-list?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Without ge or le an entry matches only that exact prefix and length. ge sets the shortest accepted length and le the longest; ge alone accepts lengths up to /32. Cisco IOS requires prefix length < ge <= le <= 32, so the tool omits a ge that is not longer than the prefix and flags an le that is shorter than it. On Junos the same ranges are written as route-filter match types: exact, upto, orlonger or prefix-length-range."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Why can't I use a wildcard mask on a FortiGate address object?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "set subnet in config firewall address takes an address and a normal subnet mask (or /len), not a Cisco wildcard. Typing 10.1.1.0 0.0.0.255 there does not create the /24 you meant. FortiOS has a separate address type wildcard for real wildcard matching; the generator always writes subnet masks for ipmask objects."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Is my prefix list sent to a server?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "No. Parsing, aggregation and config generation run in your browser with plain JavaScript. The share link stores the input in the URL query string, so only share it with people who may see those prefixes."
+                }
+            }
+        ]
+    }
+    </script>
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1924789684268835" crossorigin="anonymous"></script>
+    <style>
+        .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin: 1rem 0; }
+        .stat-card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem 1rem; }
+        .stat-label { color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        .stat-val { color: var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 1.2rem; font-weight: 600; margin-top: 0.25rem; }
+        .msg-box { margin-top: 1rem; padding: 0.75rem 1rem; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; white-space: pre-wrap; display: none; }
+        .msg-err { color: #ef4444; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); }
+        .msg-warn { color: #f59e0b; background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3); }
+        .wc-table-wrap { overflow-x: auto; margin-top: 0.5rem; }
+        .wc-table { width: 100%; border-collapse: collapse; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; }
+        .wc-table th, .wc-table td { text-align: left; padding: 0.45rem 0.75rem; border-bottom: 1px solid var(--border); white-space: nowrap; }
+        .wc-table th { color: var(--text-muted); font-weight: 500; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        .wc-table td { color: var(--text-primary); }
+        .out-head { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; margin-top: 1.25rem; }
+        .out-head .form-label { margin-bottom: 0; }
+        .out-head .btn { padding: 0.35rem 0.8rem; font-size: 0.8rem; }
+        .out-note { color: var(--text-muted); font-size: 0.8rem; margin-top: 0.35rem; }
+        .vendor-h { color: var(--text-primary); font-size: 1.05rem; margin-top: 1.75rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+        .opt-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem; }
+        @media (max-width: 600px) { .stat-row { grid-template-columns: 1fr; } }
+    </style>
+    <link rel="icon" href="/favicon.ico" sizes="48x48">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="preload" href="/fonts/Outfit-latin.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/css/base.css?v=20261122">
+    <script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://ops-box.net/"}, {"@type": "ListItem", "position": 2, "name": "Wildcard Mask & ACL Generator", "item": "https://ops-box.net/tools/wildcard-acl-generator"}]}</script>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <a href="/" class="logo" aria-label="OPS-BOX home"><span class="logo-icon">⚡</span><span class="logo-text">OPS<span>-BOX</span></span></a>
+            <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Open menu">☰</button>
+            <nav class="header-nav" id="site-nav" aria-label="Main">
+                <a href="/#network">Network</a>
+                <a href="/#security">Security</a>
+                <a href="/#developer">Developer</a>
+                <a href="/tools/subnet-calculator.html">Subnet Calculator</a>
+                <a href="/tools/mac-vendor-lookup.html">MAC Lookup</a>
+                <a href="/about.html">About</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <nav class="breadcrumb">
+            <a href="/">Home</a><span>›</span><span class="breadcrumb-current">Wildcard Mask &amp; ACL Generator</span>
+        </nav>
+
+        <div class="tool-container">
+            <div class="tool-header">
+                <h1 class="tool-title">Wildcard Mask &amp; ACL Generator</h1>
+                <p class="tool-description">Paste IPv4 prefixes and get wildcard masks plus ready-to-paste config: Cisco IOS standard/extended named ACLs and <code>ip prefix-list</code> (with ge/le), Junos prefix-lists, firewall filter and routing policy, and FortiOS address objects with an address group.</p>
+            </div>
+            <div class="tool-content">
+                <div class="form-group">
+                    <label class="form-label" for="pfxInput">Prefixes, one per line: <code>10.0.0.0/24</code>, <code>10.0.0.0 255.255.255.0</code>, <code>10.0.0.0 0.0.0.255</code>, <code>host 10.1.1.1</code>, <code>any</code>. Text after <code>#</code> or <code>!</code> is ignored.</label>
+                    <textarea id="pfxInput" class="form-input" rows="8" spellcheck="false" style="font-family:'JetBrains Mono',monospace;"></textarea>
+                </div>
+                <div class="opt-row">
+                    <div class="form-group">
+                        <label class="form-label" for="optName">List / object name</label>
+                        <input id="optName" class="form-input" type="text" maxlength="60" value="MGMT-NETS">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="optAction">Action</label>
+                        <select id="optAction" class="form-select"><option value="permit">permit / accept</option><option value="deny">deny / discard</option></select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="optDir">Match on (ext. ACL, Junos filter)</label>
+                        <select id="optDir" class="form-select"><option value="src">source address</option><option value="dst">destination address</option></select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="optStart">Sequence start</label>
+                        <input id="optStart" class="form-input" type="number" min="1" value="10">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="optStep">Sequence step</label>
+                        <input id="optStep" class="form-input" type="number" min="1" value="10">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="optGe">Prefix-list ge</label>
+                        <input id="optGe" class="form-input" type="number" min="1" max="32" placeholder="none">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="optLe">Prefix-list le</label>
+                        <input id="optLe" class="form-input" type="number" min="1" max="32" placeholder="none">
+                    </div>
+                </div>
+                <div class="checkbox-group" style="margin-bottom:1rem;">
+                    <label class="checkbox-label"><input type="checkbox" id="optAgg" checked> Aggregate first (collapse overlapping/adjacent prefixes)</label>
+                    <label class="checkbox-label"><input type="checkbox" id="optCatch"> Append catch-all entry with the opposite action</label>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="copyShareLink()" title="Copy a link that reopens this input">🔗 Copy link</button>
+                    <button class="btn btn-secondary" onclick="loadSample()">Load sample</button>
+                    <button class="btn btn-secondary" onclick="document.getElementById('pfxInput').value='';run();">Clear</button>
+                </div>
+
+                <div id="errBox" class="msg-box msg-err"></div>
+                <div id="warnBox" class="msg-box msg-warn"></div>
+                <div id="statsBox" class="stat-row"></div>
+
+                <label class="form-label">Prefix → subnet mask → wildcard mask</label>
+                <div class="wc-table-wrap"><table class="wc-table"><thead><tr><th>CIDR</th><th>Subnet mask</th><th>Wildcard</th><th>Addresses</th></tr></thead><tbody id="wcBody"></tbody></table></div>
+
+                <h2 class="vendor-h">Cisco IOS / IOS XE</h2>
+                <div class="out-head"><label class="form-label">Standard named ACL</label><button class="btn btn-secondary" onclick="copyToClipboard('outStd')">Copy</button></div>
+                <div class="bulk-output"><pre id="outStd"></pre></div>
+                <div class="out-head"><label class="form-label">Extended named ACL (protocol <code>ip</code>)</label><button class="btn btn-secondary" onclick="copyToClipboard('outExt')">Copy</button></div>
+                <div class="bulk-output"><pre id="outExt"></pre></div>
+                <div class="out-head"><label class="form-label">ip prefix-list</label><button class="btn btn-secondary" onclick="copyToClipboard('outPl')">Copy</button></div>
+                <div class="bulk-output"><pre id="outPl"></pre></div>
+                <p class="out-note">Every ACL and prefix-list ends with an implicit deny. Apply with e.g. <code>ip access-group NAME_EXT in</code>, <code>access-class NAME in</code> (VTY) or <code>neighbor x.x.x.x prefix-list NAME in</code>.</p>
+
+                <h2 class="vendor-h">Juniper Junos (set format)</h2>
+                <div class="out-head"><label class="form-label">policy-options prefix-list</label><button class="btn btn-secondary" onclick="copyToClipboard('outJpl')">Copy</button></div>
+                <div class="bulk-output"><pre id="outJpl"></pre></div>
+                <div class="out-head"><label class="form-label">Firewall filter term (family inet)</label><button class="btn btn-secondary" onclick="copyToClipboard('outJf')">Copy</button></div>
+                <div class="bulk-output"><pre id="outJf"></pre></div>
+                <div class="out-head"><label class="form-label">Routing policy (route-filter when ge/le is set)</label><button class="btn btn-secondary" onclick="copyToClipboard('outJp')">Copy</button></div>
+                <div class="bulk-output"><pre id="outJp"></pre></div>
+                <p class="out-note">A firewall filter discards anything that matches no term. Apply with <code>set interfaces &lt;ifl&gt; family inet filter input NAME-FILTER</code>. A <code>prefix-list</code> in a policy matches routes exactly; ge/le are translated to <code>route-filter</code> match types.</p>
+
+                <h2 class="vendor-h">Fortinet FortiOS</h2>
+                <div class="out-head"><label class="form-label">config firewall address + addrgrp</label><button class="btn btn-secondary" onclick="copyToClipboard('outFg')">Copy</button></div>
+                <div class="bulk-output"><pre id="outFg"></pre></div>
+                <p class="out-note">FortiOS address objects carry no action: reference the group as <code>srcaddr</code>/<code>dstaddr</code> in a firewall policy. <code>set member</code> replaces the group's member list; use <code>append member</code> to add to an existing group.</p>
+
+                <h2 class="vendor-h">IP + mask / wildcard converter</h2>
+                <div class="form-group">
+                    <label class="form-label" for="cvInput">Enter <code>IP/len</code>, <code>IP mask</code>, <code>IP wildcard</code>, <code>/len</code>, a bare mask or a bare wildcard</label>
+                    <input id="cvInput" class="form-input" type="text" spellcheck="false" value="172.16.45.130 255.255.255.192">
+                </div>
+                <div id="cvErr" class="msg-box msg-err"></div>
+                <div class="wc-table-wrap"><table class="wc-table"><tbody id="cvBody"></tbody></table></div>
+                <div class="btn-group" style="margin-top:0.75rem;"><button class="btn btn-secondary" onclick="copyToClipboard('cvText')">Copy result</button></div>
+                <pre id="cvText" style="display:none;"></pre>
+            </div>
+        </div>
+
+        <section class="seo-content">
+            <h2>What a wildcard mask is and why vendors differ</h2>
+            <p>A <strong>wildcard mask</strong> (inverse mask) tells a Cisco ACL which address bits to compare. A <code>0</code> bit means "must match", a <code>1</code> bit means "don't care". For a contiguous prefix it is simply the bitwise NOT of the subnet mask: <code>/24</code> = mask <code>255.255.255.0</code> = wildcard <code>0.0.0.255</code>; <code>/22</code> = <code>255.255.252.0</code> = <code>0.0.3.255</code>. IOS also has two shorthands: <code>any</code> stands for <code>0.0.0.0 255.255.255.255</code> and <code>host A.B.C.D</code> for <code>A.B.C.D 0.0.0.0</code>. The generator emits those forms for <code>/0</code> and <code>/32</code>.</p>
+            <p>Other platforms do not use wildcards for the same job. Cisco <code>ip prefix-list</code> and Junos <code>prefix-list</code> take <code>prefix/length</code>. FortiOS <code>config firewall address</code> takes an address and a normal subnet mask. One prefix list therefore has to be written three ways, and getting that wrong by hand is how most ACL outages start. This page writes all of them from one input.</p>
+
+            <h2>How the generator works</h2>
+            <ol style="color:var(--text-secondary);margin-left:1.5rem;line-height:1.8;">
+                <li><strong>Parse.</strong> Each line can be <code>CIDR</code>, <code>IP mask</code>, <code>IP wildcard</code>, a bare IP, <code>host IP</code> or <code>any</code>. Masks and wildcards are told apart by bit pattern: ones from the left make a subnet mask, ones from the right make a wildcard. <code>0.0.0.0</code> and <code>255.255.255.255</code> are valid as both, so they are resolved Cisco-style: after <code>0.0.0.0</code> they mean <code>any</code>, after any other address they mean a host. If host bits are set (<code>10.1.2.3/24</code>), the entry is normalised to <code>10.1.2.0/24</code> and a warning is shown.</li>
+                <li><strong>De-duplicate, optionally aggregate.</strong> Exact duplicates are always dropped. With <em>Aggregate first</em> on, the prefixes are converted to numeric ranges, merged where they overlap or touch, and split back into the minimal set of aligned CIDR blocks. Without it, the original order is kept and any prefix that sits inside another one is reported as redundant.</li>
+                <li><strong>Generate.</strong> Sequence numbers start at your value and increase by your step. The same numbers are used for the ACL and the prefix-list, so entries line up when you compare them.</li>
+            </ol>
+
+            <h2>Worked example</h2>
+            <p>The prefilled sample contains seven lines. <code>10.10.0.0/24</code>, <code>10.10.1.0/24</code> and <code>10.10.2.0/23</code> together are exactly <code>10.10.0.0</code>–<code>10.10.3.255</code>, which is one aligned <code>/22</code>. <code>10.10.1.128/25</code> is already inside <code>10.10.1.0/24</code>. <code>198.51.100.0 255.255.255.128</code> (mask form) and <code>198.51.100.128 0.0.0.127</code> (wildcard form) are the two halves of <code>198.51.100.0/24</code>. With aggregation on, the output is three entries:</p>
+            <pre style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;padding:0.75rem 1rem;overflow-x:auto;font-size:0.85rem;">ip access-list standard MGMT-NETS
+ 10 permit 10.10.0.0 0.0.3.255
+ 20 permit host 192.0.2.10
+ 30 permit 198.51.100.0 0.0.0.255</pre>
+            <p>The Junos filter references the list with <code>from source-prefix-list MGMT-NETS</code>. FortiOS gets three address objects (<code>set subnet 10.10.0.0 255.255.252.0</code> and so on) and one <code>addrgrp</code>. Seven lines of intent became three entries on each platform. Every original address is still matched, and no extra address is.</p>
+
+            <h2>Vendor caveats worth knowing</h2>
+            <ul>
+                <li><strong>Cisco implicit deny.</strong> Named ACLs and prefix-lists both end in an implicit deny. A list made only of <code>deny</code> lines blocks everything. Tick <em>Append catch-all</em> to add <code>permit any</code>, <code>permit ip any any</code> or <code>permit 0.0.0.0/0 le 32</code> as the last line.</li>
+                <li><strong>Cisco sequence numbers.</strong> Named ACL entries can be numbered up to 2147483647. If you omit the numbers, IOS starts at 10 and steps by 10. Prefix-list <code>seq</code> runs from 1 to 4294967294 and defaults to 5, stepping by 5. Leave gaps so you can insert entries later. ACLs can be renumbered with <code>ip access-list resequence</code>.</li>
+                <li><strong>Prefix-list ge/le rules.</strong> IOS requires <em>len &lt; ge &le; le &le; 32</em>. With <code>ge</code> alone the upper bound is /32. The tool applies your ge/le to every prefix: a <code>ge</code> that is not longer than a given prefix is rewritten to the equivalent range, and an <code>le</code> shorter than the prefix is reported and the entry is written as an exact match.</li>
+                <li><strong>Junos prefix-lists match exactly in policy.</strong> In a <code>policy-statement</code>, <code>from prefix-list</code> only matches routes that are identical to a list entry. For length ranges the generator switches to <code>route-filter</code> with <code>exact</code>, <code>upto /N</code>, <code>orlonger</code> or <code>prefix-length-range /A-/B</code>. In a firewall filter, <code>source-prefix-list</code> matches any packet address inside the listed prefixes, which is what you want for an ACL. Juniper documents a limit of 85,325 prefixes per prefix-list.</li>
+                <li><strong>Junos implicit discard.</strong> A packet that matches no term in a firewall filter is discarded. A <code>discard</code> term without a later <code>then accept</code> term therefore drops all traffic on that interface, including routing-protocol traffic if you apply the filter to <code>lo0</code>.</li>
+                <li><strong>FortiOS objects have no action.</strong> Permit or deny lives in <code>config firewall policy</code>. Address and address-group names can be up to 79 characters on FortiOS 7.4, and generated object names are truncated to fit. <code>set member</code> replaces the whole member list of an existing group; use <code>append member</code> to add to it.</li>
+            </ul>
+
+            <h2>Common mistakes this tool catches</h2>
+            <ul>
+                <li><strong>A subnet mask where a wildcard belongs.</strong> In an IOS ACL, <code>permit 10.0.0.0 255.255.255.0</code> does not mean 10.0.0.0/24. Read as a wildcard it says "ignore the first three octets, the last octet must be 0", so it matches every <code>x.y.z.0</code> address. Paste such a line here and the tool reads <code>255.255.255.0</code> as a subnet mask and writes the correct wildcard.</li>
+                <li><strong>A wildcard where a subnet mask belongs.</strong> The reverse happens on FortiGate: <code>set subnet 10.1.1.0 0.0.0.255</code> does not create the /24 you meant. The FortiOS output always uses real masks.</li>
+                <li><strong>Discontiguous wildcards.</strong> IOS ACLs accept wildcards such as <code>0.0.254.255</code>, which match a bit pattern rather than a prefix. They cannot be expressed as CIDR, so the list input rejects them. The converter below the outputs explains them and counts the addresses they match.</li>
+                <li><strong>Aggregating a route filter.</strong> Collapsing <code>10.0.0.0/24</code> and <code>10.0.1.0/24</code> into <code>10.0.0.0/23</code> is safe for packet ACLs. In a BGP prefix-list it stops matching the two /24 routes unless you add <code>le 24</code>. The tool warns whenever aggregation changed the set.</li>
+                <li><strong>/31 and /32 math.</strong> The converter treats a /31 as two usable addresses (RFC 3021 point-to-point links) and a /32 as a single host.</li>
+            </ul>
+            <p>Always review generated config before you apply it. Check with <code>show ip access-lists NAME</code> / <code>show ip prefix-list NAME</code> on IOS, <code>show | compare</code> followed by <code>commit check</code> or <code>commit confirmed</code> on Junos, and <code>show firewall addrgrp NAME</code> on FortiOS. Apply ACLs to management planes and routing sessions in a change window, and keep a rollback ready.</p>
+
+            <div class="faq">
+                <h3>Frequently Asked Questions</h3>
+                <div class="faq-item"><button class="faq-question">How do I calculate a wildcard mask from a subnet mask?</button><div class="faq-answer">Subtract each octet of the subnet mask from 255. 255.255.255.0 becomes 0.0.0.255, 255.255.252.0 becomes 0.0.3.255 and 255.255.255.192 becomes 0.0.0.63. Bitwise it is the inverse (NOT) of the mask: a 0 bit in the wildcard means the address bit must match, a 1 bit means it is ignored.</div></div>
+                <div class="faq-item"><button class="faq-question">Does Aggregate first change what the ACL matches?</button><div class="faq-answer">Not for packet filtering. The aggregated list covers exactly the same addresses as the input, so an ACL, a Junos firewall filter or a FortiOS address group built from it matches the same packets with fewer entries. For route filtering it does change behaviour: a prefix-list or route-filter matches route prefixes and lengths, so 10.0.0.0/23 does not match the routes 10.0.0.0/24 and 10.0.1.0/24 unless you also set le 24.</div></div>
+                <div class="faq-item"><button class="faq-question">What do ge and le mean in an ip prefix-list?</button><div class="faq-answer">Without ge or le an entry matches only that exact prefix and length. ge sets the shortest accepted length and le the longest; ge alone accepts lengths up to /32. Cisco IOS requires prefix length &lt; ge &lt;= le &lt;= 32, so the tool omits a ge that is not longer than the prefix and flags an le that is shorter than it. On Junos the same ranges are written as route-filter match types: exact, upto, orlonger or prefix-length-range.</div></div>
+                <div class="faq-item"><button class="faq-question">Why can't I use a wildcard mask on a FortiGate address object?</button><div class="faq-answer">set subnet in config firewall address takes an address and a normal subnet mask (or /len), not a Cisco wildcard. Typing 10.1.1.0 0.0.0.255 there does not create the /24 you meant. FortiOS has a separate address type wildcard for real wildcard matching; the generator always writes subnet masks for ipmask objects.</div></div>
+                <div class="faq-item"><button class="faq-question">Is my prefix list sent to a server?</button><div class="faq-answer">No. Parsing, aggregation and config generation run in your browser with plain JavaScript. The share link stores the input in the URL query string, so only share it with people who may see those prefixes.</div></div>
+            </div>
+        </section>
+
+        <section class="related-tools">
+            <h2>Related Tools</h2>
+            <div class="related-grid">
+                <a href="/tools/cidr-aggregator.html" class="related-card"><h3>CIDR Aggregator</h3><p>Collapse IP lists and ranges into minimal CIDRs.</p></a>
+                <a href="/tools/subnet-calculator.html" class="related-card"><h3>Subnet Calculator</h3><p>Plan subnets with VLSM and CIDR.</p></a>
+                <a href="/tools/bgp-asn-lookup.html" class="related-card"><h3>BGP ASN Lookup</h3><p>Announced prefixes and neighbours for any ASN.</p></a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section"><h3>Network Tools</h3><a href="/tools/subnet-calculator.html">Subnet Calculator</a><a href="/tools/cidr-aggregator.html">CIDR Aggregator</a><a href="/tools/wildcard-acl-generator.html">Wildcard Mask &amp; ACL Generator</a><a href="/tools/mac-vendor-lookup.html">MAC Vendor Lookup</a></div>
+            <div class="footer-section"><h3>Security Tools</h3><a href="/tools/password-generator.html">Password Generator</a><a href="/tools/hash-generator.html">Hash Generator</a><a href="/tools/jwt-decoder.html">JWT Decoder</a></div>
+            <div class="footer-section"><h3>Developer Tools</h3><a href="/tools/json-formatter.html">JSON Formatter</a><a href="/tools/regex-tester.html">Regex Tester</a><a href="/tools/cron-explainer.html">Cron Explainer</a></div>
+        </div>
+        <div class="footer-bottom"><p>&copy; 2026 OPS-BOX.net — Free IT utilities for professionals. | <a href="/about.html" style="color:inherit;text-decoration:underline;">About</a> · <a href="/contact.html" style="color:inherit;text-decoration:underline;">Contact</a> · <a href="/terms-of-service.html" style="color:inherit;text-decoration:underline;">Terms</a> · <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p></div>
+    </footer>
+
+    <div class="toast" id="toast">Copied to clipboard!</div>
+
+    <script src="../js/common.js?v=20261122"></script>
+    <script>
+        // ---- core logic (pure functions, no DOM) ----
+        const TWO32 = 4294967296;
+        function ipToInt(s) {
+            const parts = String(s).trim().split('.');
+            if (parts.length !== 4) throw new Error('Not an IPv4 address: ' + s);
+            let n = 0;
+            for (const p of parts) {
+                if (!/^\d{1,3}$/.test(p)) throw new Error('Bad octet in: ' + s);
+                const o = Number(p);
+                if (o > 255 || (p.length > 1 && p[0] === '0')) throw new Error('Bad octet in: ' + s);
+                n = n * 256 + o;
+            }
+            return n;
+        }
+        function intToIp(n) { return [(n >>> 24) & 255, (n >>> 16) & 255, (n >>> 8) & 255, n & 255].join('.'); }
+        function lenToMask(len) { return len === 0 ? 0 : (0xFFFFFFFF << (32 - len)) >>> 0; }
+        function maskToLen(m) {
+            // returns prefix length for a contiguous subnet mask, -1 otherwise
+            for (let len = 0; len <= 32; len++) if (lenToMask(len) === m) return len;
+            return -1;
+        }
+        function wildcardToLen(w) { return maskToLen((~w) >>> 0); }
+        function popcount(n) { let c = 0; while (n) { c += n & 1; n >>>= 1; } return c; }
+
+        // Interpret a dotted-quad that follows an address: subnet mask or wildcard.
+        // 0.0.0.0 and 255.255.255.255 are both valid masks and wildcards; resolve by address
+        // (Cisco convention: "0.0.0.0 255.255.255.255" = any, "a.b.c.d 0.0.0.0" = host).
+        function classifyMask(ip, m) {
+            if (m === 0 || m === 0xFFFFFFFF) {
+                if (ip === 0) return { len: 0, kind: 'any', contiguous: true };
+                return { len: 32, kind: m === 0 ? 'wildcard' : 'mask', contiguous: true };
+            }
+            const ml = maskToLen(m);
+            if (ml >= 0) return { len: ml, kind: 'mask', contiguous: true };
+            const wl = wildcardToLen(m);
+            if (wl >= 0) return { len: wl, kind: 'wildcard', contiguous: true };
+            return { len: -1, kind: 'discontiguous', contiguous: false };
+        }
+
+        // Parse one list entry -> {net, len, input, fixed}
+        // Accepts: a.b.c.d/len, a.b.c.d/mask|wildcard, "a.b.c.d mask|wildcard", a.b.c.d, host a.b.c.d, any
+        function parseEntry(raw) {
+            const line = String(raw).split(/[#!]/)[0].trim();
+            if (!line) return null;
+            let ip, len;
+            const lower = line.toLowerCase();
+            if (lower === 'any') { ip = 0; len = 0; }
+            else {
+                let m = lower.match(/^host\s+(\S+)$/);
+                if (m) { ip = ipToInt(m[1]); len = 32; }
+                else if ((m = line.match(/^(\S+?)\s*\/\s*(\S+)$/))) {
+                    ip = ipToInt(m[1]);
+                    if (/^\d{1,2}$/.test(m[2])) {
+                        len = Number(m[2]);
+                        if (len > 32) throw new Error('Prefix length > 32: ' + line);
+                    } else {
+                        const c = classifyMask(ip, ipToInt(m[2]));
+                        if (!c.contiguous) throw new Error('Discontiguous mask cannot be a prefix: ' + line);
+                        len = c.len;
+                    }
+                } else if ((m = line.match(/^(\S+)\s+(\S+)$/))) {
+                    ip = ipToInt(m[1]);
+                    const c = classifyMask(ip, ipToInt(m[2]));
+                    if (!c.contiguous) throw new Error('Discontiguous wildcard cannot be a prefix: ' + line);
+                    len = c.len;
+                } else if (/^[\d.]+$/.test(line)) { ip = ipToInt(line); len = 32; }
+                else throw new Error('Unrecognised entry: ' + line);
+            }
+            const net = (ip & lenToMask(len)) >>> 0;
+            return { net, len, input: line, fixed: net !== ip };
+        }
+
+        function cidrStr(p) { return intToIp(p.net) + '/' + p.len; }
+        function sizeOf(len) { return Math.pow(2, 32 - len); }
+
+        // Remove exact duplicates, keep first-seen order; report prefixes covered by another entry.
+        function dedupe(list) {
+            const seen = new Set(), out = [];
+            for (const p of list) { const k = cidrStr(p); if (!seen.has(k)) { seen.add(k); out.push(p); } }
+            return out;
+        }
+        function findCovered(list) {
+            const res = [];
+            for (let i = 0; i < list.length; i++) {
+                const a = list[i];
+                for (let j = 0; j < list.length; j++) {
+                    if (i === j) continue;
+                    const b = list[j];
+                    if (b.len < a.len && ((a.net & lenToMask(b.len)) >>> 0) === b.net) { res.push([cidrStr(a), cidrStr(b)]); break; }
+                }
+            }
+            return res;
+        }
+
+        // Minimal exact CIDR cover of the union of the input prefixes.
+        function aggregate(list) {
+            if (!list.length) return [];
+            const r = list.map(p => [p.net, p.net + sizeOf(p.len) - 1]).sort((x, y) => x[0] - y[0] || y[1] - x[1]);
+            const merged = [r[0].slice()];
+            for (let i = 1; i < r.length; i++) {
+                const top = merged[merged.length - 1];
+                if (r[i][0] <= top[1] + 1) top[1] = Math.max(top[1], r[i][1]);
+                else merged.push(r[i].slice());
+            }
+            const out = [];
+            for (const [s0, e] of merged) {
+                let s = s0;
+                while (s <= e) {
+                    let len = 32;
+                    // grow block while aligned and inside the range
+                    while (len > 0) {
+                        const bigger = sizeOf(len - 1);
+                        if (s % bigger !== 0 || s + bigger - 1 > e) break;
+                        len--;
+                    }
+                    out.push({ net: s, len });
+                    s += sizeOf(len);
+                }
+            }
+            return out;
+        }
+
+        // Effective prefix-length range for ge/le applied to a prefix of length len.
+        // Cisco rule: len < ge <= le <= 32. ge <= len is equivalent to no ge; le == len (no ge) is exact.
+        function lenRange(len, ge, le) {
+            let lo = len, hi = len, warn = null;
+            const g = ge === '' || ge == null ? null : Number(ge);
+            const l = le === '' || le == null ? null : Number(le);
+            if (g !== null) { lo = Math.max(len, g); hi = 32; }
+            if (l !== null) hi = l;
+            if (l !== null && l < len) return { error: 'le ' + l + ' is shorter than /' + len };
+            if (lo > hi) return { error: 'ge ' + lo + ' > le ' + hi };
+            if (g !== null && g <= len) warn = 'ge ' + g + ' is not longer than /' + len + ' (IOS rejects it); written as the equivalent range /' + lo + '-/' + hi;
+            return { lo, hi, warn };
+        }
+        function ciscoGeLe(len, ge, le) {
+            const r = lenRange(len, ge, le);
+            if (r.error) return r;
+            let s = '';
+            if (r.lo > len) s += ' ge ' + r.lo;
+            if (r.hi > len && !(r.lo > len && r.hi === 32)) s += ' le ' + r.hi;
+            return { text: s, warn: r.warn };
+        }
+        function junosMatchType(len, ge, le) {
+            const r = lenRange(len, ge, le);
+            if (r.error) return r;
+            if (r.lo === len && r.hi === len) return { text: 'exact' };
+            if (r.lo === len && r.hi === 32) return { text: 'orlonger' };
+            if (r.lo === len) return { text: 'upto /' + r.hi };
+            return { text: 'prefix-length-range /' + r.lo + '-/' + r.hi };
+        }
+
+        function ciscoAddr(p) {
+            if (p.len === 0) return 'any';
+            if (p.len === 32) return 'host ' + intToIp(p.net);
+            return intToIp(p.net) + ' ' + intToIp((~lenToMask(p.len)) >>> 0);
+        }
+        function sanitize(name, re, fallback, max) {
+            let n = String(name || '').trim().replace(re, '_');
+            if (!n) n = fallback;
+            return n.slice(0, max);
+        }
+        function ciscoName(n) {
+            let s = sanitize(n, /[^A-Za-z0-9_.-]/g, 'ALLOWED_NETS', 64);
+            if (/^\d/.test(s)) s = 'ACL_' + s; // all-digit names would be read as numbered ACLs
+            return s;
+        }
+        function junosName(n) { return sanitize(n, /[^A-Za-z0-9_-]/g, 'ALLOWED-NETS', 64); }
+        function fortiName(n, max) { return sanitize(n, /[^A-Za-z0-9_.-]/g, 'ALLOWED_NETS', max || 79); }
+
+        function seqList(n, start, step, max) {
+            const out = [];
+            for (let i = 0; i < n; i++) {
+                const v = start + i * step;
+                if (v > max) throw new Error('Sequence ' + v + ' exceeds max ' + max + ' — lower start/step');
+                out.push(v);
+            }
+            return out;
+        }
+
+        // Build all configs. opts: {name, action:'permit'|'deny', start, step, ge, le, dir:'src'|'dst', catchAll}
+        function buildConfigs(list, o) {
+            const warns = [];
+            const act = o.action === 'deny' ? 'deny' : 'permit';
+            const opp = act === 'deny' ? 'permit' : 'deny';
+            const extra = o.catchAll ? 1 : 0;
+            const cn = ciscoName(o.name), jn = junosName(o.name), fn = fortiName(o.name);
+            const aclSeq = seqList(list.length + extra, o.start, o.step, 2147483647);
+            const plSeq = seqList(list.length + extra, o.start, o.step, 4294967294);
+            const std = ['ip access-list standard ' + cn];
+            const ext = ['ip access-list extended ' + cn + '_EXT'];
+            const pl = [];
+            list.forEach((p, i) => {
+                std.push(' ' + aclSeq[i] + ' ' + act + ' ' + ciscoAddr(p));
+                ext.push(' ' + aclSeq[i] + ' ' + act + ' ip ' + (o.dir === 'dst' ? 'any ' + ciscoAddr(p) : ciscoAddr(p) + ' any'));
+                const g = ciscoGeLe(p.len, o.ge, o.le);
+                if (g.error) { warns.push(cidrStr(p) + ': ' + g.error + ' (entry written without ge/le)'); pl.push('ip prefix-list ' + cn + ' seq ' + plSeq[i] + ' ' + act + ' ' + cidrStr(p)); }
+                else { if (g.warn) warns.push(cidrStr(p) + ': ' + g.warn); pl.push('ip prefix-list ' + cn + ' seq ' + plSeq[i] + ' ' + act + ' ' + cidrStr(p) + g.text); }
+            });
+            if (extra) {
+                const k = list.length;
+                std.push(' ' + aclSeq[k] + ' ' + opp + ' any');
+                ext.push(' ' + aclSeq[k] + ' ' + opp + ' ip any any');
+                pl.push('ip prefix-list ' + cn + ' seq ' + plSeq[k] + ' ' + opp + ' 0.0.0.0/0 le 32');
+            }
+            // Junos
+            const jpl = list.map(p => 'set policy-options prefix-list ' + jn + ' ' + cidrStr(p));
+            const fdir = o.dir === 'dst' ? 'destination-prefix-list' : 'source-prefix-list';
+            const fbase = 'set firewall family inet filter ' + jn + '-FILTER term ';
+            const jf = [fbase + 'MATCH-' + jn + ' from ' + fdir + ' ' + jn,
+                        fbase + 'MATCH-' + jn + ' then ' + (act === 'deny' ? 'discard' : 'accept')];
+            if (extra) jf.push(fbase + 'REST then ' + (act === 'deny' ? 'accept' : 'discard'));
+            const pbase = 'set policy-options policy-statement ' + jn + '-POLICY term MATCH-' + jn + ' ';
+            const hasRange = !(o.ge === '' || o.ge == null) || !(o.le === '' || o.le == null);
+            const jp = [];
+            if (!hasRange) jp.push(pbase + 'from prefix-list ' + jn);
+            else list.forEach(p => { const t = junosMatchType(p.len, o.ge, o.le); jp.push(pbase + 'from route-filter ' + cidrStr(p) + ' ' + (t.error ? 'exact' : t.text)); });
+            jp.push(pbase + 'then ' + (act === 'deny' ? 'reject' : 'accept'));
+            // FortiOS
+            const fa = ['config firewall address'], members = [];
+            list.forEach(p => {
+                const on = fortiName(fn + '_' + intToIp(p.net) + '_' + p.len);
+                members.push('"' + on + '"');
+                fa.push('    edit "' + on + '"', '        set subnet ' + intToIp(p.net) + ' ' + intToIp(lenToMask(p.len)), '    next');
+            });
+            fa.push('end', 'config firewall addrgrp', '    edit "' + fn + '"', '        set member ' + members.join(' '), '    next', 'end');
+            return {
+                ciscoStd: std.join('\n'), ciscoExt: ext.join('\n'), ciscoPl: pl.join('\n'),
+                junosPl: jpl.join('\n'), junosFilter: jf.join('\n'), junosPolicy: jp.join('\n'),
+                forti: fa.join('\n'), warns
+            };
+        }
+
+        // Single converter: "ip mask", "ip wildcard", "ip/len", "/len", "mask", "wildcard"
+        function convert(raw) {
+            const s = String(raw).trim();
+            if (!s) throw new Error('Enter an address with /prefix, mask or wildcard');
+            let ip = null, m, c;
+            let mm;
+            if ((mm = s.match(/^\/?\s*(\d{1,2})$/))) {
+                const len = Number(mm[1]); if (len > 32) throw new Error('Prefix length > 32');
+                c = { len, kind: 'prefix', contiguous: true };
+            } else if ((mm = s.match(/^(\S+?)\s*\/\s*(\S+)$/)) || (mm = s.match(/^(\S+)\s+(\S+)$/))) {
+                ip = ipToInt(mm[1]);
+                if (/^\d{1,2}$/.test(mm[2])) { const len = Number(mm[2]); if (len > 32) throw new Error('Prefix length > 32'); c = { len, kind: 'prefix', contiguous: true }; }
+                else { m = ipToInt(mm[2]); c = classifyMask(ip, m); }
+            } else {
+                m = ipToInt(s); c = classifyMask(1, m); // bare mask/wildcard: no address context
+                if (m === 0xFFFFFFFF) c = { len: 32, kind: 'mask', contiguous: true };
+                if (m === 0) c = { len: 0, kind: 'mask', contiguous: true };
+            }
+            if (!c.contiguous) {
+                return { discontiguous: true, ip: ip === null ? null : intToIp(ip), wildcard: intToIp(m),
+                         base: ip === null ? null : intToIp((ip & ~m) >>> 0), matches: Math.pow(2, popcount(m)) };
+            }
+            const len = c.len, mask = lenToMask(len), wc = (~mask) >>> 0;
+            const r = { discontiguous: false, kind: c.kind, len, mask: intToIp(mask), wildcard: intToIp(wc), total: sizeOf(len) };
+            r.usable = len === 32 ? 1 : len === 31 ? 2 : sizeOf(len) - 2;
+            if (ip !== null) {
+                const net = (ip & mask) >>> 0, bc = (net + sizeOf(len) - 1);
+                r.ip = intToIp(ip); r.network = intToIp(net); r.broadcast = intToIp(bc); r.cidr = intToIp(net) + '/' + len;
+                r.first = len >= 31 ? intToIp(net) : intToIp(net + 1); r.last = len >= 31 ? intToIp(bc) : intToIp(bc - 1);
+                r.hostBits = net !== ip;
+                r.ace = ciscoAddr({ net, len });
+            }
+            return r;
+        }
+        // ---- UI glue ----
+        function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+        const $ = id => document.getElementById(id);
+        const SAMPLE = '10.10.0.0/24      # mgmt A\n10.10.1.0/24      # mgmt B\n10.10.2.0/23\n10.10.1.128/25    # overlaps 10.10.1.0/24\nhost 192.0.2.10   # jump host\n198.51.100.0 255.255.255.128\n198.51.100.128 0.0.0.127';
+        const MAX_URL_INPUT = 4000;
+        const OUT_IDS = ['outStd', 'outExt', 'outPl', 'outJpl', 'outJf', 'outJp', 'outFg'];
+        function show(el, text) { el.textContent = text; el.style.display = text ? 'block' : 'none'; }
+        function intOr(v, d) { const n = parseInt(v, 10); return Number.isFinite(n) && n > 0 ? n : d; }
+        function lenOpt(v) { const n = parseInt(v, 10); return Number.isFinite(n) && n >= 1 && n <= 32 ? String(n) : ''; }
+
+        function run() {
+            const raw = $('pfxInput').value;
+            const o = {
+                name: $('optName').value, action: $('optAction').value, dir: $('optDir').value,
+                start: intOr($('optStart').value, 10), step: intOr($('optStep').value, 10),
+                ge: lenOpt($('optGe').value), le: lenOpt($('optLe').value), catchAll: $('optCatch').checked
+            };
+            const agg = $('optAgg').checked;
+            setToolParams({ in: raw.length <= MAX_URL_INPUT ? raw : '', name: o.name, act: o.action, dir: o.dir, s: o.start, st: o.step, ge: o.ge, le: o.le, agg: agg ? '1' : '0', ca: o.catchAll ? '1' : '' });
+
+            const errors = [], warns = [], parsed = [];
+            raw.split(/\n|,/).forEach(line => {
+                try { const p = parseEntry(line); if (p) { parsed.push(p); if (p.fixed) warns.push(p.input + ': host bits set, using network ' + cidrStr(p)); } }
+                catch (e) { errors.push(e.message); }
+            });
+            show($('errBox'), errors.join('\n'));
+            const uniq = dedupe(parsed);
+            let list;
+            if (agg) list = aggregate(uniq);
+            else {
+                list = uniq;
+                findCovered(uniq).forEach(([a, b]) => warns.push(a + ' is inside ' + b + ' (redundant for ACLs; enable "Aggregate first" to drop it)'));
+            }
+            if (agg && list.length !== uniq.length) warns.push('Aggregation changed the prefix set. Safe for packet ACLs and address objects; for route matching (prefix-list / route-filter) the aggregate no longer matches the original more-specific routes unless you also set le.');
+            if (o.ge && o.le && Number(o.ge) > Number(o.le)) warns.push('ge must be <= le');
+
+            const tb = $('wcBody');
+            if (!list.length) {
+                tb.innerHTML = '<tr><td colspan="4">No valid prefixes.</td></tr>';
+                OUT_IDS.forEach(id => { $(id).textContent = ''; });
+                $('statsBox').innerHTML = '';
+                show($('warnBox'), warns.join('\n'));
+                return;
+            }
+            tb.innerHTML = list.map(p => '<tr><td>' + esc(cidrStr(p)) + '</td><td>' + esc(intToIp(lenToMask(p.len))) + '</td><td>' + esc(intToIp((~lenToMask(p.len)) >>> 0)) + '</td><td>' + sizeOf(p.len).toLocaleString('en-US') + '</td></tr>').join('');
+            let addrs = 0; list.forEach(p => { addrs += sizeOf(p.len); });
+            $('statsBox').innerHTML = '<div class="stat-card"><div class="stat-label">Valid input entries</div><div class="stat-val">' + parsed.length + '</div></div>'
+                + '<div class="stat-card"><div class="stat-label">Output prefixes</div><div class="stat-val">' + list.length + '</div></div>'
+                + '<div class="stat-card"><div class="stat-label">Addresses covered</div><div class="stat-val">' + (agg ? addrs.toLocaleString('en-US') : '—') + '</div></div>';
+            try {
+                const c = buildConfigs(list, o);
+                $('outStd').textContent = c.ciscoStd; $('outExt').textContent = c.ciscoExt; $('outPl').textContent = c.ciscoPl;
+                $('outJpl').textContent = c.junosPl; $('outJf').textContent = c.junosFilter; $('outJp').textContent = c.junosPolicy;
+                $('outFg').textContent = c.forti;
+                warns.push(...c.warns);
+            } catch (e) {
+                OUT_IDS.forEach(id => { $(id).textContent = ''; });
+                errors.push(e.message); show($('errBox'), errors.join('\n'));
+            }
+            show($('warnBox'), warns.join('\n'));
+        }
+
+        function runConvert() {
+            const v = $('cvInput').value;
+            setToolParams({ cv: v });
+            const body = $('cvBody'); let rows = [];
+            try {
+                const r = convert(v);
+                show($('cvErr'), '');
+                if (r.discontiguous) {
+                    rows = [['Type', 'Discontiguous wildcard (not a CIDR prefix)'], ['Wildcard', r.wildcard]];
+                    if (r.base) rows.push(['Cisco ACE', r.base + ' ' + r.wildcard]);
+                    rows.push(['Addresses matched', r.matches.toLocaleString('en-US')], ['Note', 'Valid in a Cisco ACL entry only; it has no subnet-mask or prefix-length equivalent.']);
+                } else {
+                    rows = [['Interpreted as', r.kind === 'any' ? 'any (0.0.0.0/0)' : r.kind], ['Prefix length', '/' + r.len], ['Subnet mask', r.mask], ['Wildcard mask', r.wildcard]];
+                    if (r.ip !== undefined) {
+                        rows.push(['CIDR', r.cidr], ['Network', r.network], ['Broadcast', r.len >= 31 ? 'n/a (/' + r.len + ')' : r.broadcast], ['Host range', r.first + ' – ' + r.last],
+                                  ['Cisco ACE', r.ace], ['Junos', r.cidr], ['FortiOS', 'set subnet ' + r.network + ' ' + r.mask]);
+                        if (r.hostBits) rows.push(['Note', 'Host bits set: ' + r.ip + ' normalised to network ' + r.network]);
+                    }
+                    rows.push(['Total addresses', r.total.toLocaleString('en-US')], ['Usable hosts', r.usable.toLocaleString('en-US') + (r.len === 31 ? ' (RFC 3021 point-to-point)' : '')]);
+                }
+            } catch (e) { show($('cvErr'), e.message); }
+            body.innerHTML = rows.map(([k, val]) => '<tr><th>' + esc(k) + '</th><td>' + esc(val) + '</td></tr>').join('');
+            $('cvText').textContent = rows.map(([k, val]) => k + ': ' + val).join('\n');
+        }
+
+        function loadSample() { $('pfxInput').value = SAMPLE; run(); }
+
+        const liveRun = debounce(run, 250), liveConv = debounce(runConvert, 250);
+        ['pfxInput', 'optName', 'optStart', 'optStep', 'optGe', 'optLe'].forEach(id => $(id).addEventListener('input', liveRun));
+        ['optAction', 'optDir', 'optAgg', 'optCatch'].forEach(id => $(id).addEventListener('change', run));
+        $('cvInput').addEventListener('input', liveConv);
+
+        (function initFromURL() {
+            const p = getToolParams();
+            $('pfxInput').value = p.in !== undefined ? p.in : SAMPLE;
+            if (p.name !== undefined) $('optName').value = p.name;
+            if (p.act === 'permit' || p.act === 'deny') $('optAction').value = p.act;
+            if (p.dir === 'src' || p.dir === 'dst') $('optDir').value = p.dir;
+            if (p.s) $('optStart').value = intOr(p.s, 10);
+            if (p.st) $('optStep').value = intOr(p.st, 10);
+            if (p.ge) $('optGe').value = lenOpt(p.ge);
+            if (p.le) $('optLe').value = lenOpt(p.le);
+            if (p.agg === '0') $('optAgg').checked = false;
+            if (p.ca === '1') $('optCatch').checked = true;
+            if (p.cv !== undefined) $('cvInput').value = p.cv;
+            run(); runConvert();
+        })();
+    </script>
+    <script>
+        document.querySelectorAll('.faq-question').forEach(function(btn) {
+            btn.addEventListener('click', function() { btn.parentElement.classList.toggle('open'); });
+        });
+    </script>
+    <script src="/js/nav.js?v=20261122" defer></script>
+</body>
+</html>

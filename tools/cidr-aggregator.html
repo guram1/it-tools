@@ -107,6 +107,7 @@
                     <button class="btn btn-secondary" onclick="loadSample()">Load sample</button>
                     <button class="btn btn-secondary" onclick="copyToClipboard('cidrOutput')">Copy output</button>
                     <button class="btn btn-secondary" onclick="document.getElementById('cidrInput').value='';aggregate();">Clear</button>
+                    <button class="btn btn-secondary" onclick="copyShareLink()" title="Copy a link that reopens this input">🔗 Copy link</button>
                 </div>
 
                 <div id="cidrError" style="display:none;color:#ef4444;margin-top:1rem;padding:0.75rem 1rem;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:0.85rem;white-space:pre-wrap;"></div>
@@ -239,7 +240,15 @@
             return out;
         }
 
+        // Shareable state: ?in=<entries joined by newline>. Very long lists are not put in the URL.
+        const MAX_URL_INPUT = 4000;
+        function syncURL() {
+            const raw = document.getElementById('cidrInput').value.trim();
+            setToolParams({ in: raw.length <= MAX_URL_INPUT ? raw : '' });
+        }
+
         function aggregate() {
+            syncURL();
             const raw = document.getElementById('cidrInput').value;
             const errEl = document.getElementById('cidrError');
             const outEl = document.getElementById('cidrOutput');
@@ -247,7 +256,7 @@
             errEl.style.display = 'none';
 
             const lines = raw.split(/[\n,]/).map(s => s.trim()).filter(Boolean);
-            if (!lines.length) { outEl.textContent = 'Paste input and click Aggregate.'; statsEl.style.display = 'none'; return; }
+            if (!lines.length) { outEl.textContent = 'Paste input — results update as you type.'; statsEl.style.display = 'none'; return; }
 
             const errors = [];
             const ranges = [];
@@ -294,6 +303,16 @@
 172.17.0.0/16`;
             aggregate();
         }
+
+        // Live results while typing
+        document.getElementById('cidrInput').addEventListener('input', debounce(aggregate, 300));
+
+        // Restore from URL, otherwise show the sample
+        (function initFromURL() {
+            const p = getToolParams();
+            if (p.in !== undefined) { document.getElementById('cidrInput').value = p.in; aggregate(); }
+            else loadSample();
+        })();
     </script>
     <script>
         document.querySelectorAll('.faq-question').forEach(function(btn) {

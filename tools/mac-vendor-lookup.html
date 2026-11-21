@@ -156,15 +156,19 @@
             <div class="tool-content">
                 <div class="form-group">
                     <label class="form-label">MAC Addresses (one per line)</label>
-                    <textarea class="form-textarea" id="macVendorInput" placeholder="AA:BB:CC:DD:EE:FF
+                    <textarea class="form-textarea" id="macVendorInput" oninput="lookupMacVendorsDebounced()" placeholder="AA:BB:CC:DD:EE:FF
 00-11-22-33-44-55
 aabb.ccdd.eeff
-001122334455"></textarea>
+001122334455">00:0C:29:3E:5B:7A
+B8-27-EB-12-34-56
+3c22.fbaa.bbcc
+00000C1A2B3C</textarea>
                 </div>
                 <div class="btn-group">
                     <button class="btn btn-primary" onclick="lookupMacVendors()">Lookup Vendors</button>
                     <button class="btn btn-secondary" onclick="copyToClipboard('macVendorResult')">Copy Results</button>
                     <button class="btn btn-secondary" onclick="exportVendorCSV()">Export CSV</button>
+                    <button class="btn btn-secondary" id="macShareBtn" onclick="copyShareLink()" title="Copy a link that restores these MAC addresses">🔗 Copy link</button>
                 </div>
                 <div class="bulk-output" style="max-height: 400px;"><pre id="macVendorResult">Vendor information will appear here...</pre></div>
                 <div class="output-box">
@@ -274,13 +278,28 @@ aabb.ccdd.eeff
         const loadedShards = {};
         let vendorResults = [];
 
+        let lookupSeq = 0;
+        const MAX_URL_PARAM = 1500; // skip URL state for huge bulk pastes
+
+        function syncMacParam(lines) {
+            const joined = lines.map(l => l.trim()).join(',');
+            setToolParams({ mac: joined.length <= MAX_URL_PARAM ? joined : '' });
+        }
+
         async function lookupMacVendors() {
             const inputField = document.getElementById('macVendorInput');
             const resultBox = document.getElementById('macVendorResult');
             const statsBox = document.getElementById('macVendorStats');
+            const seq = ++lookupSeq;
             
             const lines = inputField.value.trim().split('\n').filter(l => l.trim());
-            if (!lines.length) { alert('Enter MAC addresses'); return; }
+            syncMacParam(lines);
+            if (!lines.length) {
+                vendorResults = [];
+                resultBox.textContent = 'Enter one or more MAC addresses above (one per line).';
+                statsBox.textContent = '—';
+                return;
+            }
 
             resultBox.textContent = "Scanning database... please wait...";
             
@@ -315,6 +334,7 @@ aabb.ccdd.eeff
                     }
                 }
 
+                if (seq !== lookupSeq) return; // a newer lookup started while this shard loaded
                 const vendor = loadedShards[shardKey][oui] || 'Unknown Vendor';
                 const macFormatted = cleaned.length >= 12 
                     ? cleaned.substring(0, 12).match(/.{2}/g).join(':') 
@@ -328,6 +348,7 @@ aabb.ccdd.eeff
                 }
             }
 
+            if (seq !== lookupSeq) return;
             resultBox.textContent = results.join('\n');
             
             const topVendors = Object.entries(vendorCount)
@@ -349,6 +370,16 @@ aabb.ccdd.eeff
             a.click();
             showToast('CSV exported!');
         }
+
+        const lookupMacVendorsDebounced = debounce(() => lookupMacVendors(), 300);
+
+        (function initFromUrl() {
+            const q = getToolParams();
+            if (q.mac && q.mac.trim()) {
+                document.getElementById('macVendorInput').value = q.mac.split(/[,\n]+/).map(s => s.trim()).filter(Boolean).join('\n');
+            }
+            lookupMacVendors();
+        })();
     </script>
 
     <script>

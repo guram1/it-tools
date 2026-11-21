@@ -481,7 +481,9 @@
                     </div>
                     <div class="btn-group">
                         <button class="btn btn-primary" onclick="calculateSubnet()">Calculate</button>
+                        <button class="btn btn-secondary" onclick="copyShareLink()" title="Copy a link that reopens this calculation">🔗 Copy link</button>
                     </div>
+                    <div id="subnetMsg"></div>
                     
                     <div id="subnetResults" style="display: none;">
                         <div class="subnet-results">
@@ -578,6 +580,7 @@
                     </div>
                     <div class="btn-group">
                         <button class="btn btn-primary" onclick="calculateVLSM()">Calculate VLSM</button>
+                        <button class="btn btn-secondary" onclick="copyShareLink()" title="Copy a link that reopens this calculation">🔗 Copy link</button>
                     </div>
                     <div id="vlsmResults"></div>
                 </div>
@@ -604,6 +607,7 @@
                     </div>
                     <div class="btn-group">
                         <button class="btn btn-primary" onclick="splitSubnet()">Split Network</button>
+                        <button class="btn btn-secondary" onclick="copyShareLink()" title="Copy a link that reopens this calculation">🔗 Copy link</button>
                     </div>
                     <div id="splitResults"></div>
                 </div>
@@ -620,6 +624,7 @@
                     </div>
                     <div class="btn-group">
                         <button class="btn btn-primary" onclick="rangeToCIDR()">Convert to CIDR</button>
+                        <button class="btn btn-secondary" onclick="copyShareLink()" title="Copy a link that reopens this calculation">🔗 Copy link</button>
                     </div>
                     <div id="rangeResults"></div>
                 </div>
@@ -635,6 +640,7 @@
                     </div>
                     <div class="btn-group">
                         <button class="btn btn-primary" onclick="calculateSupernet()">Calculate Supernet</button>
+                        <button class="btn btn-secondary" onclick="copyShareLink()" title="Copy a link that reopens this calculation">🔗 Copy link</button>
                     </div>
                     <div id="supernetResults"></div>
                 </div>
@@ -776,10 +782,12 @@
             document.getElementById(`tab-${tabId}`).classList.add('active');
             
             if (tabId === 'reference') generateCIDRTable();
+            if (typeof syncURL === 'function') syncURL();
         }
         
         // Utility functions
         function parseIP(ip) {
+            if (!/^\d{1,3}(\.\d{1,3}){3}$/.test(String(ip).trim())) return null;
             const parts = ip.trim().split('.').map(Number);
             if (parts.length !== 4 || parts.some(p => isNaN(p) || p < 0 || p > 255)) return null;
             return (parts[0] << 24 >>> 0) + (parts[1] << 16) + (parts[2] << 8) + parts[3];
@@ -841,30 +849,45 @@
             showToast('Copied: ' + text);
         }
         
+        function esc(v) {
+            return String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        }
+        
+        // Gentle inline message (replaces alert() so live typing never pops dialogs)
+        function inlineMsg(targetId, msg) {
+            document.getElementById(targetId).innerHTML = `<div class="summary-box warning">${esc(msg)}</div>`;
+        }
+        
+        function subnetFail(msg) {
+            document.getElementById('subnetResults').style.display = 'none';
+            inlineMsg('subnetMsg', msg);
+        }
+        
         // Basic Subnet Calculator
         function calculateSubnet() {
             const ipInput = document.getElementById('subnetIP').value.trim();
             let maskInput = document.getElementById('subnetMask').value.trim();
             
-            if (!ipInput) { alert('Enter an IP address'); return; }
-            
+            if (!ipInput) return subnetFail('Enter an IP address, e.g. 192.168.1.10');
+            if (parseIP(ipInput) === null) return subnetFail('Invalid IP address — use dotted decimal, e.g. 192.168.1.10');
             const ipParts = ipInput.split('.').map(Number);
-            if (ipParts.length !== 4 || ipParts.some(p => isNaN(p) || p < 0 || p > 255)) {
-                alert('Invalid IP address'); return;
-            }
             
             let cidr;
             if (maskInput.startsWith('/')) {
-                cidr = parseInt(maskInput.substring(1));
+                cidr = /^\/\d{1,2}$/.test(maskInput) ? parseInt(maskInput.substring(1)) : NaN;
             } else if (maskInput.includes('.')) {
-                const maskParts = maskInput.split('.').map(Number);
-                const maskBinary = maskParts.map(p => p.toString(2).padStart(8, '0')).join('');
+                const maskInt = parseIP(maskInput);
+                const maskBinary = maskInt === null ? '' : maskInt.toString(2).padStart(32, '0');
+                if (!/^1*0*$/.test(maskBinary) || !maskBinary) return subnetFail('Invalid subnet mask — must be contiguous, e.g. 255.255.255.0');
                 cidr = (maskBinary.match(/1/g) || []).length;
+            } else if (maskInput === '') {
+                cidr = 24;
             } else {
-                cidr = parseInt(maskInput) || 24;
+                cidr = /^\d{1,2}$/.test(maskInput) ? parseInt(maskInput) : NaN;
             }
             
-            if (cidr < 0 || cidr > 32) { alert('Invalid CIDR (0-32)'); return; }
+            if (isNaN(cidr) || cidr < 0 || cidr > 32) return subnetFail('Invalid CIDR — use /0 to /32 or a mask like 255.255.255.0');
+            document.getElementById('subnetMsg').innerHTML = '';
             
             const ip = parseIP(ipInput);
             const mask = getMask(cidr);
@@ -967,18 +990,20 @@
                 <button class="remove-btn" onclick="removeVlsmRow(this)">✕</button>
             `;
             container.appendChild(row);
+            return row;
         }
         
         function removeVlsmRow(btn) {
             const rows = document.querySelectorAll('.vlsm-input-row');
             if (rows.length > 1) btn.parentElement.remove();
+            if (typeof liveVlsm === 'function') liveVlsm();
         }
         
         function calculateVLSM() {
             const networkInput = document.getElementById('vlsmNetwork').value;
             const parsed = parseCIDR(networkInput);
             
-            if (!parsed) { alert('Invalid network address'); return; }
+            if (!parsed) return inlineMsg('vlsmResults', 'Enter a valid network in CIDR form, e.g. 192.168.1.0/24');
             
             const rows = document.querySelectorAll('.vlsm-input-row');
             const subnets = [];
@@ -990,7 +1015,7 @@
                 if (hosts > 0) subnets.push({ name, hosts });
             });
             
-            if (subnets.length === 0) { alert('Add at least one subnet with hosts'); return; }
+            if (subnets.length === 0) return inlineMsg('vlsmResults', 'Add at least one subnet with a host count');
             
             // Sort by hosts descending (VLSM allocates largest first)
             subnets.sort((a, b) => b.hosts - a.hosts);
@@ -1056,11 +1081,11 @@
             
             results.forEach(r => {
                 if (r.error) {
-                    html += `<tr style="color: #ef4444;"><td>${r.name}</td><td>${r.hosts}</td><td colspan="4">${r.error}</td></tr>`;
+                    html += `<tr style="color: #ef4444;"><td>${esc(r.name)}</td><td>${r.hosts}</td><td colspan="4">${r.error}</td></tr>`;
                 } else {
                     html += `
                         <tr>
-                            <td>${r.name}</td>
+                            <td>${esc(r.name)}</td>
                             <td>${r.hosts}</td>
                             <td>${r.usable} (/${r.cidr})</td>
                             <td>${r.network}/${r.cidr}</td>
@@ -1079,7 +1104,7 @@
             results.forEach((r, i) => {
                 if (!r.error) {
                     const width = (getHostCount(r.cidr) / totalAvailable) * 100;
-                    html += `<div class="subnet-segment" style="width: ${width}%; background: ${colors[i % colors.length]};" title="${r.name}: ${r.network}/${r.cidr}">${width > 8 ? r.name : ''}</div>`;
+                    html += `<div class="subnet-segment" style="width: ${width}%; background: ${colors[i % colors.length]};" title="${esc(r.name)}: ${r.network}/${r.cidr}">${width > 8 ? esc(r.name) : ''}</div>`;
                 }
             });
             if (remaining > 0) {
@@ -1098,8 +1123,8 @@
             const value = parseInt(document.getElementById('splitValue').value);
             
             const parsed = parseCIDR(networkInput);
-            if (!parsed) { alert('Invalid network address'); return; }
-            if (!value || value < 1) { alert('Enter a valid value'); return; }
+            if (!parsed) return inlineMsg('splitResults', 'Enter a valid network in CIDR form, e.g. 10.0.0.0/8');
+            if (!value || value < 1) return inlineMsg('splitResults', 'Enter a value of 1 or more');
             
             let newCidr;
             
@@ -1112,8 +1137,8 @@
                 newCidr = value;
             }
             
-            if (newCidr > 32 || newCidr < parsed.cidr) {
-                alert('Invalid split parameters'); return;
+            if (!(newCidr <= 32) || newCidr < parsed.cidr) {
+                return inlineMsg('splitResults', `Cannot split /${parsed.cidr} that way — the new prefix must be between /${parsed.cidr} and /32`);
             }
             
             const network = getNetwork(parsed.ip, parsed.cidr);
@@ -1166,8 +1191,8 @@
             const start = parseIP(document.getElementById('rangeStart').value);
             const end = parseIP(document.getElementById('rangeEnd').value);
             
-            if (start === null || end === null) { alert('Invalid IP addresses'); return; }
-            if (start > end) { alert('Start IP must be less than end IP'); return; }
+            if (start === null || end === null) return inlineMsg('rangeResults', 'Enter valid start and end IPv4 addresses, e.g. 192.168.1.10 to 192.168.1.100');
+            if (start > end) return inlineMsg('rangeResults', 'Start IP must not be greater than end IP');
             
             const cidrs = [];
             let current = start;
@@ -1178,7 +1203,7 @@
                 // Find the largest block that starts at current and doesn't exceed end
                 while (maxSize > 0) {
                     const mask = getMask(maxSize - 1);
-                    const network = current & mask;
+                    const network = (current & mask) >>> 0;
                     const broadcast = (network | (~mask >>> 0)) >>> 0;
                     
                     if (network === current && broadcast <= end) {
@@ -1189,7 +1214,7 @@
                 }
                 
                 cidrs.push({ network: current, cidr: maxSize });
-                current = (current + getHostCount(maxSize)) >>> 0;
+                current = current + getHostCount(maxSize);  // no >>> 0: must exceed end at 255.255.255.255 instead of wrapping to 0
             }
             
             let html = `
@@ -1230,8 +1255,10 @@
             const lines = input.split('\n').filter(l => l.trim());
             
             const networks = [];
+            const ignored = [];
             for (const line of lines) {
                 const parsed = parseCIDR(line);
+                if (!parsed) ignored.push(line.trim());
                 if (parsed) {
                     networks.push({
                         original: line.trim(),
@@ -1241,7 +1268,7 @@
                 }
             }
             
-            if (networks.length < 2) { alert('Enter at least 2 networks'); return; }
+            if (networks.length < 2) return inlineMsg('supernetResults', 'Enter at least 2 valid networks, one per line (e.g. 192.168.0.0/24)' + (ignored.length ? ` — ignored: ${ignored.join(', ')}` : ''));
             
             // Sort by network address
             networks.sort((a, b) => a.network - b.network);
@@ -1254,7 +1281,7 @@
             let supernetCidr = 0;
             for (let c = 32; c >= 0; c--) {
                 const mask = getMask(c);
-                const net = minIP & mask;
+                const net = (minIP & mask) >>> 0;
                 const broad = getBroadcast(net, c);
                 if (net <= minIP && broad >= maxIP) {
                     supernetCidr = c;
@@ -1284,6 +1311,7 @@
                 <div class="summary-box ${hasGaps ? 'warning' : ''}">
                     <strong>Supernet: ${toIP(supernetNetwork)}/${supernetCidr}</strong><br>
                     Aggregates ${networks.length} networks into one route<br>
+                    ${ignored.length ? `⚠️ Ignored ${ignored.length} invalid line${ignored.length > 1 ? 's' : ''}: ${esc(ignored.join(', '))}<br>` : ''}
                     ${hasGaps ? `⚠️ Warning: Supernet includes ${(supernetSize - actualUsed).toLocaleString()} addresses not in original networks` : '✓ Perfect aggregation'}
                 </div>
                 <div class="subnet-results">
@@ -1311,7 +1339,7 @@
             `;
             
             networks.forEach(n => {
-                html += `<tr><td>${n.original}</td><td>${getHostCount(n.cidr).toLocaleString()}</td></tr>`;
+                html += `<tr><td>${esc(n.original)}</td><td>${getHostCount(n.cidr).toLocaleString()}</td></tr>`;
             });
             
             html += '</tbody></table>';
@@ -1351,6 +1379,8 @@
         function useRefCIDR(cidr) {
             document.getElementById('subnetMask').value = '/' + cidr;
             switchTab('basic');
+            calculateSubnet();
+            syncURL();
             document.getElementById('subnetIP').focus();
             showToast('CIDR /' + cidr + ' selected');
         }
@@ -1363,6 +1393,89 @@
         document.addEventListener('DOMContentLoaded', function() {
             generateCIDRTable();
         });
+        
+        // ---- Live results + shareable URL state ----
+        // URL keys: tab, ip, mask (basic) | vnet, vlsm=Name:hosts,... (VLSM) | snet, smode, sval (splitter)
+        //           rs, re (range) | sup=cidr,cidr,... (supernet). Only the active tab's keys are written.
+        const TAB_KEYS = {
+            basic: ['ip', 'mask'], vlsm: ['vnet', 'vlsm'], split: ['snet', 'smode', 'sval'],
+            range: ['rs', 're'], supernet: ['sup'], reference: []
+        };
+        const val = id => document.getElementById(id).value.trim();
+        
+        function activeTab() {
+            const el = document.querySelector('.tab-content.active');
+            return el ? el.id.replace('tab-', '') : 'basic';
+        }
+        
+        function vlsmState() {
+            return Array.from(document.querySelectorAll('.vlsm-input-row')).map(row => {
+                const i = row.querySelectorAll('input');
+                const name = i[0].value.trim().replace(/[,:]/g, ' ');
+                const hosts = i[1].value.trim();
+                return (name || hosts) ? name + ':' + hosts : '';
+            }).filter(Boolean).join(',');
+        }
+        
+        function syncURL() {
+            const tab = activeTab();
+            const state = {
+                ip: val('subnetIP'), mask: val('subnetMask'),
+                vnet: val('vlsmNetwork'), vlsm: vlsmState(),
+                snet: val('splitNetwork'), smode: document.getElementById('splitMethod').value, sval: val('splitValue'),
+                rs: val('rangeStart'), re: val('rangeEnd'),
+                sup: document.getElementById('supernetInput').value.split('\n').map(l => l.trim()).filter(Boolean).join(',')
+            };
+            const out = { tab: tab === 'basic' ? '' : tab };
+            Object.keys(TAB_KEYS).forEach(t => TAB_KEYS[t].forEach(k => { out[k] = t === tab ? state[k] : ''; }));
+            setToolParams(out);
+        }
+        
+        function safeRun(fn) {
+            try { fn(); } catch (e) { console.warn(e); }
+        }
+        
+        const liveBasic = debounce(() => { safeRun(calculateSubnet); syncURL(); });
+        const liveVlsm = debounce(() => { safeRun(calculateVLSM); syncURL(); });
+        const liveSplit = debounce(() => { safeRun(splitSubnet); syncURL(); });
+        const liveRange = debounce(() => { safeRun(rangeToCIDR); syncURL(); });
+        const liveSupernet = debounce(() => { safeRun(calculateSupernet); syncURL(); });
+        
+        ['subnetIP', 'subnetMask'].forEach(id => document.getElementById(id).addEventListener('input', liveBasic));
+        document.getElementById('vlsmNetwork').addEventListener('input', liveVlsm);
+        document.getElementById('vlsmInputs').addEventListener('input', liveVlsm);
+        ['splitNetwork', 'splitValue'].forEach(id => document.getElementById(id).addEventListener('input', liveSplit));
+        document.getElementById('splitMethod').addEventListener('change', liveSplit);
+        ['rangeStart', 'rangeEnd'].forEach(id => document.getElementById(id).addEventListener('input', liveRange));
+        document.getElementById('supernetInput').addEventListener('input', liveSupernet);
+        document.querySelector('.add-subnet-btn').addEventListener('click', liveVlsm);
+        
+        // Restore state from URL, otherwise prefill realistic examples, then render every tab
+        (function initFromURL() {
+            const p = getToolParams();
+            const set = (id, v, dflt) => { document.getElementById(id).value = (v !== undefined ? v : dflt); };
+            set('subnetIP', p.ip, '192.168.1.10');
+            set('subnetMask', p.mask, '/24');
+            set('vlsmNetwork', p.vnet, '192.168.1.0/24');
+            const rowsSpec = (p.vlsm !== undefined ? p.vlsm : 'Sales:50,IT:20').split(',').filter(Boolean).slice(0, 64);
+            const container = document.getElementById('vlsmInputs');
+            while (container.querySelectorAll('.vlsm-input-row').length < rowsSpec.length) addVlsmRow();
+            container.querySelectorAll('.vlsm-input-row').forEach((row, i) => {
+                const spec = rowsSpec[i] || '';
+                const cut = spec.lastIndexOf(':');
+                const inputs = row.querySelectorAll('input');
+                inputs[0].value = cut >= 0 ? spec.slice(0, cut) : spec;
+                inputs[1].value = cut >= 0 ? spec.slice(cut + 1).replace(/[^0-9]/g, '') : '';
+            });
+            set('splitNetwork', p.snet, '10.0.0.0/8');
+            if (['subnets', 'hosts', 'cidr'].includes(p.smode)) document.getElementById('splitMethod').value = p.smode;
+            set('splitValue', p.sval, '4');
+            set('rangeStart', p.rs, '192.168.1.10');
+            set('rangeEnd', p.re, '192.168.1.100');
+            document.getElementById('supernetInput').value = (p.sup !== undefined ? p.sup : '192.168.0.0/24,192.168.1.0/24,192.168.2.0/24,192.168.3.0/24').split(',').map(l => l.trim()).filter(Boolean).join('\n');
+            [calculateSubnet, calculateVLSM, splitSubnet, rangeToCIDR, calculateSupernet].forEach(safeRun);
+            if (p.tab && TAB_KEYS[p.tab] && document.querySelector(`[onclick="switchTab('${p.tab}')"]`)) switchTab(p.tab);
+        })();
     </script>
 
     <script>

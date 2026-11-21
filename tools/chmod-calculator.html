@@ -336,6 +336,10 @@
                     <span id="chmodCmd">chmod 000 filename</span>
                     <button class="copy-btn" onclick="copyText(document.getElementById('chmodCmd').textContent)">📋 Copy</button>
                 </div>
+                <div id="chmodMsg" style="display:none;color:var(--text-muted);font-size:0.85rem;margin-top:0.5rem;"></div>
+                <div class="btn-group" style="margin-top:0.75rem;">
+                    <button class="btn btn-secondary" onclick="copyShareLink()" title="Copy a link that reopens these permissions">🔗 Copy link</button>
+                </div>
             </div>
         </div>
 
@@ -498,6 +502,7 @@
             document.getElementById('octalOut').textContent = octal;
             document.getElementById('symbolicOut').textContent = symbolic;
             document.getElementById('chmodCmd').textContent = 'chmod ' + octal + ' filename';
+            syncURL(octal);
 
             // Sync the editable inputs without clobbering focus
             const oi = document.getElementById('octalInput');
@@ -548,18 +553,33 @@
             document.getElementById('sticky').checked = sticky;
         }
 
+        // Shareable state: ?mode=<octal, e.g. 755 or 1777>
+        const syncURL = debounce(octal => setToolParams({ mode: octal }));
+
+        // Gentle hint for partial/invalid typed input (state is kept, nothing is wiped)
+        function hint(msg) {
+            const el = document.getElementById('chmodMsg');
+            el.textContent = msg || '';
+            el.style.display = msg ? 'block' : 'none';
+        }
+
         // Wire up events
         checkboxes().forEach(cb => cb.addEventListener('change', render));
         specials.forEach(id => document.getElementById(id).addEventListener('change', render));
 
         document.getElementById('octalInput').addEventListener('input', e => {
-            applyOctal(e.target.value);
+            const v = e.target.value.trim();
+            hint(/^[0-7]{3,4}$/.test(v) || v === '' ? '' : 'Octal needs 3 or 4 digits, each 0–7 (e.g. 755 or 1777).');
+            applyOctal(v);
             render();
         });
         document.getElementById('symbolicInput').addEventListener('input', e => {
-            applySymbolic(e.target.value.trim());
+            const v = e.target.value.trim();
+            hint(/^[r-][w-][xsS-][r-][w-][xsS-][r-][w-][xtT-]$/.test(v) || v === '' ? '' : 'Symbolic needs 9 characters like rwxr-xr-x (s/S/t/T allowed for special bits).');
+            applySymbolic(v);
             render();
         });
+        checkboxes().concat(specials.map(id => document.getElementById(id))).forEach(cb => cb.addEventListener('change', () => hint('')));
 
         // Quick presets
         const presetData = [
@@ -576,8 +596,9 @@
             presetsEl.appendChild(b);
         });
 
-        // Initialize at 644
-        applyOctal('644');
+        // Initialize from URL (?mode=755), otherwise 644
+        const startMode = (getToolParams().mode || '').trim();
+        applyOctal(/^[0-7]{3,4}$/.test(startMode) ? startMode : '644');
         render();
     </script>
 

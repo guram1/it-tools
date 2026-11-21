@@ -443,7 +443,7 @@
                 <div class="form-group">
                     <label class="form-label">Domain Name</label>
                     <div class="dns-input-section">
-                        <input type="text" class="form-input" id="domainInput" placeholder="example.com">
+                        <input type="text" class="form-input" id="domainInput" value="example.com" placeholder="example.com">
                         <button class="btn btn-primary" onclick="lookupDNS()">Lookup</button>
                     </div>
                 </div>
@@ -512,6 +512,7 @@
                         <div class="btn-group" style="margin-top: 0.5rem;">
                             <button class="btn btn-secondary" onclick="copyExport()">Copy All</button>
                             <button class="btn btn-secondary" onclick="downloadExport()">Download TXT</button>
+                            <button class="btn btn-secondary" id="dnsShareBtn" onclick="copyShareLink()" title="Copy a link to this lookup">🔗 Copy link</button>
                         </div>
                     </div>
                 </div>
@@ -666,6 +667,22 @@
             }
         }
         
+        // Programmatic selection (used when restoring state from the URL)
+        function setSelectedTypes(types) {
+            const valid = (types || []).map(t => String(t).toUpperCase()).filter(t => recordTypes.includes(t));
+            selectedTypes = valid.length ? [...new Set(valid)] : ['ALL'];
+            document.querySelectorAll('.record-type-btn').forEach(b => {
+                const t = b.textContent.trim().toUpperCase();
+                b.classList.toggle('active', selectedTypes.includes(t));
+            });
+        }
+
+        function showDnsError(msg) {
+            const box = document.getElementById('errorBox');
+            box.textContent = msg;
+            box.style.display = 'block';
+        }
+
         function quickLookup(domain) {
             document.getElementById('domainInput').value = domain;
             lookupDNS();
@@ -697,15 +714,26 @@
             }
         }
         
+        let lookupSeq = 0;
+
         async function lookupDNS() {
+            const seq = ++lookupSeq;
             const input = document.getElementById('domainInput').value.trim();
+            document.getElementById('loading').classList.remove('active');
             if (!input) {
-                alert('Please enter a domain name');
+                document.getElementById('dnsResults').style.display = 'none';
+                showDnsError('Please enter a domain name (e.g. example.com).');
                 return;
             }
             
             const domain = cleanDomain(input);
+            if (!domain || domain.length > 253 || /[\s\\@?#<>"'`]/.test(domain)) {
+                document.getElementById('dnsResults').style.display = 'none';
+                showDnsError('That does not look like a domain name. Try something like example.com.');
+                return;
+            }
             currentDomain = domain;
+            setToolParams({ domain, type: selectedTypes.includes('ALL') ? '' : selectedTypes.join(',') });
             
             document.getElementById('loading').classList.add('active');
             document.getElementById('dnsResults').style.display = 'none';
@@ -731,6 +759,7 @@
                 
                 // Also check for DMARC
                 const dmarcRecords = await queryDNS(`_dmarc.${domain}`, 'TXT');
+                if (seq !== lookupSeq) return; // superseded by a newer lookup
                 if (dmarcRecords.length > 0) {
                     allRecords['DMARC'] = dmarcRecords;
                 }
@@ -746,6 +775,7 @@
                 displayResults();
                 
             } catch (error) {
+                if (seq !== lookupSeq) return;
                 document.getElementById('loading').classList.remove('active');
                 document.getElementById('errorBox').textContent = 'Error: ' + error.message;
                 document.getElementById('errorBox').style.display = 'block';
@@ -820,11 +850,11 @@
             
             return `
                 <div class="dns-record">
-                    <span class="name">${name}</span>
+                    <span class="name">${escapeHtml(name)}</span>
                     <span class="ttl">TTL: ${formatTTL(ttl)}</span>
                     ${extra}
                     <span class="value">${escapeHtml(displayValue)}</span>
-                    <button class="copy-btn" onclick="copyRecord('${escapeHtml(value)}')" title="Copy">📋</button>
+                    <button class="copy-btn" data-v="${escapeHtml(value)}" onclick="copyRecord(this.dataset.v)" title="Copy">📋</button>
                 </div>
             `;
         }
@@ -839,7 +869,7 @@
         function escapeHtml(text) {
             const div = document.createElement('div');
             div.textContent = text;
-            return div.innerHTML;
+            return div.innerHTML.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
         }
         
         function toggleSection(header) {
@@ -946,6 +976,16 @@
         document.getElementById('domainInput').addEventListener('keypress', e => {
             if (e.key === 'Enter') lookupDNS();
         });
+
+        // Restore shared state (?domain=...&type=A,MX) and run exactly one lookup on load.
+        (function initFromUrl() {
+            const q = getToolParams();
+            const hasDomain = !!(q.domain && q.domain.trim());
+            if (hasDomain) document.getElementById('domainInput').value = q.domain.trim();
+            // No params: light default example (example.com, A only). Shared link without type = ALL.
+            setSelectedTypes(q.type ? q.type.split(',') : (hasDomain ? ['ALL'] : ['A']));
+            lookupDNS();
+        })();
     </script>
     <script src="/js/nav.js?v=20261122" defer></script>
 </body>

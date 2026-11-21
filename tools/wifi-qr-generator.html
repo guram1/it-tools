@@ -32,8 +32,8 @@
     <link rel="stylesheet" href="../css/style.css?v=20261122">
     
     <!-- QR Code Libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" integrity="sha384-3zSEDfvllQohrq0PHL1fOXJuC/jSOO34H46t6UQfobFOmxE5BpjjaIJY5F2/bMnU" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" integrity="sha384-+mbV2IY1Zk/X1p/nWllGySJSUN8uMs+gUAN10Or95UBH0fpj6GfKgPmgC5EXieXG" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     
     <script type="application/ld+json">
     {
@@ -349,7 +349,7 @@ guest2024-03
                         </div>
                         <p class="hint-text">Upload a logo to display on QR cards (recommended: square image)</p>
                         <div class="logo-preview" id="logoPreview">
-                            <img id="logoPreviewImg" alt="Logo preview">
+                            <img id="logoPreviewImg" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Logo preview">
                         </div>
                     </div>
                     
@@ -754,8 +754,7 @@ guest2024-03
                 printWindow.document.write('</div></div>');
             }
             
-            printWindow.document.write('    <script src="/js/nav.js?v=20261122" defer></script>
-</body></html>');
+            printWindow.document.write('</body></html>');
             printWindow.document.close();
             
             printWindow.onload = async function() {
@@ -866,5 +865,6 @@ guest2024-03
             });
         });
     </script>
+    <script src="/js/nav.js?v=20261122" defer></script>
 </body>
 </html>

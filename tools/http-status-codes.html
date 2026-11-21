@@ -6,14 +6,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HTTP Status Codes List (1xx–5xx) | OPS-BOX</title>
-    <meta name="description" content="Complete HTTP status code reference. Search 200 OK, 301, 401, 403, 404, 418, 429, 500, 502, 503 and every other code with concise explanations and RFC references.">
-    <meta name="keywords" content="HTTP status codes, 404 meaning, 500 error, 301 redirect, HTTP response codes, status code reference">
+    <meta name="description" content="HTTP status codes 1xx–5xx with RFC 9110 meanings, plus nginx 444/499 and Cloudflare 520–526. Search, deep-link any code and troubleshoot it with curl -I.">
+    <meta name="keywords" content="HTTP status codes, 404 meaning, 502 bad gateway, 504 gateway timeout, nginx 499, nginx 444, cloudflare 520, cloudflare 522, HTTP response codes, RFC 9110">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://ops-box.net/tools/http-status-codes">
-    <meta property="og:title" content="HTTP Status Codes Reference"><meta property="og:description" content="Complete reference for HTTP 1xx–5xx response codes."><meta property="og:type" content="website"><meta property="og:url" content="https://ops-box.net/tools/http-status-codes"><meta property="og:image" content="https://ops-box.net/og-image.png">
-    <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="HTTP Status Codes Reference"><meta name="twitter:description" content="Complete HTTP status code reference."><meta name="twitter:image" content="https://ops-box.net/og-image.png">
+    <meta property="og:title" content="HTTP Status Codes Reference"><meta property="og:description" content="Every registered HTTP status code 1xx–5xx per RFC 9110, plus nginx and Cloudflare non-standard codes, with troubleshooting steps."><meta property="og:type" content="website"><meta property="og:url" content="https://ops-box.net/tools/http-status-codes"><meta property="og:image" content="https://ops-box.net/og-image.png">
+    <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="HTTP Status Codes Reference"><meta name="twitter:description" content="Searchable HTTP status code reference with troubleshooting for sysadmins and DevOps."><meta name="twitter:image" content="https://ops-box.net/og-image.png">
     <link rel="stylesheet" href="../css/style.css?v=20261122">
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"HTTP Status Codes","url":"https://ops-box.net/tools/http-status-codes","description":"Searchable reference for HTTP status codes","applicationCategory":"DeveloperApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"HTTP Status Codes","url":"https://ops-box.net/tools/http-status-codes","description":"Searchable reference for every IANA-registered HTTP status code plus common non-standard nginx and Cloudflare codes, with troubleshooting steps","applicationCategory":"DeveloperApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+        {"@type":"Question","name":"What is the difference between 401 and 403?","acceptedAnswer":{"@type":"Answer","text":"401 Unauthorized means the request lacks valid authentication credentials; RFC 9110 requires the server to send a WWW-Authenticate header with at least one challenge, so logging in or sending a token can fix it. 403 Forbidden means the server understood the request and refuses it; if credentials were sent, they are not sufficient. In nginx and Apache a 403 usually comes from an allow/deny rule, a missing index file with directory listing disabled, or file permissions, not from a login problem."}},
+        {"@type":"Question","name":"What is the difference between 502, 503 and 504?","acceptedAnswer":{"@type":"Answer","text":"All three usually come from a proxy or load balancer, not from your application. 502 Bad Gateway means the proxy got an invalid response or a refused or reset connection from the upstream. 503 Service Unavailable means the service is temporarily unable to handle the request, for example maintenance, overload, rate limiting or no healthy targets. 504 Gateway Timeout means the proxy did not get a response from the upstream in time; in nginx the default proxy_read_timeout is 60 seconds."}},
+        {"@type":"Question","name":"Should I use 301 or 308, 302 or 307?","acceptedAnswer":{"@type":"Answer","text":"301 and 308 are permanent, 302 and 307 are temporary. The difference is the request method: for historical reasons clients may turn a POST into a GET after a 301 or 302, while 307 and 308 forbid changing the method. For plain page moves and HTTP-to-HTTPS redirects of GET traffic, 301 is fine and universally understood. For APIs or forms that must keep POST, PUT or DELETE, use 308 or 307."}},
+        {"@type":"Question","name":"Are 444, 499 and 520 to 526 real HTTP status codes?","acceptedAnswer":{"@type":"Answer","text":"No. They are not in the IANA HTTP Status Code Registry. 444 and 499 are nginx-internal codes: 444 tells nginx to close the connection without sending any response, and 499 is written to the access log when the client closed the connection before nginx could answer. 520 to 526 are generated by Cloudflare's edge to describe problems between Cloudflare and your origin server, such as a refused connection, a timeout or a TLS failure."}},
+        {"@type":"Question","name":"How do I check the HTTP status code of a URL from the command line?","acceptedAnswer":{"@type":"Answer","text":"Run curl -I https://example.com/ to send a HEAD request and print the status line and headers. Some applications answer HEAD differently from GET, so for an exact check use curl -s -o /dev/null -w '%{http_code}\\n' https://example.com/ which performs a normal GET and prints only the code. Add -L to follow redirects, -v to see the TLS handshake and request headers, and --resolve example.com:443:203.0.113.10 to test one specific origin server behind a CDN or load balancer."}}
+    ]}</script>
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1924789684268835" crossorigin="anonymous"></script>
     <style>
         .cat-chip { display:inline-block; padding:0.2rem 0.6rem; border-radius:6px; font-family:'JetBrains Mono',monospace; font-size:0.75rem; font-weight:600; }
@@ -22,16 +29,30 @@
         .cat-3xx { background:rgba(234,179,8,0.15); color:#eab308; }
         .cat-4xx { background:rgba(249,115,22,0.15); color:#fb923c; }
         .cat-5xx { background:rgba(239,68,68,0.15); color:#ef4444; }
-        .status-card { background:var(--bg-secondary); border:1px solid var(--border); border-radius:8px; padding:0.9rem 1rem; margin-bottom:0.5rem; }
+        .status-card { background:var(--bg-secondary); border:1px solid var(--border); border-radius:8px; padding:0.9rem 1rem; margin-bottom:0.5rem; scroll-margin-top:90px; transition:border-color .3s, box-shadow .3s; }
+        .status-card.is-target { border-color:var(--accent); box-shadow:0 0 0 2px rgba(34,197,94,0.25); }
         .status-head { display:flex; align-items:center; gap:0.75rem; margin-bottom:0.4rem; flex-wrap:wrap; }
-        .status-code { font-family:'JetBrains Mono',monospace; font-size:1.1rem; font-weight:600; color:var(--accent); }
+        .status-code { font-family:'JetBrains Mono',monospace; font-size:1.1rem; font-weight:600; color:var(--accent); text-decoration:none; }
+        .status-code:hover { text-decoration:underline; }
         .status-name { font-weight:600; color:var(--text-primary); }
         .status-desc { color:var(--text-secondary); font-size:0.9rem; line-height:1.5; }
-        .status-rfc { color:var(--text-muted); font-size:0.75rem; font-family:'JetBrains Mono',monospace; }
+        .status-rfc { color:var(--text-muted); font-size:0.75rem; font-family:'JetBrains Mono',monospace; margin-left:auto; }
+        .status-tag { font-size:0.7rem; font-weight:600; padding:0.1rem 0.45rem; border-radius:4px; border:1px solid var(--border); color:var(--text-muted); text-transform:uppercase; letter-spacing:0.03em; }
+        .status-tag.ns { border-color:rgba(234,179,8,0.5); color:#eab308; }
+        .link-btn { background:none; border:1px solid var(--border); color:var(--text-muted); border-radius:5px; padding:0.1rem 0.45rem; font-size:0.75rem; cursor:pointer; }
+        .link-btn:hover { color:var(--text-primary); border-color:var(--accent); }
+        .status-details { margin-top:0.6rem; }
+        .status-details summary { cursor:pointer; color:var(--accent); font-size:0.85rem; font-weight:600; }
+        .status-details .d-body { margin-top:0.5rem; color:var(--text-secondary); font-size:0.88rem; line-height:1.55; }
+        .status-details h4 { margin:0.6rem 0 0.25rem; font-size:0.85rem; color:var(--text-primary); }
+        .status-details ul { margin:0 0 0 1.1rem; padding:0; }
+        .status-details pre, .seo-content pre { background:var(--bg-primary); border:1px solid var(--border); border-radius:6px; padding:0.6rem 0.75rem; overflow-x:auto; font-family:'JetBrains Mono',monospace; font-size:0.8rem; line-height:1.5; white-space:pre; }
         .cat-filter { display:flex; flex-wrap:wrap; gap:0.4rem; margin-bottom:1rem; }
         .cat-btn { background:var(--bg-secondary); border:1px solid var(--border); color:var(--text-secondary); padding:0.4rem 0.8rem; border-radius:6px; font-family:'JetBrains Mono',monospace; font-size:0.85rem; cursor:pointer; }
         .cat-btn.active { background:var(--accent); color:var(--bg-primary); border-color:var(--accent); }
         .cat-btn:hover:not(.active) { background:var(--bg-hover); color:var(--text-primary); }
+        .seo-content table { width:100%; border-collapse:collapse; margin:0.75rem 0; font-size:0.9rem; }
+        .seo-content th, .seo-content td { border:1px solid var(--border); padding:0.45rem 0.6rem; text-align:left; vertical-align:top; }
     </style>
     <link rel="icon" href="/favicon.ico" sizes="48x48">
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -62,37 +83,91 @@
         <div class="tool-container">
             <div class="tool-header">
                 <h1 class="tool-title">HTTP Status Codes</h1>
-                <p class="tool-description">Searchable reference for every HTTP response code (1xx informational through 5xx server error) with concise explanations and RFC references.</p>
+                <p class="tool-description">Every IANA-registered HTTP response code from 1xx to 5xx with its RFC 9110 meaning, plus the non-standard nginx, Cloudflare and AWS ALB codes you meet in real logs. The most common codes expand into causes and <code>curl</code> checks. Link straight to any code, e.g. <a href="#502">#502</a>.</p>
             </div>
             <div class="tool-content">
                 <div class="form-group">
-                    <input type="text" id="hsSearch" class="form-input" placeholder="Search by code (404) or text (not found, redirect, rate limit)…" oninput="render()" style="font-size:1rem;">
+                    <label for="hsSearch" class="form-label">Search</label>
+                    <input type="search" id="hsSearch" class="form-input" placeholder="Code (404, 50) or text (timeout, redirect, nginx, cloudflare)…" autocomplete="off" style="font-size:1rem;">
                 </div>
-                <div class="cat-filter">
-                    <button class="cat-btn active" data-cat="all" onclick="setCat('all')">All</button>
-                    <button class="cat-btn" data-cat="1" onclick="setCat('1')">1xx Informational</button>
-                    <button class="cat-btn" data-cat="2" onclick="setCat('2')">2xx Success</button>
-                    <button class="cat-btn" data-cat="3" onclick="setCat('3')">3xx Redirect</button>
-                    <button class="cat-btn" data-cat="4" onclick="setCat('4')">4xx Client error</button>
-                    <button class="cat-btn" data-cat="5" onclick="setCat('5')">5xx Server error</button>
+                <div class="cat-filter" role="group" aria-label="Filter by class">
+                    <button type="button" class="cat-btn active" data-cat="all">All</button>
+                    <button type="button" class="cat-btn" data-cat="1">1xx Informational</button>
+                    <button type="button" class="cat-btn" data-cat="2">2xx Success</button>
+                    <button type="button" class="cat-btn" data-cat="3">3xx Redirect</button>
+                    <button type="button" class="cat-btn" data-cat="4">4xx Client error</button>
+                    <button type="button" class="cat-btn" data-cat="5">5xx Server error</button>
+                    <button type="button" class="cat-btn" data-cat="ns">Non-standard</button>
+                    <button type="button" class="cat-btn" data-cat="det">Troubleshooting guides</button>
                 </div>
-                <div id="hsCount" style="color:var(--text-muted);font-size:0.85rem;margin-bottom:0.75rem;"></div>
+                <div id="hsCount" aria-live="polite" style="color:var(--text-muted);font-size:0.85rem;margin-bottom:0.75rem;"></div>
                 <div id="hsList"></div>
+                <div id="hsEmpty" hidden style="padding:1rem;color:var(--text-muted);text-align:center;">No matches. Try a shorter search or the “All” filter.</div>
             </div>
         </div>
 
         <section class="seo-content">
             <h2>About HTTP Status Codes</h2>
-            <p>HTTP status codes are three-digit numbers sent by a server in the first line of its response, telling the client whether the request succeeded, requires further action, or failed. They are defined primarily in <a href="https://datatracker.ietf.org/doc/html/rfc9110" rel="noopener">RFC 9110</a> (replacing the older RFC 7231/2616), with additional codes registered in <a href="https://www.iana.org/assignments/http-status-codes/" rel="noopener">the IANA registry</a>.</p>
+            <p>An HTTP status code is the three-digit number in the first line of every response. It tells the client, and anything in between such as a CDN, a load balancer or a cache, whether the request worked, needs another step, or failed and on which side. The codes are defined in <a href="https://www.rfc-editor.org/rfc/rfc9110#section-15" rel="noopener">RFC 9110, section 15</a> (HTTP Semantics, which replaced RFC 7231 and the older RFC 2616). Extensions such as 429, 431 and 451 come from their own RFCs. The authoritative list is the <a href="https://www.iana.org/assignments/http-status-codes/" rel="noopener">IANA HTTP Status Code Registry</a>. This reference follows that registry and labels everything outside it as non-standard.</p>
 
             <h3>The Five Classes</h3>
             <ul>
-                <li><strong>1xx — Informational:</strong> request received, processing continues. Rarely seen by application code.</li>
-                <li><strong>2xx — Success:</strong> request succeeded. <code>200 OK</code> is the default; <code>201 Created</code>, <code>204 No Content</code>, and <code>206 Partial Content</code> have specific meanings.</li>
-                <li><strong>3xx — Redirection:</strong> client must take further action. <code>301</code>/<code>308</code> are permanent; <code>302</code>/<code>307</code> are temporary; <code>304 Not Modified</code> means the cached version is still good.</li>
-                <li><strong>4xx — Client error:</strong> the request looks wrong. <code>400</code>, <code>401</code>, <code>403</code>, <code>404</code>, and <code>429</code> are the most common.</li>
-                <li><strong>5xx — Server error:</strong> the server failed. <code>500 Internal Server Error</code> is the catch-all; <code>502</code>, <code>503</code>, and <code>504</code> usually indicate upstream/load issues.</li>
+                <li><strong>1xx Informational:</strong> an interim response; the final one follows. You see <code>100 Continue</code> with large uploads, <code>101 Switching Protocols</code> on WebSocket upgrades and <code>103 Early Hints</code> on sites that preload assets.</li>
+                <li><strong>2xx Success:</strong> the request was received, understood and accepted. <code>200 OK</code> is the default; <code>201 Created</code>, <code>204 No Content</code> and <code>206 Partial Content</code> each mean something specific.</li>
+                <li><strong>3xx Redirection:</strong> the client has to do something else, usually follow the <code>Location</code> header. <code>301</code> and <code>308</code> are permanent, <code>302</code>, <code>303</code> and <code>307</code> are temporary, and <code>304 Not Modified</code> says the cached copy is still valid.</li>
+                <li><strong>4xx Client error:</strong> the server blames the request: bad syntax, missing credentials, no permission, wrong URL, too large or too many. Sending the same request again will not help.</li>
+                <li><strong>5xx Server error:</strong> the request looked valid but the server, or a proxy in front of it, failed. Retrying with back-off is often reasonable, especially for 502, 503 and 504.</li>
             </ul>
+            <p>Clients that meet an unknown code must treat it like the <code>x00</code> code of its class. A client that does not know <code>429</code> handles it like <code>400</code>, for example. That rule is why vendors can invent codes such as 499 or 520 without breaking browsers.</p>
+
+            <h3>How to Check a Status Code with curl</h3>
+            <p>The browser hides most of what matters: redirects, caching headers and which hop produced the error. Use <code>curl</code> instead:</p>
+<pre># Status line + headers (HEAD request)
+curl -I https://example.com/
+
+# Exact status of a normal GET, nothing else
+curl -s -o /dev/null -w '%{http_code}\n' https://example.com/
+
+# Follow the redirect chain and show every hop
+curl -sIL http://example.com/ | grep -iE '^(HTTP|location)'
+
+# Timing breakdown: which phase is slow?
+curl -s -o /dev/null -w 'code=%{http_code} connect=%{time_connect} tls=%{time_appconnect} ttfb=%{time_starttransfer} total=%{time_total}\n' https://example.com/
+
+# Bypass the CDN / load balancer and hit one origin directly
+curl -svk --resolve example.com:443:203.0.113.10 https://example.com/ -o /dev/null</pre>
+            <p><code>-I</code> sends <code>HEAD</code>, and some frameworks route <code>HEAD</code> differently or return 405 for it. When the result looks odd, repeat it with a real GET using <code>-o /dev/null -w</code>. <code>--resolve</code> keeps the correct SNI and <code>Host</code> header while pinning the IP address, which is the cleanest way to tell an edge problem from an origin problem.</p>
+
+            <h3>Which Hop Generated the Error?</h3>
+            <p>Most production outages show up as a 5xx that your application never produced. Read the response before you read the application logs. A <code>Server</code> header of <code>cloudflare</code> combined with a 52x code means Cloudflare's edge could not get a usable answer from your origin. An nginx-branded error page means the reverse proxy gave up on its upstream, and the nginx <code>error.log</code> names the reason: <code>upstream timed out</code> gives 504, <code>no live upstreams</code> or <code>upstream prematurely closed connection</code> gives 502. On an AWS Application Load Balancer, compare the <code>HTTPCode_ELB_5XX_Count</code> metric (generated by the load balancer) with <code>HTTPCode_Target_5XX_Count</code> (returned by your targets). Work from the outside in: edge, load balancer, reverse proxy, application server, database.</p>
+
+            <h3>Redirects: 301 vs 302 vs 303 vs 307 vs 308</h3>
+            <table>
+                <thead><tr><th>Code</th><th>Permanent?</th><th>Method preserved?</th><th>Typical use</th></tr></thead>
+                <tbody>
+                    <tr><td>301</td><td>Yes</td><td>No, POST may become GET</td><td>Domain moves, HTTP → HTTPS for pages</td></tr>
+                    <tr><td>302</td><td>No</td><td>No, POST may become GET</td><td>Login redirects, short-lived moves</td></tr>
+                    <tr><td>303</td><td>No</td><td>Always becomes GET</td><td>Post/Redirect/Get after a form submit</td></tr>
+                    <tr><td>307</td><td>No</td><td>Yes</td><td>Temporary moves of API endpoints</td></tr>
+                    <tr><td>308</td><td>Yes</td><td>Yes</td><td>Permanent moves of APIs and non-GET traffic</td></tr>
+                </tbody>
+            </table>
+            <p>Browsers cache permanent redirects hard. Test a new redirect with a 302 or 307 first, and switch to 301 or 308 once the target is right.</p>
+
+            <h3>Retry or Not?</h3>
+            <p>Retry <code>408</code>, <code>429</code>, <code>502</code>, <code>503</code> and <code>504</code> with exponential back-off, and honour <code>Retry-After</code> when it is present. Do not retry most other 4xx codes, because the request itself is wrong. Cloudflare's own guidance treats <code>525</code> and <code>526</code> as not retryable until someone fixes the origin's TLS configuration. Only repeat non-idempotent requests (POST) automatically if the API offers idempotency keys.</p>
+
+            <h3>Non-Standard Codes</h3>
+            <p>Codes tagged <em>non-standard</em> in the list are not in the IANA registry. They come from one vendor and mean nothing outside that vendor's products. nginx uses 444, 494–497 and 499 internally; 494–497 reach the client as a plain <code>400</code> with a specific error page. Cloudflare's edge generates 520–526. The AWS Application Load Balancer adds 460, 463 and 464. Search for the vendor name (<em>nginx</em>, <em>cloudflare</em>, <em>aws</em>) to list them.</p>
+
+            <div class="faq">
+                <h3>Frequently Asked Questions</h3>
+                <div class="faq-item"><button class="faq-question">What is the difference between 401 and 403?</button><div class="faq-answer">401 Unauthorized means the request lacks valid authentication credentials; RFC 9110 requires the server to send a WWW-Authenticate header with at least one challenge, so logging in or sending a token can fix it. 403 Forbidden means the server understood the request and refuses it; if credentials were sent, they are not sufficient. In nginx and Apache a 403 usually comes from an allow/deny rule, a missing index file with directory listing disabled, or file permissions, not from a login problem.</div></div>
+                <div class="faq-item"><button class="faq-question">What is the difference between 502, 503 and 504?</button><div class="faq-answer">All three usually come from a proxy or load balancer, not from your application. 502 Bad Gateway means the proxy got an invalid response or a refused or reset connection from the upstream. 503 Service Unavailable means the service is temporarily unable to handle the request, for example maintenance, overload, rate limiting or no healthy targets. 504 Gateway Timeout means the proxy did not get a response from the upstream in time; in nginx the default proxy_read_timeout is 60 seconds.</div></div>
+                <div class="faq-item"><button class="faq-question">Should I use 301 or 308, 302 or 307?</button><div class="faq-answer">301 and 308 are permanent, 302 and 307 are temporary. The difference is the request method: for historical reasons clients may turn a POST into a GET after a 301 or 302, while 307 and 308 forbid changing the method. For plain page moves and HTTP-to-HTTPS redirects of GET traffic, 301 is fine and universally understood. For APIs or forms that must keep POST, PUT or DELETE, use 308 or 307.</div></div>
+                <div class="faq-item"><button class="faq-question">Are 444, 499 and 520 to 526 real HTTP status codes?</button><div class="faq-answer">No. They are not in the IANA HTTP Status Code Registry. 444 and 499 are nginx-internal codes: 444 tells nginx to close the connection without sending any response, and 499 is written to the access log when the client closed the connection before nginx could answer. 520 to 526 are generated by Cloudflare's edge to describe problems between Cloudflare and your origin server, such as a refused connection, a timeout or a TLS failure.</div></div>
+                <div class="faq-item"><button class="faq-question">How do I check the HTTP status code of a URL from the command line?</button><div class="faq-answer">Run curl -I https://example.com/ to send a HEAD request and print the status line and headers. Some applications answer HEAD differently from GET, so for an exact check use curl -s -o /dev/null -w '%{http_code}\n' https://example.com/ which performs a normal GET and prints only the code. Add -L to follow redirects, -v to see the TLS handshake and request headers, and --resolve example.com:443:203.0.113.10 to test one specific origin server behind a CDN or load balancer.</div></div>
+            </div>
         </section>
 
         <section class="related-tools"><h2>Related Tools</h2><div class="related-grid">
@@ -106,7 +181,7 @@
         <div class="footer-content">
             <div class="footer-section"><h3>Network Tools</h3><a href="/tools/subnet-calculator.html">Subnet Calculator</a><a href="/tools/ipv6-subnet-calculator.html">IPv6 Subnet</a><a href="/tools/bgp-asn-lookup.html">BGP ASN Lookup</a></div>
             <div class="footer-section"><h3>Security Tools</h3><a href="/tools/password-generator.html">Password Generator</a><a href="/tools/bcrypt.html">Bcrypt</a><a href="/tools/totp-generator.html">TOTP Generator</a></div>
-            <div class="footer-section"><h3>Developer Tools</h3><a href="/tools/http-status-codes.html">HTTP Status Codes</a><a href="/tools/color-converter.html">Color Converter</a><a href="/tools/json-formatter.html">JSON Formatter</a></div>
+            <div class="footer-section"><h3>Developer Tools</h3><a href="/tools/http-status-codes.html">HTTP Status Codes</a><a href="/tools/mtu-mss-calculator.html">MTU &amp; MSS Calculator</a><a href="/tools/json-formatter.html">JSON Formatter</a></div>
         </div>
         <div class="footer-bottom"><p>&copy; 2026 OPS-BOX.net — Free IT utilities for professionals. | <a href="/about.html" style="color:inherit;text-decoration:underline;">About</a> · <a href="/contact.html" style="color:inherit;text-decoration:underline;">Contact</a> · <a href="/terms-of-service.html" style="color:inherit;text-decoration:underline;">Terms</a> · <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p></div>
     </footer>
@@ -115,96 +190,286 @@
 
     <script src="../js/common.js?v=20261122"></script>
     <script>
+        // [code, name, one-line meaning, reference, tag]
+        // tag: '' = registered, 'temp' = temporary registration, 'reserved'/'deprecated'/'obsolete' = registry status,
+        //      'nginx' / 'cloudflare' / 'aws' = non-standard vendor code (not in the IANA registry).
         const CODES = [
-            [100, 'Continue', 'Client should continue with the request. Used in conjunction with Expect: 100-continue.', 'RFC 9110'],
-            [101, 'Switching Protocols', 'Server is switching to a different protocol per the Upgrade header (e.g. WebSockets).', 'RFC 9110'],
-            [102, 'Processing', 'Server has received the request and is processing it but no response is available yet.', 'RFC 2518 (WebDAV)'],
-            [103, 'Early Hints', 'Used with the Link header to start preloading resources before the final response.', 'RFC 8297'],
+            [100, 'Continue', 'The request headers were accepted; the client should send the body. Used with Expect: 100-continue before large uploads.', 'RFC 9110 §15.2.1', ''],
+            [101, 'Switching Protocols', 'The server agrees to switch protocol per the Upgrade header, e.g. a WebSocket handshake.', 'RFC 9110 §15.2.2', ''],
+            [102, 'Processing', 'WebDAV: the request is still being processed; no final response yet. Rarely used today.', 'RFC 2518', ''],
+            [103, 'Early Hints', 'Interim response carrying Link headers so the browser can preload assets before the final response.', 'RFC 8297', ''],
+            [104, 'Upload Resumption Supported', 'Resumable uploads (IETF draft). Temporary IANA registration, listed with an expiry date of 2026-11-13.', 'draft-ietf-httpbis-resumable-upload', 'temp'],
 
-            [200, 'OK', 'Standard success response. The body contains the requested resource.', 'RFC 9110'],
-            [201, 'Created', 'Resource was successfully created. The Location header typically points to it.', 'RFC 9110'],
-            [202, 'Accepted', 'Request accepted for processing but not yet completed (asynchronous).', 'RFC 9110'],
-            [203, 'Non-Authoritative Information', 'Returned metadata is from a third-party copy, not the origin server.', 'RFC 9110'],
-            [204, 'No Content', 'Request succeeded; no body returned. Common for PUT/DELETE.', 'RFC 9110'],
-            [205, 'Reset Content', 'Tell the client to reset its view (e.g. clear a form).', 'RFC 9110'],
-            [206, 'Partial Content', 'Response to a Range request — only the requested byte range is returned.', 'RFC 9110'],
-            [207, 'Multi-Status', 'WebDAV: response body contains XML with multiple status codes.', 'RFC 4918'],
-            [208, 'Already Reported', 'WebDAV: members of a binding already enumerated.', 'RFC 5842'],
-            [226, 'IM Used', 'Response is the result of applying delta encoding to the requested resource.', 'RFC 3229'],
+            [200, 'OK', 'The request succeeded; the body carries the result.', 'RFC 9110 §15.3.1', ''],
+            [201, 'Created', 'A new resource was created; the Location header usually points to it.', 'RFC 9110 §15.3.2', ''],
+            [202, 'Accepted', 'Accepted for processing but not finished (asynchronous job, queue).', 'RFC 9110 §15.3.3', ''],
+            [203, 'Non-Authoritative Information', 'Success, but a transforming proxy modified the origin server\'s 200 response.', 'RFC 9110 §15.3.4', ''],
+            [204, 'No Content', 'Success with no body. Common for PUT, DELETE and CORS preflight responses.', 'RFC 9110 §15.3.5', ''],
+            [205, 'Reset Content', 'Success; the client should reset the document view (e.g. clear a form).', 'RFC 9110 §15.3.6', ''],
+            [206, 'Partial Content', 'Response to a Range request: only the requested byte range(s). Used for resumable downloads and video seeking.', 'RFC 9110 §15.3.7', ''],
+            [207, 'Multi-Status', 'WebDAV: the XML body contains separate status codes for multiple resources.', 'RFC 4918', ''],
+            [208, 'Already Reported', 'WebDAV: members of this binding were already listed earlier in the response.', 'RFC 5842', ''],
+            [226, 'IM Used', 'The response is the result of instance manipulations (delta encoding) applied to the resource.', 'RFC 3229', ''],
 
-            [300, 'Multiple Choices', 'Multiple resources match; client must choose.', 'RFC 9110'],
-            [301, 'Moved Permanently', 'Permanent redirect. Update bookmarks/links. Search engines transfer ranking.', 'RFC 9110'],
-            [302, 'Found', 'Temporary redirect. The original URL should still be used in future requests.', 'RFC 9110'],
-            [303, 'See Other', 'After a POST, redirect the client to GET a different resource (POST/Redirect/GET pattern).', 'RFC 9110'],
-            [304, 'Not Modified', 'Cached response is still valid. Used with conditional GET (If-Modified-Since / ETag).', 'RFC 9110'],
-            [307, 'Temporary Redirect', 'Like 302, but method must not change (POST stays POST).', 'RFC 9110'],
-            [308, 'Permanent Redirect', 'Like 301, but method must not change. Preferred over 301 for non-GET redirects.', 'RFC 7538'],
+            [300, 'Multiple Choices', 'Several representations exist; the client or user should pick one.', 'RFC 9110 §15.4.1', ''],
+            [301, 'Moved Permanently', 'Permanent redirect to the Location URI. Clients may change POST to GET when following it.', 'RFC 9110 §15.4.2', ''],
+            [302, 'Found', 'Temporary redirect; keep using the original URI. Clients may change POST to GET when following it.', 'RFC 9110 §15.4.3', ''],
+            [303, 'See Other', 'Redirect that always continues with GET, typically after a POST (Post/Redirect/Get).', 'RFC 9110 §15.4.4', ''],
+            [304, 'Not Modified', 'Conditional GET/HEAD: the cached copy is still valid, so no body is sent.', 'RFC 9110 §15.4.5', ''],
+            [305, 'Use Proxy', 'Deprecated. Formerly told the client to use a proxy; do not use.', 'RFC 9110 §15.4.6', 'deprecated'],
+            [306, '(Unused)', 'Defined in an earlier HTTP spec, no longer used; the code is reserved.', 'RFC 9110 §15.4.7', 'reserved'],
+            [307, 'Temporary Redirect', 'Temporary redirect; the client must not change the request method.', 'RFC 9110 §15.4.8', ''],
+            [308, 'Permanent Redirect', 'Permanent redirect; the client must not change the request method.', 'RFC 9110 §15.4.9', ''],
 
-            [400, 'Bad Request', 'The request is malformed (syntax, framing). Server cannot or will not process it.', 'RFC 9110'],
-            [401, 'Unauthorized', 'Authentication required or failed. Send credentials. Despite the name, this is really "Unauthenticated".', 'RFC 9110'],
-            [402, 'Payment Required', 'Reserved for future use; rarely seen.', 'RFC 9110'],
-            [403, 'Forbidden', 'Server understood but refuses. Auth will not help — the credentials lack permission.', 'RFC 9110'],
-            [404, 'Not Found', 'Resource does not exist (or server does not want to reveal whether it does).', 'RFC 9110'],
-            [405, 'Method Not Allowed', 'HTTP method (GET/POST/etc.) is not supported for this resource. Allow header lists valid methods.', 'RFC 9110'],
-            [406, 'Not Acceptable', 'No representation matches the Accept-* headers from the client.', 'RFC 9110'],
-            [407, 'Proxy Authentication Required', 'Like 401 but authenticate with the proxy, not the origin.', 'RFC 9110'],
-            [408, 'Request Timeout', 'Client did not send the full request in time.', 'RFC 9110'],
-            [409, 'Conflict', 'Request conflicts with current resource state (e.g. version conflict).', 'RFC 9110'],
-            [410, 'Gone', 'Resource is permanently gone. Stronger than 404 — do not retry.', 'RFC 9110'],
-            [411, 'Length Required', 'Content-Length header missing where required.', 'RFC 9110'],
-            [412, 'Precondition Failed', 'If-Match / If-Unmodified-Since precondition not met.', 'RFC 9110'],
-            [413, 'Content Too Large', 'Request body exceeds the server limit (formerly "Payload Too Large").', 'RFC 9110'],
-            [414, 'URI Too Long', 'URI exceeds server limits — usually a very long query string.', 'RFC 9110'],
-            [415, 'Unsupported Media Type', 'Content-Type of the request body is not supported.', 'RFC 9110'],
-            [416, 'Range Not Satisfiable', 'Requested byte range is outside the resource length.', 'RFC 9110'],
-            [417, 'Expectation Failed', 'Server cannot meet the Expect header requirements.', 'RFC 9110'],
-            [418, "I'm a teapot", 'April Fools joke (RFC 2324); some services use it to indicate a refused request.', 'RFC 2324'],
-            [421, 'Misdirected Request', 'Request was directed to a server that cannot produce a response (common with HTTP/2 connection coalescing).', 'RFC 9110'],
-            [422, 'Unprocessable Content', 'Semantic errors in the request body (e.g. valid JSON but missing required fields).', 'RFC 9110'],
-            [423, 'Locked', 'WebDAV: resource is locked.', 'RFC 4918'],
-            [424, 'Failed Dependency', 'WebDAV: request failed because a previous request failed.', 'RFC 4918'],
-            [425, 'Too Early', 'Server unwilling to process a request that may be replayed (TLS 1.3 0-RTT).', 'RFC 8470'],
-            [426, 'Upgrade Required', 'Client must switch to a different protocol (per Upgrade header).', 'RFC 9110'],
-            [428, 'Precondition Required', 'Server requires the request to be conditional (e.g. If-Match).', 'RFC 6585'],
-            [429, 'Too Many Requests', 'Rate limit exceeded. Honor the Retry-After header.', 'RFC 6585'],
-            [431, 'Request Header Fields Too Large', 'Header section is too big.', 'RFC 6585'],
-            [451, 'Unavailable For Legal Reasons', 'Content blocked due to legal demand (named after Fahrenheit 451).', 'RFC 7725'],
+            [400, 'Bad Request', 'The server will not process the request because of a client error: bad syntax, invalid framing, oversized header.', 'RFC 9110 §15.5.1', ''],
+            [401, 'Unauthorized', 'Missing or invalid authentication credentials. The server must send WWW-Authenticate with a challenge.', 'RFC 9110 §15.5.2', ''],
+            [402, 'Payment Required', 'Reserved for future use. Some APIs use it for billing problems.', 'RFC 9110 §15.5.3', ''],
+            [403, 'Forbidden', 'Understood but refused. Credentials, if sent, are not sufficient for this resource.', 'RFC 9110 §15.5.4', ''],
+            [404, 'Not Found', 'No current representation for the target, or the server will not reveal that one exists.', 'RFC 9110 §15.5.5', ''],
+            [405, 'Method Not Allowed', 'The method is not supported for this resource. The server must send an Allow header.', 'RFC 9110 §15.5.6', ''],
+            [406, 'Not Acceptable', 'No representation matches the request\'s Accept-* headers.', 'RFC 9110 §15.5.7', ''],
+            [407, 'Proxy Authentication Required', 'Like 401, but the client must authenticate to the proxy (Proxy-Authenticate header).', 'RFC 9110 §15.5.8', ''],
+            [408, 'Request Timeout', 'The server did not receive a complete request in the time it was willing to wait.', 'RFC 9110 §15.5.9', ''],
+            [409, 'Conflict', 'Conflicts with the current state of the resource, e.g. an edit conflict; the user may resolve and resubmit.', 'RFC 9110 §15.5.10', ''],
+            [410, 'Gone', 'The resource is no longer available and this is likely permanent. Stronger than 404.', 'RFC 9110 §15.5.11', ''],
+            [411, 'Length Required', 'The server requires a Content-Length header.', 'RFC 9110 §15.5.12', ''],
+            [412, 'Precondition Failed', 'A condition in If-Match, If-Unmodified-Since or similar headers evaluated to false.', 'RFC 9110 §15.5.13', ''],
+            [413, 'Content Too Large', 'The request body is larger than the server will accept (formerly "Payload Too Large").', 'RFC 9110 §15.5.14', ''],
+            [414, 'URI Too Long', 'The request target is longer than the server will interpret, usually a huge query string.', 'RFC 9110 §15.5.15', ''],
+            [415, 'Unsupported Media Type', 'The request body\'s Content-Type or Content-Encoding is not supported.', 'RFC 9110 §15.5.16', ''],
+            [416, 'Range Not Satisfiable', 'None of the requested byte ranges can be served (e.g. beyond the end of the file).', 'RFC 9110 §15.5.17', ''],
+            [417, 'Expectation Failed', 'The Expect header (e.g. 100-continue) could not be met by an inbound server.', 'RFC 9110 §15.5.18', ''],
+            [418, "(Unused) — \"I'm a teapot\"", 'Reserved. It started as an April Fools joke (RFC 2324); some services still return it to refuse requests.', 'RFC 9110 §15.5.19', 'reserved'],
+            [421, 'Misdirected Request', 'The server cannot give an authoritative answer for this URI on this connection (e.g. a reused HTTP/2 connection, or an SNI/Host mismatch).', 'RFC 9110 §15.5.20', ''],
+            [422, 'Unprocessable Content', 'Syntax and content type are fine, but the contained instructions cannot be processed (validation error).', 'RFC 9110 §15.5.21', ''],
+            [423, 'Locked', 'WebDAV: the resource is locked.', 'RFC 4918', ''],
+            [424, 'Failed Dependency', 'WebDAV: the request failed because another request it depended on failed.', 'RFC 4918', ''],
+            [425, 'Too Early', 'The server will not risk processing a request that might be replayed (TLS 1.3 early data / 0-RTT).', 'RFC 8470', ''],
+            [426, 'Upgrade Required', 'The client must switch protocol; the server must send an Upgrade header naming it.', 'RFC 9110 §15.5.22', ''],
+            [428, 'Precondition Required', 'The server requires a conditional request (e.g. If-Match) to prevent lost updates.', 'RFC 6585', ''],
+            [429, 'Too Many Requests', 'Rate limit exceeded. The response may include Retry-After.', 'RFC 6585', ''],
+            [431, 'Request Header Fields Too Large', 'One header or the whole header section is too large; usually oversized cookies.', 'RFC 6585', ''],
+            [451, 'Unavailable For Legal Reasons', 'Access denied because of a legal demand (court order, government block).', 'RFC 7725', ''],
 
-            [500, 'Internal Server Error', 'Catch-all for unexpected server failures. Check server logs.', 'RFC 9110'],
-            [501, 'Not Implemented', 'Server does not recognize the request method or cannot fulfil it.', 'RFC 9110'],
-            [502, 'Bad Gateway', 'Server acting as a proxy received an invalid response from upstream.', 'RFC 9110'],
-            [503, 'Service Unavailable', 'Server is temporarily overloaded or down for maintenance. Honor Retry-After.', 'RFC 9110'],
-            [504, 'Gateway Timeout', 'Server acting as a proxy did not get a timely response from upstream.', 'RFC 9110'],
-            [505, 'HTTP Version Not Supported', 'Server does not support the HTTP protocol version.', 'RFC 9110'],
-            [506, 'Variant Also Negotiates', 'Configuration error in content negotiation.', 'RFC 2295'],
-            [507, 'Insufficient Storage', 'WebDAV: server out of disk.', 'RFC 4918'],
-            [508, 'Loop Detected', 'WebDAV: infinite loop detected during processing.', 'RFC 5842'],
-            [510, 'Not Extended', 'Further extensions to the request are required.', 'RFC 2774'],
-            [511, 'Network Authentication Required', 'Client must authenticate to the network (e.g. captive portal).', 'RFC 6585'],
-        ];
+            [444, 'No Response (nginx)', 'nginx-internal: "return 444;" closes the connection without sending any response. Clients see an empty reply.', 'nginx docs', 'nginx'],
+            [460, 'Client Closed Connection (AWS ALB)', 'AWS ALB: the client closed the connection before the load balancer\'s idle timeout elapsed.', 'AWS ALB docs', 'aws'],
+            [463, 'Too Many X-Forwarded-For IPs (AWS ALB)', 'AWS ALB: the X-Forwarded-For header held more than 30 IP addresses.', 'AWS ALB docs', 'aws'],
+            [464, 'Protocol Version Mismatch (AWS ALB)', 'AWS ALB: request protocol incompatible with the target group protocol version (HTTP/1.1 vs HTTP/2/gRPC).', 'AWS ALB docs', 'aws'],
+            [494, 'Request Header Too Large (nginx)', 'nginx-internal: a request header exceeded large_client_header_buffers. Sent to the client as 400 "Request Header Or Cookie Too Large".', 'nginx source', 'nginx'],
+            [495, 'SSL Certificate Error (nginx)', 'nginx-internal: client certificate verification failed. Sent to the client as 400.', 'nginx docs (ssl module)', 'nginx'],
+            [496, 'SSL Certificate Required (nginx)', 'nginx-internal: the client did not present a required certificate. Sent to the client as 400.', 'nginx docs (ssl module)', 'nginx'],
+            [497, 'HTTP Request Sent to HTTPS Port (nginx)', 'nginx-internal: plain HTTP arrived on an SSL port. Sent to the client as 400 "The plain HTTP request was sent to HTTPS port".', 'nginx docs (ssl module)', 'nginx'],
+            [499, 'Client Closed Request (nginx)', 'nginx-internal, logged only: the client closed the connection before nginx sent the response.', 'nginx source', 'nginx'],
 
+            [500, 'Internal Server Error', 'Generic server-side failure. The answer is in the application or web server error log.', 'RFC 9110 §15.6.1', ''],
+            [501, 'Not Implemented', 'The server does not support the functionality required, e.g. an unknown method.', 'RFC 9110 §15.6.2', ''],
+            [502, 'Bad Gateway', 'A gateway or proxy received an invalid response from the upstream server.', 'RFC 9110 §15.6.3', ''],
+            [503, 'Service Unavailable', 'Temporarily unable to handle the request (overload, maintenance). May include Retry-After.', 'RFC 9110 §15.6.4', ''],
+            [504, 'Gateway Timeout', 'A gateway or proxy did not get a timely response from the upstream server.', 'RFC 9110 §15.6.5', ''],
+            [505, 'HTTP Version Not Supported', 'The server does not support, or refuses, the major HTTP version of the request.', 'RFC 9110 §15.6.6', ''],
+            [506, 'Variant Also Negotiates', 'Transparent content negotiation misconfiguration: the chosen variant negotiates itself.', 'RFC 2295', ''],
+            [507, 'Insufficient Storage', 'WebDAV: the server cannot store the representation needed to complete the request.', 'RFC 4918', ''],
+            [508, 'Loop Detected', 'WebDAV: an infinite loop was detected while processing the request.', 'RFC 5842', ''],
+            [510, 'Not Extended', 'Obsoleted (the HTTP extension framework of RFC 2774 is now historic).', 'RFC 2774', 'obsolete'],
+            [511, 'Network Authentication Required', 'The client must authenticate to gain network access, typically a captive portal.', 'RFC 6585', ''],
+
+            [520, 'Web Server Returned an Unknown Error (Cloudflare)', 'Cloudflare: the origin returned an empty, unknown or unexpected response.', 'Cloudflare docs', 'cloudflare'],
+            [521, 'Web Server Is Down (Cloudflare)', 'Cloudflare: the origin refused the connection from Cloudflare.', 'Cloudflare docs', 'cloudflare'],
+            [522, 'Connection Timed Out (Cloudflare)', 'Cloudflare: timed out contacting the origin (TCP handshake or first data).', 'Cloudflare docs', 'cloudflare'],
+            [523, 'Origin Is Unreachable (Cloudflare)', 'Cloudflare: cannot reach the origin at all, usually wrong DNS or no route.', 'Cloudflare docs', 'cloudflare'],
+            [524, 'A Timeout Occurred (Cloudflare)', 'Cloudflare: connected to the origin but got no HTTP response within the proxy read timeout (125 s default).', 'Cloudflare docs', 'cloudflare'],
+            [525, 'SSL Handshake Failed (Cloudflare)', 'Cloudflare: the TLS handshake with the origin failed (Full / Full (strict) mode).', 'Cloudflare docs', 'cloudflare'],
+            [526, 'Invalid SSL Certificate (Cloudflare)', 'Cloudflare: the origin certificate could not be validated (Full (strict) mode).', 'Cloudflare docs', 'cloudflare'],
+        ].sort((a, b) => a[0] - b[0]);
+
+        const NS_TAGS = { nginx: 'nginx', cloudflare: 'Cloudflare', aws: 'AWS ALB' };
+        const REG_TAGS = { temp: 'temporary', reserved: 'reserved', deprecated: 'deprecated', obsolete: 'obsoleted' };
+        const CF = 'https://developers.cloudflare.com/support/troubleshooting/http-status-codes/cloudflare-5xx-errors/';
+
+        // Troubleshooting guides: when / causes / checks (HTML, static and trusted).
+        const DETAILS = {
+            301: { when: 'HTTP → HTTPS, apex → www, old URL → new URL. Search engines treat it as a permanent move.',
+                causes: ['nginx: <code>return 301 https://$host$request_uri;</code> in the port-80 server block.', 'Apache: <code>Redirect permanent</code> or a mod_rewrite rule with <code>[R=301]</code>.', 'CDN: "Always Use HTTPS" or redirect rules at the edge.', 'Loops: Cloudflare in Flexible mode talks HTTP to the origin; if the origin redirects HTTP to HTTPS you get an endless loop.'],
+                cmd: "curl -sIL http://example.com/ | grep -iE '^(HTTP|location)'\ncurl -s -o /dev/null -w '%{http_code} -> %{redirect_url}\\n' http://example.com/" },
+            302: { when: 'Temporary redirects: login pages, A/B tests, maintenance pages, framework defaults.',
+                causes: ['Application <code>redirect()</code> helpers often default to 302.', 'SSO / OAuth flows bounce through several 302s.', 'If a form POST becomes a GET after the redirect, switch to 307 (keep method) or 303 (deliberate GET).'],
+                cmd: "curl -sv -o /dev/null https://example.com/account 2>&1 | grep -iE '^< (HTTP|location|set-cookie)'" },
+            304: { when: 'Revalidation of cached content: the client sent If-None-Match (ETag) or If-Modified-Since and nothing changed.',
+                causes: ['Normal and good: it saves bandwidth.', 'Stale content after a deploy usually means the ETag/Last-Modified did not change, or a CDN keeps serving its cached copy.'],
+                cmd: "curl -sI https://example.com/app.js | grep -iE 'etag|last-modified|cache-control'\ncurl -sI -H 'If-None-Match: \"<etag>\"' https://example.com/app.js | head -1" },
+            308: { when: 'Permanent moves that must keep POST/PUT/DELETE, e.g. API endpoints or trailing-slash normalisation in frameworks.',
+                causes: ['nginx: <code>return 308 https://$host$request_uri;</code>', 'Very old clients that predate 308 treat it like 300, so stay on 301 for legacy GET traffic.'],
+                cmd: "curl -si -X POST -d 'a=1' http://api.example.com/v1/items | grep -iE '^(HTTP|location)'" },
+            400: { when: 'The request is malformed in the server\'s eyes: syntax, framing or an oversized header.',
+                causes: ['nginx: a header line larger than one <code>large_client_header_buffers</code> buffer (default 4 × 8k) → 400 "Request Header Or Cookie Too Large". Typical cause: bloated cookies.', 'nginx: plain HTTP sent to an HTTPS port → 400 "The plain HTTP request was sent to HTTPS port".', 'AWS ALB: request line or one header over 16 K, or the whole header over 64 K.', 'Invalid JSON or missing required fields in APIs (some return 422 instead).'],
+                cmd: "curl -sv https://example.com/ -o /dev/null 2>&1 | grep -E '^[<>]'\n# Test with a huge cookie to reproduce header limits\ncurl -s -o /dev/null -w '%{http_code}\\n' -H \"Cookie: x=$(head -c 9000 /dev/zero | tr '\\0' a)\" https://example.com/" },
+            401: { when: 'Credentials are missing, expired or wrong. A correct 401 always carries a WWW-Authenticate challenge.',
+                causes: ['nginx <code>auth_basic</code> / Apache <code>AuthType Basic</code> without valid credentials.', 'Expired or malformed bearer token (JWT exp, wrong audience, clock skew).', 'AWS ALB authenticate / JWT rules: missing Authorization header, bad signature, missing claim.', 'A proxy stripping the Authorization header before it reaches the app.'],
+                cmd: "curl -sI https://example.com/api | grep -iE '^(HTTP|www-authenticate)'\ncurl -s -o /dev/null -w '%{http_code}\\n' -H \"Authorization: Bearer $TOKEN\" https://example.com/api" },
+            403: { when: 'The server knows what you want and refuses. Re-sending credentials will not help.',
+                causes: ['nginx/Apache <code>deny</code> / <code>Require</code> rules, IP allow-lists, geo blocks.', 'nginx: directory requested, no index file, autoindex off → error.log: <code>directory index of "…" is forbidden</code>.', 'File permissions or SELinux: the worker user cannot read the file (error.log shows "Permission denied").', 'WAF block: AWS WAF on an ALB returns 403; Cloudflare WAF and bot rules also return 403 or a 1xxx error page.'],
+                cmd: "curl -sI https://example.com/path/ | head -5\nsudo tail -n 20 /var/log/nginx/error.log\nnamei -l /var/www/html/path/index.html   # check every directory's permissions" },
+            404: { when: 'Nothing at that path, or the server hides that it exists.',
+                causes: ['Wrong <code>root</code> / <code>alias</code>, or a <code>try_files</code> rule without an SPA fallback.', 'Request hit the default server block because the Host header or SNI did not match any <code>server_name</code>.', 'Case-sensitive file systems: /Image.png ≠ /image.png.', 'Ingress or ALB path rules that send the request to the wrong backend.'],
+                cmd: "curl -sI -H 'Host: example.com' http://203.0.113.10/path\ncurl -sI --resolve example.com:443:203.0.113.10 https://example.com/path\nsudo nginx -T | grep -nE 'server_name|root|alias|try_files'" },
+            405: { when: 'The URL exists but not for this method. The server must list allowed methods in the Allow header.',
+                causes: ['nginx static files: POST (and methods other than GET/HEAD) to a static file returns 405.', 'API routes that only define GET, or a missing OPTIONS handler for CORS preflights.', 'AWS ALB rejects TRACE with 405.', 'curl -I sends HEAD; some frameworks return 405 for HEAD even when GET works.'],
+                cmd: "curl -si -X OPTIONS https://example.com/api/items | grep -iE '^(HTTP|allow|access-control)'\ncurl -s -o /dev/null -w '%{http_code}\\n' https://example.com/api/items   # real GET" },
+            408: { when: 'The client opened a connection but did not finish sending the request in time.',
+                causes: ['nginx: <code>client_header_timeout</code> / <code>client_body_timeout</code> (60 s defaults) expired between reads.', 'AWS ALB: no data before the idle timeout; TCP keep-alives do not count.', 'Slow mobile clients, slowloris-style attacks, preconnecting browsers that never send a request.'],
+                cmd: "curl -s -o /dev/null -w '%{http_code} %{time_total}s\\n' --limit-rate 1k -T bigfile https://example.com/upload" },
+            413: { when: 'Uploads or large POST bodies exceed a size limit somewhere in the chain.',
+                causes: ['nginx: <code>client_max_body_size</code> defaults to 1m. Raise it in the relevant server/location block.', 'Apache: <code>LimitRequestBody</code>; PHP: <code>upload_max_filesize</code> and <code>post_max_size</code>.', 'AWS ALB with a Lambda target: request body over 1 MB.', 'CDN upload limits per plan. Check which hop answered: the error page branding or the Server header.'],
+                cmd: "head -c 5000000 /dev/urandom > /tmp/5m.bin\ncurl -s -o /dev/null -w '%{http_code}\\n' -X POST --data-binary @/tmp/5m.bin https://example.com/upload\nsudo nginx -T | grep -n client_max_body_size" },
+            421: { when: 'The connection you are reusing belongs to a different virtual host than the request. Typical with HTTP/2 connection coalescing and shared or wildcard certificates.',
+                causes: ['Two hostnames resolve to the same IP and share a certificate, but are served by different server blocks or backends.', 'SNI and the Host header disagree, for example on a proxy that rewrites Host but not SNI.', 'Clients may retry a 421 on a new connection; browsers do this automatically.'],
+                cmd: "curl -sv --http2 https://a.example.com/ -o /dev/null 2>&1 | grep -E 'SNI|subject|HTTP/2 '\ncurl -sI --http1.1 https://a.example.com/ | head -1" },
+            429: { when: 'A rate limiter triggered. Good APIs add Retry-After or RateLimit-* headers.',
+                causes: ['nginx <code>limit_req</code> rejects with 503 by default; set <code>limit_req_status 429;</code> for a correct code.', 'Cloudflare / WAF rate-limiting rules, API gateways, upstream SaaS quotas.', 'Many clients behind one NAT or proxy IP sharing a single per-IP limit.'],
+                cmd: "for i in $(seq 1 30); do curl -s -o /dev/null -w '%{http_code} ' https://example.com/api; done; echo\ncurl -sI https://example.com/api | grep -iE 'retry-after|ratelimit'" },
+            444: { when: 'Only in nginx logs, never on the wire: nginx closed the connection without a response.',
+                causes: ['<code>return 444;</code> in a catch-all <code>default_server</code> to drop scanners and requests for unknown hostnames.', 'Bot or abuse rules that silently drop matched requests.'],
+                cmd: "curl -sv http://203.0.113.10/ -H 'Host: unknown.invalid'   # curl: (52) Empty reply from server\ngrep ' 444 ' /var/log/nginx/access.log | tail" },
+            499: { when: 'Only in nginx logs: the client closed the connection before nginx could send the response. The request may still have run upstream.',
+                causes: ['The client, or a load balancer in front of nginx, has a timeout shorter than the upstream processing time.', 'Users navigating away, mobile clients losing signal, health checks with very short timeouts.', 'Slow upstreams: compare <code>$request_time</code> and <code>$upstream_response_time</code> with the client\'s timeout.'],
+                cmd: "awk '$9==499' /var/log/nginx/access.log | tail\n# add to log_format: rt=$request_time urt=$upstream_response_time\ncurl -s -o /dev/null -m 5 -w '%{http_code}\\n' https://example.com/slow   # curl gives up after 5 s" },
+            500: { when: 'Something failed inside the server and nothing more specific applies. The response says little; the logs say a lot.',
+                causes: ['Unhandled application exception, PHP fatal error, crashed worker.', 'nginx: <code>rewrite or internal redirection cycle</code> (bad try_files/rewrite) returns 500.', 'Apache: a syntax error in .htaccess.', 'AWS ALB: WAF evaluation errors or identity-provider (IdP) failures on authenticate rules.'],
+                cmd: "curl -s -o /dev/null -w '%{http_code}\\n' https://example.com/\nsudo tail -f /var/log/nginx/error.log /var/log/php*-fpm.log\njournalctl -u myapp --since '10 min ago'" },
+            502: { when: 'The proxy (nginx, ALB, Cloudflare, ingress) reached for the upstream and got garbage, a refusal or a reset.',
+                causes: ['Upstream is down or listening elsewhere: nginx error.log <code>(111: Connection refused) while connecting to upstream</code>.', 'All upstreams marked failed: <code>no live upstreams</code>. Upstream died mid-response: <code>upstream prematurely closed connection</code>.', 'Response headers too big for <code>proxy_buffer_size</code>: <code>upstream sent too big header</code>. PHP-FPM socket missing or permission denied.', 'AWS ALB: target sent TCP RST or FIN; target keep-alive shorter than the ALB idle timeout; TLS handshake error to the target.'],
+                cmd: "curl -sI http://127.0.0.1:8080/   # test the upstream directly from the proxy host\nss -ltnp | grep 8080\nsudo grep -E 'upstream|connect\\(\\)' /var/log/nginx/error.log | tail" },
+            503: { when: 'The service is deliberately or temporarily unavailable: maintenance, overload, no healthy backends.',
+                causes: ['nginx <code>limit_req</code> / <code>limit_conn</code> reject with 503 by default.', 'AWS ALB: the target group has no registered or healthy-enough targets.', 'Kubernetes: Service has no ready endpoints (failing readiness probes). Maintenance mode in the app or CMS.', 'Honour Retry-After when present; set it yourself on maintenance pages.'],
+                cmd: "curl -sI https://example.com/ | grep -iE '^(HTTP|retry-after|server)'\nkubectl get endpoints myservice\naws elbv2 describe-target-health --target-group-arn \"$TG_ARN\"" },
+            504: { when: 'The proxy connected (or tried to) but the upstream did not answer in time.',
+                causes: ['nginx: <code>upstream timed out (110: Connection timed out) while reading response header from upstream</code>; <code>proxy_read_timeout</code> and <code>proxy_connect_timeout</code> default to 60 s.', 'AWS ALB: cannot connect to the target within 10 s, or no response within the idle timeout.', 'Slow database queries, locks, long reports. Move long jobs to async (202 + polling) rather than raising timeouts forever.', 'Cloudflare reports the same condition as 524.'],
+                cmd: "curl -s -o /dev/null -w 'code=%{http_code} connect=%{time_connect} ttfb=%{time_starttransfer} total=%{time_total}\\n' https://example.com/report\nsudo nginx -T | grep -nE 'proxy_(read|connect|send)_timeout|fastcgi_read_timeout'" },
+            520: { when: 'Cloudflare got something from the origin it could not interpret: empty reply, no status line, protocol violation.',
+                causes: ['Origin crash or PHP process dying mid-request.', 'Firewall or security plugin resetting connections from Cloudflare IP ranges.', 'Response headers over 128 KB (often too many cookies); broken HTTP/2 at the origin.'],
+                cmd: "curl -svk --resolve example.com:443:ORIGIN_IP https://example.com/ -o /dev/null\ncurl -s -o /dev/null -w '%{size_header} bytes of headers\\n' --resolve example.com:443:ORIGIN_IP https://example.com/" },
+            521: { when: 'The origin actively refused Cloudflare\'s connection.',
+                causes: ['Web server not running or not listening on 80/443.', 'Firewall, fail2ban or hosting provider blocking Cloudflare IP ranges.', 'SSL mode Full / Full (strict) while the origin does not serve HTTPS.'],
+                cmd: "nc -vz ORIGIN_IP 443\ncurl -svk --resolve example.com:443:ORIGIN_IP https://example.com/ -o /dev/null" },
+            522: { when: 'Cloudflare timed out talking to the origin: no SYN-ACK within 19 s, or no data within 90 s after connecting.',
+                causes: ['Cloudflare IPs rate-limited or dropped by iptables, security groups or .htaccess (most common).', 'Overloaded origin; wrong origin IP in the DNS record; packet loss on the path.'],
+                cmd: "curl -sv --connect-timeout 10 --resolve example.com:443:ORIGIN_IP https://example.com/ -o /dev/null\nsudo iptables -L -n | grep -i drop" },
+            523: { when: 'Cloudflare cannot reach the origin at all.',
+                causes: ['A/AAAA record in Cloudflare DNS points to a wrong or old IP.', 'Routing problem between Cloudflare and the origin; in AWS, an overly broad VPC route (e.g. 172.0.0.0/8) swallowing Cloudflare\'s 172.64.0.0/13.'],
+                cmd: "dig +short example.com @1.1.1.1   # proxied IPs; compare the origin IP in the dashboard\ntraceroute ORIGIN_IP" },
+            524: { when: 'Cloudflare connected and sent the request, but the origin sent no HTTP response within 125 s (default Proxy Read Timeout).',
+                causes: ['Long-running requests: reports, exports, heavy queries.', 'Origin starved of CPU, workers or DB connections.', 'Run long jobs asynchronously, or serve them from a DNS-only (grey-cloud) hostname.'],
+                cmd: "time curl -s -o /dev/null -w '%{http_code}\\n' --resolve example.com:443:ORIGIN_IP https://example.com/export" },
+            525: { when: 'SSL mode is Full or Full (strict) and the TLS handshake between Cloudflare and the origin fails.',
+                causes: ['No certificate installed on the origin, or port 443 closed.', 'No SNI support, or no cipher suite in common with Cloudflare.', 'Not retryable: fix the origin TLS configuration.'],
+                cmd: "openssl s_client -connect ORIGIN_IP:443 -servername example.com </dev/null | head -20" },
+            526: { when: 'SSL mode is Full (strict) and Cloudflare cannot validate the origin certificate.',
+                causes: ['Expired, revoked or self-signed certificate; hostname not in the SAN list; missing intermediate.', 'Fix: install a publicly trusted or Cloudflare Origin CA certificate.'],
+                cmd: "openssl s_client -connect ORIGIN_IP:443 -servername example.com -showcerts </dev/null 2>/dev/null | openssl x509 -noout -subject -issuer -dates -ext subjectAltName" },
+        };
+        const CF_PAGE = { 520: 'error-520', 521: 'error-521', 522: 'error-522', 523: 'error-523', 524: 'error-524', 525: 'error-525', 526: 'error-526' };
+
+        const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+        const plain = html => html.replace(/<[^>]+>/g, '');
+
+        function cardHtml([code, name, desc, ref, tag]) {
+            const cls = 'cat-' + String(code)[0] + 'xx';
+            let badge = '';
+            if (NS_TAGS[tag]) badge = `<span class="status-tag ns" title="Not in the IANA registry">non-standard · ${NS_TAGS[tag]}</span>`;
+            else if (REG_TAGS[tag]) badge = `<span class="status-tag">${REG_TAGS[tag]}</span>`;
+            const refHtml = CF_PAGE[code] ? `<a href="${CF}${CF_PAGE[code]}/" rel="noopener" class="status-rfc">${esc(ref)}</a>` : `<span class="status-rfc">${esc(ref)}</span>`;
+            const d = DETAILS[code];
+            const det = d ? `<details class="status-details"><summary>When you see it · causes · curl checks</summary><div class="d-body"><h4>When you see it</h4><p>${d.when}</p><h4>Typical causes (nginx / Apache / load balancers / CDNs)</h4><ul>${d.causes.map(c => `<li>${c}</li>`).join('')}</ul><h4>Troubleshoot</h4><pre>${esc(d.cmd)}</pre></div></details>` : '';
+            return `<article class="status-card" id="${code}" data-code="${code}"><div class="status-head"><span class="cat-chip ${cls}">${String(code)[0]}xx</span><a class="status-code" href="#${code}" title="Link to ${code}">${code}</a><span class="status-name">${esc(name)}</span>${badge}${refHtml}<button type="button" class="link-btn" data-copy="${code}" aria-label="Copy link to ${code}">🔗 Copy link</button></div><div class="status-desc">${esc(desc)}</div>${det}</article>`;
+        }
+
+        const listEl = document.getElementById('hsList');
+        listEl.innerHTML = CODES.map(cardHtml).join('');
+        const INDEX = CODES.map(row => {
+            const [code, name, desc, ref, tag] = row;
+            const d = DETAILS[code];
+            const extra = d ? plain(d.when + ' ' + d.causes.join(' ')) : '';
+            return { code, tag, el: document.getElementById(String(code)), hay: [code, name, desc, ref, tag, NS_TAGS[tag] || '', REG_TAGS[tag] || '', extra].join(' ').toLowerCase() };
+        });
+
+        const searchEl = document.getElementById('hsSearch');
         let activeCat = 'all';
-        function setCat(c) {
-            activeCat = c;
-            document.querySelectorAll('.cat-btn').forEach(b => b.classList.toggle('active', b.dataset.cat === c));
-            render();
+
+        function matchesCat(it) {
+            if (activeCat === 'all') return true;
+            if (activeCat === 'ns') return !!NS_TAGS[it.tag];
+            if (activeCat === 'det') return !!DETAILS[it.code];
+            return String(it.code)[0] === activeCat;
         }
         function render() {
-            const q = document.getElementById('hsSearch').value.trim().toLowerCase();
-            const list = CODES.filter(([code, name, desc]) => {
-                if (activeCat !== 'all' && String(code)[0] !== activeCat) return false;
-                if (!q) return true;
-                return String(code).includes(q) || name.toLowerCase().includes(q) || desc.toLowerCase().includes(q);
+            const q = searchEl.value.trim().toLowerCase();
+            const terms = q.split(/\s+/).filter(Boolean);
+            let shown = 0;
+            INDEX.forEach(it => {
+                let ok = matchesCat(it);
+                if (ok && terms.length) {
+                    ok = /^\d{1,3}x*$/.test(q)
+                        ? String(it.code).startsWith(q.replace(/x+$/, ''))
+                        : terms.every(t => it.hay.includes(t));
+                }
+                it.el.hidden = !ok;
+                if (ok) shown++;
             });
-            const out = document.getElementById('hsList');
-            document.getElementById('hsCount').textContent = `${list.length} of ${CODES.length} codes`;
-            if (!list.length) { out.innerHTML = '<div style="padding:1rem;color:var(--text-muted);text-align:center;">No matches.</div>'; return; }
-            out.innerHTML = list.map(([code, name, desc, rfc]) => {
-                const cls = 'cat-' + String(code)[0] + 'xx';
-                return `<div class="status-card"><div class="status-head"><span class="cat-chip ${cls}">${String(code)[0]}xx</span><span class="status-code">${code}</span><span class="status-name">${name}</span><span class="status-rfc" style="margin-left:auto;">${rfc}</span></div><div class="status-desc">${desc}</div></div>`;
-            }).join('');
+            document.getElementById('hsCount').textContent = `${shown} of ${INDEX.length} codes`;
+            document.getElementById('hsEmpty').hidden = shown > 0;
         }
-        render();
+        function setCat(c) {
+            activeCat = c;
+            document.querySelectorAll('.cat-btn').forEach(b => {
+                const on = b.dataset.cat === c;
+                b.classList.toggle('active', on);
+                b.setAttribute('aria-pressed', on ? 'true' : 'false');
+            });
+            render();
+        }
+        function syncParams() { setToolParams({ q: searchEl.value.trim(), cls: activeCat === 'all' ? '' : activeCat }); }
+
+        function focusHash() {
+            const m = location.hash.match(/^#(\d{3})$/);
+            if (!m) return;
+            const it = INDEX.find(x => String(x.code) === m[1]);
+            if (!it) return;
+            if (it.el.hidden) { searchEl.value = ''; setCat('all'); syncParams(); }
+            document.querySelectorAll('.status-card.is-target').forEach(e => e.classList.remove('is-target'));
+            it.el.classList.add('is-target');
+            const det = it.el.querySelector('details');
+            if (det) det.open = true;
+            it.el.scrollIntoView({ block: 'start' });
+        }
+
+        const syncDebounced = debounce(syncParams, 300);
+        searchEl.addEventListener('input', () => { render(); syncDebounced(); });
+        document.querySelectorAll('.cat-btn').forEach(b => b.addEventListener('click', () => { setCat(b.dataset.cat); syncParams(); }));
+        listEl.addEventListener('click', e => {
+            const btn = e.target.closest('[data-copy]');
+            if (btn) {
+                history.replaceState(null, '', location.pathname + location.search + '#' + btn.dataset.copy);
+                focusHash();
+                copyShareLink();
+                return;
+            }
+            const card = e.target.closest('.status-card');
+            if (card && e.target.closest('summary') && location.hash !== '#' + card.dataset.code) {
+                history.replaceState(null, '', location.pathname + location.search + '#' + card.dataset.code);
+            }
+        });
+        window.addEventListener('hashchange', focusHash);
+
+        const p = getToolParams();
+        if (p.q) searchEl.value = p.q;
+        const validCats = ['all', '1', '2', '3', '4', '5', 'ns', 'det'];
+        setCat(validCats.includes(p.cls) ? p.cls : 'all');
+        focusHash();
+    </script>
+    <script>
+        document.querySelectorAll('.faq-question').forEach(function(btn) {
+            btn.addEventListener('click', function() { btn.parentElement.classList.toggle('open'); });
+        });
     </script>
     <script src="/js/nav.js?v=20261122" defer></script>
 </body>

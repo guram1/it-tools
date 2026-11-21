@@ -35,7 +35,7 @@ Every tool under `tools/` follows the same structure — copy an existing tool w
 - `<footer>` with three `.footer-section` blocks
 - Toast div + `<script src="../js/common.js"></script>` + per-tool `<script>` + FAQ toggle script
 
-Tool logic is inlined per page. There is no JS bundler and no shared component layer beyond `js/common.js` (which exports only `showToast`, `copyToClipboard`, `initRangeSliders`).
+Tool logic is inlined per page. There is no JS bundler and no shared component layer beyond `js/common.js` (`showToast`, `copyToClipboard`, `initRangeSliders`, plus the URL-state helpers listed below).
 
 The color theme is defined as CSS custom properties on `:root` (dark theme, green accent `#22c55e`) and is duplicated in `index.html`'s inline styles and `css/style.css`. Keep these in sync when changing theme colors.
 
@@ -73,3 +73,12 @@ Absolute self-URLs (canonical, `og:url`, JSON-LD `url`, `sitemap.xml` `<loc>`) a
 `ads.txt` (AdSense seller line) and `404.html` (noindex, **no AdSense script**: Google forbids ads on error pages) live at the repo root. Without `404.html`, Cloudflare Pages serves `index.html` with status 200 for every unknown path, which creates soft-404s.
 
 Contact email across the site is `contact@ops-box.net` (not a personal address — see commit `49d8184`).
+
+## Site-wide conventions (2026-11-22 overhaul)
+
+- Every page loads `/css/base.css?v=<ver>` LAST in `<head>` (self-hosted fonts from `/fonts/`, WCAG-AA `--text-muted`, unified header + mobile menu) and `/js/nav.js?v=<ver>` (defer) before the final `</body>`. The `<header>` markup is identical on every page; change it with a script across all files, never per page.
+- `js/common.js` also provides `getToolParams()`, `setToolParams(obj)`, `copyShareLink()`, `debounce(fn, ms)`. Tools prefill an example, update live, and keep shareable state in the query string.
+- Static assets are cached for a week (`_headers`): bump `?v=` on every `css/` / `js/` reference when you change those files.
+- Renamed/removed pages get a 301 in `_redirects` (both `/path` and `/path.html`).
+- `scripts/check_site.py` (also in CI, `.github/workflows/checks.yml`, with `html-validate`) checks JSON-LD, FAQ/JSON-LD match, internal links, sitemap vs pages, canonicals, titles <= 60, one H1, header/nav/base.css presence and SRI. Run it before every push.
+- Site-wide regex inserts: use the LAST `</body>` (`rfind`); `tools/wifi-qr-generator.html` has `</body>` inside a JS print template.

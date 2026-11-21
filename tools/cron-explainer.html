@@ -103,7 +103,7 @@
             <div class="tool-content">
                 <div class="form-group">
                     <label class="form-label" for="cronInput">Cron expression</label>
-                    <input type="text" id="cronInput" class="form-input" value="*/15 9-17 * * 1-5" placeholder="*/15 9-17 * * 1-5" style="font-family:'JetBrains Mono',monospace;font-size:1.1rem;" oninput="parseCron()">
+                    <input type="text" id="cronInput" class="form-input" value="*/15 9-17 * * 1-5" placeholder="*/15 9-17 * * 1-5" style="font-family:'JetBrains Mono',monospace;font-size:1.1rem;" oninput="parseCronDebounced()">
                     <div style="display:flex;flex-wrap:wrap;gap:0.4rem;margin-top:0.6rem;">
                         <button class="preset-btn" onclick="setCron('* * * * *')">every minute</button>
                         <button class="preset-btn" onclick="setCron('*/5 * * * *')">every 5 min</button>
@@ -119,6 +119,10 @@
                 <div id="cronError" style="display:none;color:#ef4444;margin:0.5rem 0;padding:0.6rem 0.9rem;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:0.85rem;"></div>
 
                 <div id="cronFields" class="cron-fields" style="display:none;"></div>
+
+                <div style="display:flex;justify-content:flex-end;margin:0.25rem 0 0.5rem;">
+                    <button type="button" class="preset-btn" id="cronShareBtn" onclick="copyShareLink()" title="Copy a link to this expression">🔗 Copy link</button>
+                </div>
 
                 <div class="form-group">
                     <label class="form-label">In plain English</label>
@@ -215,6 +219,8 @@
         const FIELD_NAMES = ['minute', 'hour', 'day of month', 'month', 'day of week'];
 
         function setCron(s) { document.getElementById('cronInput').value = s; parseCron(); }
+        function escHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+        const parseCronDebounced = debounce(() => parseCron(), 200);
 
         function parseField(raw, idx) {
             const [min, max] = RANGES[idx];
@@ -251,6 +257,7 @@
             const nextEl = document.getElementById('cronNext');
             const tzEl = document.getElementById('cronTz');
             errEl.style.display = 'none';
+            setToolParams({ expr: raw0 });
             if (!raw0) { fieldsEl.style.display = 'none'; engEl.textContent = ''; nextEl.textContent = ''; tzEl.textContent = ''; return; }
             const raw = ALIASES[raw0.toLowerCase()] || raw0;
             const parts = raw.split(/\s+/);
@@ -260,7 +267,7 @@
             catch (e) { errEl.textContent = e.message; errEl.style.display = 'block'; fieldsEl.style.display = 'none'; engEl.textContent = ''; nextEl.textContent = ''; return; }
 
             fieldsEl.style.display = 'grid';
-            fieldsEl.innerHTML = parts.map((p, i) => `<div class="cron-field"><div class="cron-field-label">${FIELD_NAMES[i]}</div><div class="cron-field-val">${p}</div><div class="cron-field-desc">${describeField(p, i, sets[i])}</div></div>`).join('');
+            fieldsEl.innerHTML = parts.map((p, i) => `<div class="cron-field"><div class="cron-field-label">${FIELD_NAMES[i]}</div><div class="cron-field-val">${escHtml(p)}</div><div class="cron-field-desc">${escHtml(describeField(p, i, sets[i]))}</div></div>`).join('');
 
             engEl.textContent = describeCron(parts, sets);
 
@@ -336,7 +343,11 @@
             return runs;
         }
 
-        parseCron();
+        (function initFromUrl() {
+            const q = getToolParams();
+            if (q.expr !== undefined && q.expr.trim()) document.getElementById('cronInput').value = q.expr;
+            parseCron();
+        })();
     </script>
     <script>
         document.querySelectorAll('.faq-question').forEach(function(btn) {

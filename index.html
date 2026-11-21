@@ -405,11 +405,67 @@
             <input type="text" class="search-input" id="searchInput" placeholder="Search tools... (press / to focus)" oninput="filterTools()">
         </div>
         
+
+        <nav class="category-nav" aria-label="Tool categories">
+            <a href="#most-used">Most used</a><a href="#network">Network</a><a href="#security">Security</a><a href="#developer">Developer</a>
+        </nav>
+
+        <section class="category most-used" id="most-used">
+            <div class="category-header">
+                <span class="category-icon">⭐</span>
+                <h2 class="category-title">Most used</h2>
+            </div>
+            <div class="tools-grid">
+                <a href="/tools/subnet-calculator.html" class="tool-card" data-keywords="subnet">
+                    <div class="tool-icon">📊</div>
+                    <div class="tool-info">
+                        <div class="tool-name">Subnet Calculator</div>
+                        <div class="tool-desc">IPv4 CIDR, VLSM & ranges</div>
+                    </div>
+                </a>
+                <a href="/tools/mac-vendor-lookup.html" class="tool-card" data-keywords="mac vendor">
+                    <div class="tool-icon">🏷️</div>
+                    <div class="tool-info">
+                        <div class="tool-name">MAC Vendor Lookup</div>
+                        <div class="tool-desc">Find the manufacturer from a MAC/OUI</div>
+                    </div>
+                </a>
+                <a href="/tools/bgp-asn-lookup.html" class="tool-card" data-keywords="bgp asn">
+                    <div class="tool-icon">🛰️</div>
+                    <div class="tool-info">
+                        <div class="tool-name">BGP ASN Lookup</div>
+                        <div class="tool-desc">AS number, prefixes & peers</div>
+                    </div>
+                </a>
+                <a href="/tools/dns-lookup.html" class="tool-card" data-keywords="dns">
+                    <div class="tool-icon">📡</div>
+                    <div class="tool-info">
+                        <div class="tool-name">DNS Lookup</div>
+                        <div class="tool-desc">A, AAAA, MX, TXT, NS, CNAME</div>
+                    </div>
+                </a>
+                <a href="/tools/csr-generator.html" class="tool-card" data-keywords="csr">
+                    <div class="tool-icon">📝</div>
+                    <div class="tool-info">
+                        <div class="tool-name">CSR Generator</div>
+                        <div class="tool-desc">Create a certificate signing request</div>
+                    </div>
+                </a>
+                <a href="/tools/mtu-mss-calculator.html" class="tool-card" data-keywords="mtu mss">
+                    <div class="tool-icon">📦</div>
+                    <div class="tool-info">
+                        <div class="tool-name">Tunnel MTU & MSS</div>
+                        <div class="tool-desc">IPsec/GRE/VXLAN overhead</div>
+                    </div>
+                </a>
+            </div>
+        </section>
+
         <!-- Network Tools -->
-        <section class="category">
+        <section class="category" id="network">
             <div class="category-header">
                 <span class="category-icon">🌐</span>
-                <span class="category-title">Network Tools</span>
+                <h2 class="category-title">Network Tools</h2>
             </div>
             <div class="tools-grid">
                 <a href="/tools/subnet-calculator.html" class="tool-card" data-keywords="subnet ip cidr vlsm network calculator">
@@ -419,10 +475,10 @@
                         <div class="tool-desc">CIDR, VLSM, IP ranges & network planning</div>
                     </div>
                 </a>
-                <a href="/tools/dns-dumpster.html" class="tool-card" data-keywords="dns dumpster subdomain recon enumeration">
+                <a href="/tools/subdomain-finder.html" class="tool-card" data-keywords="subdomain finder dns recon enumeration certificate transparency dnsdumpster alternative">
                     <div class="tool-icon">🔍</div>
                     <div class="tool-info">
-                        <div class="tool-name">DNS Dumpster</div>
+                        <div class="tool-name">Subdomain Finder</div>
                         <div class="tool-desc">Subdomain discovery & DNS recon</div>
                     </div>
                 </a>
@@ -454,18 +510,11 @@
                         <div class="tool-desc">Find device manufacturer by MAC</div>
                     </div>
                 </a>
-                <a href="/tools/mac-address-formatter.html" class="tool-card" data-keywords="mac address format convert">
+                <a href="/tools/mac-address-formatter.html" class="tool-card" data-keywords="mac address format convert bulk batch cisco colon dash">
                     <div class="tool-icon">✏️</div>
                     <div class="tool-info">
-                        <div class="tool-name">MAC Formatter</div>
+                        <div class="tool-name">MAC Formatter (single & bulk)</div>
                         <div class="tool-desc">Convert MAC address formats</div>
-                    </div>
-                </a>
-                <a href="/tools/bulk-mac-formatter.html" class="tool-card" data-keywords="bulk mac format batch convert">
-                    <div class="tool-icon">📑</div>
-                    <div class="tool-info">
-                        <div class="tool-name">Bulk MAC Formatter</div>
-                        <div class="tool-desc">Format multiple MACs at once</div>
                     </div>
                 </a>
                 <a href="/tools/cidr-aggregator.html" class="tool-card" data-keywords="cidr aggregator summarize supernet merge ip ranges firewall">
@@ -489,14 +538,42 @@
                         <div class="tool-desc">AS info, prefixes & BGP peers</div>
                     </div>
                 </a>
+                <a href="/tools/wildcard-acl-generator.html" class="tool-card" data-keywords="wildcard mask acl prefix-list generator cisco juniper fortigate access list">
+                    <div class="tool-icon">🧾</div>
+                    <div class="tool-info">
+                        <div class="tool-name">Wildcard Mask & ACL Generator</div>
+                        <div class="tool-desc">Cisco, Juniper & FortiOS ACLs and prefix-lists</div>
+                    </div>
+                </a>
+                <a href="/tools/mtu-mss-calculator.html" class="tool-card" data-keywords="mtu mss calculator ipsec gre vxlan wireguard overhead tunnel adjust-mss">
+                    <div class="tool-icon">📦</div>
+                    <div class="tool-info">
+                        <div class="tool-name">Tunnel MTU & MSS Calculator</div>
+                        <div class="tool-desc">IPsec, GRE, VXLAN, WireGuard overhead & TCP MSS</div>
+                    </div>
+                </a>
+                <a href="/tools/fortigate-cli-builder.html" class="tool-card" data-keywords="fortigate fortios cli address object group ipsec vpn config generator">
+                    <div class="tool-icon">🛡️</div>
+                    <div class="tool-info">
+                        <div class="tool-name">FortiGate CLI Builder</div>
+                        <div class="tool-desc">Address objects & site-to-site IPsec VPN config</div>
+                    </div>
+                </a>
+                <a href="/tools/email-dns-checker.html" class="tool-card" data-keywords="spf dkim dmarc checker email dns record generator mx">
+                    <div class="tool-icon">✉️</div>
+                    <div class="tool-info">
+                        <div class="tool-name">SPF, DKIM & DMARC Checker</div>
+                        <div class="tool-desc">Validate email DNS records & build new ones</div>
+                    </div>
+                </a>
             </div>
         </section>
 
         <!-- Security Tools -->
-        <section class="category">
+        <section class="category" id="security">
             <div class="category-header">
                 <span class="category-icon">🔐</span>
-                <span class="category-title">Security Tools</span>
+                <h2 class="category-title">Security Tools</h2>
             </div>
             <div class="tools-grid">
                 <a href="/tools/password-generator.html" class="tool-card" data-keywords="password generator secure random">
@@ -580,10 +657,10 @@
         </section>
 
         <!-- Developer Tools -->
-        <section class="category">
+        <section class="category" id="developer">
             <div class="category-header">
                 <span class="category-icon">💻</span>
-                <span class="category-title">Developer Tools</span>
+                <h2 class="category-title">Developer Tools</h2>
             </div>
             <div class="tools-grid">
                 <a href="/tools/json-formatter.html" class="tool-card" data-keywords="json format beautify validate minify">
@@ -635,13 +712,6 @@
                         <div class="tool-desc">Unix epoch ↔ human-readable date</div>
                     </div>
                 </a>
-                <a href="/tools/color-converter.html" class="tool-card" data-keywords="color converter hex rgb hsl oklch wcag contrast accessibility">
-                    <div class="tool-icon">🎨</div>
-                    <div class="tool-info">
-                        <div class="tool-name">Color Converter</div>
-                        <div class="tool-desc">Hex/RGB/HSL/OKLCH + WCAG contrast</div>
-                    </div>
-                </a>
                 <a href="/tools/http-status-codes.html" class="tool-card" data-keywords="http status codes 404 500 301 reference response">
                     <div class="tool-icon">🔢</div>
                     <div class="tool-info">
@@ -669,13 +739,13 @@
         <!-- Why OPS-BOX Section -->
         <section class="seo-content" style="margin-top: 3rem;">
             <h2>Why OPS-BOX?</h2>
-            <p>OPS-BOX is a curated collection of <strong>33 free IT tools</strong> built specifically for network engineers, system administrators, security professionals, and software developers. Every tool is designed to solve a real-world problem quickly and privately — no account creation, no data collection, no hidden costs.</p>
+            <p>OPS-BOX is a curated collection of <strong>35 free IT tools</strong> built specifically for network engineers, system administrators, security professionals, and software developers. Every tool is designed to solve a real-world problem quickly and privately — no account creation, no data collection, no hidden costs.</p>
 
             <h3>Privacy-First Architecture</h3>
             <p>Unlike many online tools that process your data on remote servers, OPS-BOX tools run entirely in your web browser using client-side JavaScript. When you generate a password, calculate a subnet, or format JSON, your data never leaves your machine. For tools that require external data (like DNS lookups or SSL checks), we query trusted public APIs and transmit only the domain name or IP address you explicitly enter — never any personal information.</p>
 
             <h3>What Tools Are Available?</h3>
-            <p><strong>Network Tools</strong> cover the essentials of IP networking: an advanced <a href="/tools/subnet-calculator.html">Subnet Calculator</a> with VLSM planning and subnet splitting, <a href="/tools/dns-lookup.html">DNS Lookup</a> supporting all record types (A, AAAA, MX, TXT, NS, CNAME, SOA), a <a href="/tools/dns-dumpster.html">DNS Dumpster</a> for subdomain enumeration and reconnaissance, an <a href="/tools/ssl-checker.html">SSL Certificate Checker</a> for monitoring certificate expiry and chain validation, <a href="/tools/ip-location.html">IP Geolocation</a> with ASN and ISP data, and <a href="/tools/mac-vendor-lookup.html">MAC address tools</a> for vendor lookup and format conversion.</p>
+            <p><strong>Network Tools</strong> cover the essentials of IP networking: an advanced <a href="/tools/subnet-calculator.html">Subnet Calculator</a> with VLSM planning and subnet splitting, <a href="/tools/dns-lookup.html">DNS Lookup</a> supporting all record types (A, AAAA, MX, TXT, NS, CNAME, SOA), a <a href="/tools/subdomain-finder.html">Subdomain Finder</a> for subdomain enumeration and reconnaissance, an <a href="/tools/ssl-checker.html">SSL Certificate Checker</a> for monitoring certificate expiry and chain validation, <a href="/tools/ip-location.html">IP Geolocation</a> with ASN and ISP data, and <a href="/tools/mac-vendor-lookup.html">MAC address tools</a> for vendor lookup and format conversion.</p>
             <p><strong>Security Tools</strong> include a cryptographically secure <a href="/tools/password-generator.html">Password Generator</a> that uses the Web Crypto API (<code>crypto.getRandomValues()</code>) with customizable length, character sets, and bulk generation. The <a href="/tools/hash-generator.html">Hash Generator</a> computes SHA-1, SHA-256, and SHA-512 hashes instantly. And the <a href="/tools/uuid-generator.html">UUID Generator</a> creates unique identifiers for databases, APIs, and distributed systems.</p>
             <p><strong>Developer Tools</strong> round out the toolkit with a <a href="/tools/json-formatter.html">JSON Formatter</a> that beautifies, minifies, and validates JSON with syntax error detection, a <a href="/tools/base64-encoder.html">Base64 Encoder/Decoder</a>, and a <a href="/tools/wifi-qr-generator.html">WiFi QR Code Generator</a> for easy network sharing.</p>
 
@@ -693,7 +763,7 @@
         <div class="footer-content">
             <div class="footer-links">
                 <a href="/tools/subnet-calculator.html">Subnet Calculator</a>
-                <a href="/tools/dns-dumpster.html">DNS Dumpster</a>
+                <a href="/tools/subdomain-finder.html">Subdomain Finder</a>
                 <a href="/tools/ssl-checker.html">SSL Checker</a>
                 <a href="/tools/password-generator.html">Password Generator</a>
                 <a href="/tools/json-formatter.html">JSON Formatter</a>
@@ -709,7 +779,8 @@
     <script>
         function filterTools() {
             const query = document.getElementById('searchInput').value.toLowerCase().trim();
-            const cards = document.querySelectorAll('.tool-card');
+            document.getElementById('most-used').style.display = query ? 'none' : '';
+            const cards = document.querySelectorAll('section.category:not(.most-used) .tool-card');
             
             cards.forEach(card => {
                 const name = card.querySelector('.tool-name').textContent.toLowerCase();

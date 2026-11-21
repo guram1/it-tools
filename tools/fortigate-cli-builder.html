@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-FH74PGMNYD"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-FH74PGMNYD');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FortiGate CLI Builder: Addresses &amp; IPsec VPN | OPS-BOX</title>
+    <meta name="description" content="Generate FortiGate CLI: bulk firewall address objects and groups from IP, CIDR, range and FQDN lists, plus route-based site-to-site IPsec VPN for both peers.">
+    <meta name="keywords" content="FortiGate CLI generator, FortiGate address object bulk, config firewall address, FortiGate IPsec VPN CLI, phase1-interface, phase2-interface, FortiOS site-to-site VPN">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://ops-box.net/tools/fortigate-cli-builder">
+
+    <meta property="og:title" content="FortiGate CLI Builder — Address Objects &amp; Site-to-Site IPsec VPN">
+    <meta property="og:description" content="Turn IP/CIDR/range/FQDN lists into FortiGate address objects and build a complete route-based IPsec VPN config for both FortiGates.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ops-box.net/tools/fortigate-cli-builder">
+    <meta property="og:image" content="https://ops-box.net/og-image.png">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="FortiGate CLI Builder — Address Objects &amp; IPsec VPN">
+    <meta name="twitter:description" content="Bulk FortiGate address objects and route-based site-to-site IPsec VPN CLI, generated in your browser.">
+    <meta name="twitter:image" content="https://ops-box.net/og-image.png">
+
+    <link rel="stylesheet" href="../css/style.css?v=20261122">
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "FortiGate CLI Builder",
+        "url": "https://ops-box.net/tools/fortigate-cli-builder",
+        "description": "Generate FortiOS CLI for bulk firewall address objects and address groups, and for route-based site-to-site IPsec VPNs (phase1-interface, phase2-interface, static and blackhole routes, firewall policies) for both peers.",
+        "applicationCategory": "NetworkingApplication",
+        "operatingSystem": "Any",
+        "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {"@type": "Question", "name": "Which FortiOS versions does the generated CLI target?", "acceptedAnswer": {"@type": "Answer", "text": "The output uses keywords that exist in the FortiOS 7.2, 7.4 and 7.6 CLI references: config firewall address/addrgrp, config vpn ipsec phase1-interface/phase2-interface, config router static and config firewall policy. Defaults differ between versions (for example the phase1 dhgrp default), so the builder always sets ike-version, proposal and dhgrp explicitly instead of relying on defaults."}},
+            {"@type": "Question", "name": "Is my pre-shared key sent anywhere or stored in the share link?", "acceptedAnswer": {"@type": "Answer", "text": "No. Everything runs in your browser. The PSK generator uses crypto.getRandomValues, and the PSK is deliberately excluded from the shareable URL, so copying the link never leaks the secret. Distribute the key to the peer administrator over a separate secure channel."}},
+            {"@type": "Question", "name": "Why does the VPN output include a blackhole route with distance 254?", "acceptedAnswer": {"@type": "Answer", "text": "When the tunnel is down, its static route is withdrawn and traffic to the remote subnets would follow the default route out to the internet in clear text. A blackhole route for the same prefixes with distance 254 stays in the table as a last resort and drops that traffic instead. This is the pattern Fortinet uses in its site-to-site examples."}},
+            {"@type": "Question", "name": "Should I use one phase2 per subnet pair or a single 0.0.0.0/0 selector?", "acceptedAnswer": {"@type": "Answer", "text": "Between two FortiGates on a route-based VPN, 0.0.0.0/0 selectors or address-group selectors keep the config short because routing and policy decide what enters the tunnel. Third-party peers, especially policy-based ones, usually expect explicit traffic selectors that match their crypto ACL exactly, so one phase2 per local/remote subnet pair is the most interoperable choice."}},
+            {"@type": "Question", "name": "How are address object names generated?", "acceptedAnswer": {"@type": "Answer", "text": "Each object gets your prefix plus a type tag and the value: h- for a single host, n- for a subnet (slash replaced by underscore), r- for a range, and the hostname itself for an FQDN. Names are capped at the 79-character limit from the CLI reference, quotes are stripped from comments, and duplicates are skipped with a warning."}}
+        ]
+    }
+    </script>
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1924789684268835" crossorigin="anonymous"></script>
+    <style>
+        .mode-tabs { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+        .mode-tabs .format-btn { font-size: 0.9rem; padding: 0.6rem 1rem; }
+        .mode-tabs .format-btn.active { background: var(--accent-glow); border-color: var(--accent); color: var(--accent); }
+        .fg-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+        .fg-grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+        .site-card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; }
+        .site-card h3 { font-size: 0.95rem; color: var(--accent); margin-bottom: 0.75rem; }
+        .site-card .form-group { margin-bottom: 0.9rem; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .chk-row { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; }
+        .chk-row label { display: flex; align-items: center; gap: 0.35rem; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer; font-family: 'JetBrains Mono', monospace; }
+        .msg-box { margin-top: 1rem; padding: 0.75rem 1rem; border-radius: 8px; font-size: 0.85rem; white-space: pre-wrap; font-family: 'JetBrains Mono', monospace; }
+        .msg-err { color: #ef4444; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); }
+        .msg-warn { color: var(--warning); background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.3); }
+        .msg-info { color: var(--text-secondary); background: var(--bg-secondary); border: 1px solid var(--border); }
+        .out-head { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-top: 1.25rem; }
+        .out-head .form-label { margin: 0; }
+        .bulk-output.tall { max-height: 520px; }
+        .version-note { margin-top: 1.25rem; padding: 0.9rem 1rem; border-left: 3px solid var(--info); background: rgba(59,130,246,0.07); border-radius: 6px; font-size: 0.85rem; color: var(--text-secondary); }
+        .version-note strong { color: var(--text-primary); }
+        .version-note ul { margin: 0.4rem 0 0 1.2rem; }
+        .psk-row { display: flex; gap: 0.5rem; }
+        .psk-row .form-input { flex: 1; }
+        .psk-row .btn { margin: 0; white-space: nowrap; }
+        @media (max-width: 760px) { .fg-grid, .fg-grid3 { grid-template-columns: 1fr; } .psk-row { flex-wrap: wrap; } }
+    </style>
+    <link rel="icon" href="/favicon.ico" sizes="48x48">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="preload" href="/fonts/Outfit-latin.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/css/base.css?v=20261122">
+    <script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://ops-box.net/"}, {"@type": "ListItem", "position": 2, "name": "FortiGate CLI Builder", "item": "https://ops-box.net/tools/fortigate-cli-builder"}]}</script>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <a href="/" class="logo" aria-label="OPS-BOX home"><span class="logo-icon">⚡</span><span class="logo-text">OPS<span>-BOX</span></span></a>
+            <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Open menu">☰</button>
+            <nav class="header-nav" id="site-nav" aria-label="Main">
+                <a href="/#network">Network</a>
+                <a href="/#security">Security</a>
+                <a href="/#developer">Developer</a>
+                <a href="/tools/subnet-calculator.html">Subnet Calculator</a>
+                <a href="/tools/mac-vendor-lookup.html">MAC Lookup</a>
+                <a href="/about.html">About</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <nav class="breadcrumb">
+            <a href="/">Home</a><span>›</span><span class="breadcrumb-current">FortiGate CLI Builder</span>
+        </nav>
+
+        <div class="tool-container">
+            <div class="tool-header">
+                <h1 class="tool-title">FortiGate CLI Builder</h1>
+                <p class="tool-description">Generate paste-ready FortiOS CLI: bulk firewall address objects and groups from a list of IPs, subnets, ranges and FQDNs, or a complete route-based site-to-site IPsec VPN for both FortiGates. Runs entirely in your browser.</p>
+            </div>
+            <div class="tool-content">
+                <div class="mode-tabs" role="tablist">
+                    <button type="button" class="format-btn" id="tabAddr" role="tab" onclick="setMode('addr')">Address objects</button>
+                    <button type="button" class="format-btn" id="tabVpn" role="tab" onclick="setMode('vpn')">Site-to-site IPsec VPN</button>
+                    <button type="button" class="format-btn" onclick="copyShareLink()" title="The PSK is never included in the link">🔗 Copy link</button>
+                </div>
+
+                <!-- ============ ADDRESS MODE ============ -->
+                <div id="panelAddr">
+                    <div class="form-group">
+                        <label class="form-label" for="addrInput">Entries — one per line: IP, CIDR, IP + mask, range (a.b.c.d-e.f.g.h) or FQDN; optional comment after #</label>
+                        <textarea id="addrInput" class="form-input mono" rows="10" spellcheck="false"></textarea>
+                    </div>
+                    <div class="fg-grid">
+                        <div class="form-group">
+                            <label class="form-label" for="addrPrefix">Name prefix</label>
+                            <input id="addrPrefix" class="form-input mono" type="text" maxlength="40">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="addrGroup">Address group name (empty = no group)</label>
+                            <input id="addrGroup" class="form-input mono" type="text" maxlength="79">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="addrColor">Color (0–32, 0 = default)</label>
+                            <input id="addrColor" class="form-input mono" type="number" min="0" max="32" step="1">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="addrVdom">VDOM (empty = no VDOM wrapper)</label>
+                            <input id="addrVdom" class="form-input mono" type="text" maxlength="31" placeholder="root">
+                        </div>
+                    </div>
+                    <div class="chk-row">
+                        <label><input type="checkbox" id="addrRouting"> set allow-routing enable (usable in static routes)</label>
+                    </div>
+                    <div id="addrMsgs"></div>
+                    <div class="out-head">
+                        <span class="form-label">FortiOS CLI</span>
+                        <button class="btn btn-secondary" onclick="copyToClipboard('addrOut')">Copy CLI</button>
+                    </div>
+                    <div class="bulk-output tall"><pre id="addrOut"></pre></div>
+                </div>
+
+                <!-- ============ VPN MODE ============ -->
+                <div id="panelVpn" style="display:none;">
+                    <div class="fg-grid">
+                        <div class="site-card">
+                            <h3>Site A (this FortiGate)</h3>
+                            <div class="form-group"><label class="form-label" for="tunA">Tunnel name (max 15)</label><input id="tunA" class="form-input mono" type="text" maxlength="15"></div>
+                            <div class="form-group"><label class="form-label" for="wanA">WAN interface</label><input id="wanA" class="form-input mono" type="text" maxlength="35"></div>
+                            <div class="form-group"><label class="form-label" for="ipA">WAN public IP (Site B's remote-gw)</label><input id="ipA" class="form-input mono" type="text"></div>
+                            <div class="form-group"><label class="form-label" for="lanA">LAN interface (policy src/dst)</label><input id="lanA" class="form-input mono" type="text" maxlength="35"></div>
+                            <div class="form-group"><label class="form-label" for="subA">Protected subnets (one per line)</label><textarea id="subA" class="form-input mono" rows="3" spellcheck="false"></textarea></div>
+                        </div>
+                        <div class="site-card">
+                            <h3>Site B (peer FortiGate)</h3>
+                            <div class="form-group"><label class="form-label" for="tunB">Tunnel name (max 15)</label><input id="tunB" class="form-input mono" type="text" maxlength="15"></div>
+                            <div class="form-group"><label class="form-label" for="wanB">WAN interface</label><input id="wanB" class="form-input mono" type="text" maxlength="35"></div>
+                            <div class="form-group"><label class="form-label" for="ipB">WAN public IP (Site A's remote-gw)</label><input id="ipB" class="form-input mono" type="text"></div>
+                            <div class="form-group"><label class="form-label" for="lanB">LAN interface (policy src/dst)</label><input id="lanB" class="form-input mono" type="text" maxlength="35"></div>
+                            <div class="form-group"><label class="form-label" for="subB">Protected subnets (one per line)</label><textarea id="subB" class="form-input mono" rows="3" spellcheck="false"></textarea></div>
+                        </div>
+                    </div>
+
+                    <div class="fg-grid" style="margin-top:1rem;">
+                        <div class="form-group">
+                            <label class="form-label" for="ikeVer">IKE version</label>
+                            <select id="ikeVer" class="form-select"><option value="2">IKEv2 (recommended)</option><option value="1">IKEv1 (legacy peers only)</option></select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="selMode">Phase2 selectors</label>
+                            <select id="selMode" class="form-select">
+                                <option value="pairs">One phase2 per subnet pair (most interoperable)</option>
+                                <option value="name">One phase2 with address-group selectors</option>
+                                <option value="any">One phase2 with 0.0.0.0/0 selectors</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <span class="form-label">Phase1 proposals</span>
+                        <div class="chk-row" id="p1Box"></div>
+                    </div>
+                    <div class="form-group">
+                        <span class="form-label">Phase2 proposals</span>
+                        <div class="chk-row" id="p2Box"></div>
+                    </div>
+                    <div class="form-group">
+                        <span class="form-label">DH groups (phase1 and phase2 PFS)</span>
+                        <div class="chk-row" id="dhBox"></div>
+                    </div>
+                    <div class="fg-grid">
+                        <div class="form-group">
+                            <label class="form-label" for="psk">Pre-shared key (never put in the share link)</label>
+                            <div class="psk-row">
+                                <input id="psk" class="form-input mono" type="password" autocomplete="off" spellcheck="false">
+                                <button class="btn btn-secondary" type="button" onclick="togglePsk()" id="pskShow">Show</button>
+                                <button class="btn btn-secondary" type="button" onclick="newPsk()">Generate</button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="vpnVdom">VDOM (empty = no VDOM wrapper)</label>
+                            <input id="vpnVdom" class="form-input mono" type="text" maxlength="31" placeholder="root">
+                        </div>
+                    </div>
+                    <div class="chk-row">
+                        <label><input type="checkbox" id="autoNeg"> phase2 auto-negotiate enable</label>
+                        <label><input type="checkbox" id="logAll"> policies: logtraffic all</label>
+                    </div>
+
+                    <div id="vpnMsgs"></div>
+                    <div class="out-head">
+                        <span class="form-label">Site A CLI</span>
+                        <button class="btn btn-secondary" onclick="copyToClipboard('vpnOutA')">Copy Site A</button>
+                    </div>
+                    <div class="bulk-output tall"><pre id="vpnOutA"></pre></div>
+                    <div class="out-head">
+                        <span class="form-label">Site B CLI</span>
+                        <button class="btn btn-secondary" onclick="copyToClipboard('vpnOutB')">Copy Site B</button>
+                    </div>
+                    <div class="bulk-output tall"><pre id="vpnOutB"></pre></div>
+
+                    <div class="version-note">
+                        <strong>FortiOS version notes (7.2 / 7.4 / 7.6)</strong>
+                        <ul>
+                            <li><strong>7.2 and 7.4:</strong> CLI defaults for phase1-interface are <code>ike-version 1</code> and <code>dhgrp 14</code>. Omitting them silently gives you IKEv1.</li>
+                            <li><strong>7.6:</strong> the CLI default is still <code>ike-version 1</code>; the documented phase1/phase2 <code>dhgrp</code> default changed to <code>20</code> (Fortinet marks it as model-dependent). The GUI VPN wizard defaults to IKEv2 from 7.6.0.</li>
+                            <li><strong>All three:</strong> <code>net-device</code> defaults to <code>disable</code> and <code>peertype</code> defaults to <code>peer</code> (certificate), so the builder sets <code>peertype any</code> for PSK, as in Fortinet's examples. Phase1 AES-GCM / ChaCha20 proposals require IKEv2.</li>
+                            <li>The builder sets <code>ike-version</code>, <code>proposal</code> and <code>dhgrp</code> explicitly on both sides, so the result does not depend on version defaults. Check <code>get system status</code> and the CLI reference for your exact build.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <section class="seo-content">
+            <h2>What this FortiGate CLI builder does</h2>
+            <p>Most FortiGate changes that take an hour in the GUI take a minute in the CLI, provided the syntax is right. This builder produces FortiOS CLI for the two jobs network engineers repeat most: importing a list of addresses as <code>config firewall address</code> objects with a matching <code>config firewall addrgrp</code>, and building a route-based site-to-site IPsec VPN between two FortiGates. The output is plain text you paste into the CLI console, an SSH session or a FortiManager CLI script. Nothing is sent to a server.</p>
+
+            <h3>Mode 1: bulk address objects</h3>
+            <p>Each input line is classified and mapped to the matching address type from the FortiOS CLI reference:</p>
+            <ul>
+                <li><strong>Single IP or CIDR</strong> (<code>10.10.5.20</code>, <code>10.20.0.0/16</code>, <code>10.20.0.0 255.255.0.0</code>) becomes <code>set type ipmask</code> with <code>set subnet &lt;ip&gt; &lt;mask&gt;</code>. A bare IP is a /32 host. <code>ipmask</code> is the default type, but it is written explicitly so the intent is visible in reviews.</li>
+                <li><strong>Range</strong> (<code>192.168.50.10-192.168.50.40</code>) becomes <code>set type iprange</code> with <code>set start-ip</code> and <code>set end-ip</code>. Both ends are inclusive.</li>
+                <li><strong>FQDN</strong> (<code>updates.example.com</code>, <code>*.example.com</code>) becomes <code>set type fqdn</code> with <code>set fqdn</code>. Wildcard FQDNs use the same type; Fortinet documents that the FortiGate must see the client's DNS traffic for wildcard objects to populate.</li>
+            </ul>
+            <p>Text after <code>#</code> becomes <code>set comment</code>. Quotes and backslashes are stripped from comments because the FortiOS CLI treats them as special characters. CIDRs with host bits set (for example <code>10.1.1.5/24</code>) are rejected rather than silently rounded, because a typo in a mask usually means the source list is wrong. The tool also flags entries that overlap each other: if <code>10.20.30.0/24</code> is already inside <code>10.20.0.0/16</code>, you probably do not need both objects in the same group.</p>
+
+            <h3>Worked example: addresses</h3>
+            <p>The line <code>10.20.0.0/16 # Branch LAN</code> with prefix <code>ACME_</code> produces:</p>
+            <pre class="mono" style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;padding:0.75rem;overflow-x:auto;font-size:0.82rem;">config firewall address
+    edit "ACME_n-10.20.0.0_16"
+        set type ipmask
+        set subnet 10.20.0.0 255.255.0.0
+        set comment "Branch LAN"
+    next
+end</pre>
+            <p>If you fill in a VDOM, the block is wrapped in <code>config vdom</code> / <code>edit &lt;vdom&gt;</code> … <code>next</code> / <code>end</code>, which is how Fortinet's multi-VDOM examples enter a VDOM context. On a FortiGate without multi-VDOM mode, leave the field empty.</p>
+
+            <h3>Mode 2: route-based site-to-site IPsec VPN</h3>
+            <p>The VPN mode writes both ends at once, so the proposals, DH groups and selectors match by construction. For each side it produces, in dependency order: address objects and two address groups (<code>&lt;tunnel&gt;_local</code>, <code>&lt;tunnel&gt;_remote</code>), <code>config vpn ipsec phase1-interface</code>, <code>config vpn ipsec phase2-interface</code>, a static route plus a blackhole route per remote subnet, and an outbound and inbound firewall policy. Objects must exist before anything references them, so paste the output top to bottom.</p>
+            <p>The phase1 uses <code>set interface</code> (WAN), <code>set ike-version</code>, <code>set peertype any</code>, <code>set net-device disable</code>, <code>set proposal</code>, <code>set dhgrp</code>, <code>set remote-gw</code> and <code>set psksecret</code>, the same keywords as Fortinet's site-to-site examples. Tunnel names are limited to 15 characters because the phase1-interface name becomes an interface name. Static routes and policies use <code>edit 0</code>, which tells FortiOS to assign the next free sequence number instead of overwriting an existing entry.</p>
+
+            <h3>Worked example: VPN</h3>
+            <p>Site A, WAN <code>wan1</code> at <code>203.0.113.10</code>, protects <code>10.10.0.0/24</code> and <code>10.10.10.0/24</code>. Site B, WAN <code>wan1</code> at <code>198.51.100.20</code>, protects <code>10.20.0.0/16</code>. In "one phase2 per subnet pair" mode, Site A gets two phase2 entries (<code>10.10.0.0/24 ↔ 10.20.0.0/16</code> and <code>10.10.10.0/24 ↔ 10.20.0.0/16</code>), one route to <code>10.20.0.0 255.255.0.0</code> via the tunnel and one blackhole at distance 254 for the same prefix. Site B gets the mirror image: two routes and two blackholes. With IKEv2, <code>aes256gcm-prfsha384</code> and DH 20 in phase1, and <code>aes256gcm</code> with PFS group 20 in phase2, both sides negotiate the same suite on the first proposal.</p>
+
+            <h3>Why the blackhole route matters</h3>
+            <p>A route-based tunnel installs its static route only while the tunnel interface is up. When the peer goes down, traffic for the remote subnets falls through to the default route and leaves the WAN unencrypted. A blackhole route for the same prefixes at administrative distance 254 is ignored while the tunnel route (distance 10 by default) is present and drops the traffic when it is not. It also helps when the remote subnets are RFC 1918 space you should never send to an ISP.</p>
+
+            <h3>Selector strategy and interoperability</h3>
+            <ul>
+                <li><strong>One phase2 per pair</strong> uses <code>src-subnet</code>/<code>dst-subnet</code>. It is verbose, but it matches what Cisco, Palo Alto, Check Point and cloud VPN gateways configured with explicit traffic selectors expect.</li>
+                <li><strong>Address-group selectors</strong> (<code>src-addr-type name</code>, <code>dst-addr-type name</code>) are what the FortiOS 7.6 VPN wizard generates. They are compact and fine between FortiGates; confirm support on the peer before using them with other vendors.</li>
+                <li><strong>0.0.0.0/0 selectors</strong> negotiate a single SA and leave traffic control to routing and policy. Use them FortiGate-to-FortiGate or with route-based (VTI) peers, not with policy-based crypto maps.</li>
+            </ul>
+
+            <h3>Common mistakes this tool prevents</h3>
+            <ul>
+                <li>Relying on defaults: the phase1 CLI default is IKEv1 on 7.2, 7.4 and 7.6, and the default DH group differs between versions. The builder always writes them out.</li>
+                <li>Mismatched proposals: phase1 AES-GCM and ChaCha20 suites are IKEv2-only on FortiGate, so the tool blocks them with IKEv1.</li>
+                <li>Overlapping local and remote subnets: these need NAT and cannot be routed as-is, so they are reported as errors.</li>
+                <li>PSKs with <code>?</code>: the FortiGate CLI uses <code>?</code> for help, and Fortinet notes that question marks cannot be pasted into the CLI console or some SSH clients. Generated keys use letters and digits only (40 characters, about 238 bits of entropy).</li>
+                <li>Forgetting the policy direction: two policies are generated, LAN → tunnel and tunnel → LAN, both with <code>set nat disable</code>, because source-NATing site-to-site traffic breaks return routing and logging.</li>
+            </ul>
+
+            <h3>Verify after pasting</h3>
+            <p>Bring the tunnel up and check it with <code>diagnose vpn ike gateway list name &lt;tunnel&gt;</code> and <code>diagnose vpn tunnel list</code>. For negotiation failures, run <code>diagnose debug application ike -1</code> with <code>diagnose debug enable</code>; a "probable pre-shared secret mismatch" message points at the PSK. Confirm routing with <code>get router info routing-table static</code>. To roll back, delete the policies first, then the routes, phase2, phase1 and finally the address objects, the reverse of the creation order.</p>
+
+            <div class="faq">
+                <h3>Frequently Asked Questions</h3>
+                <div class="faq-item"><button class="faq-question">Which FortiOS versions does the generated CLI target?</button><div class="faq-answer">The output uses keywords that exist in the FortiOS 7.2, 7.4 and 7.6 CLI references: config firewall address/addrgrp, config vpn ipsec phase1-interface/phase2-interface, config router static and config firewall policy. Defaults differ between versions (for example the phase1 dhgrp default), so the builder always sets ike-version, proposal and dhgrp explicitly instead of relying on defaults.</div></div>
+                <div class="faq-item"><button class="faq-question">Is my pre-shared key sent anywhere or stored in the share link?</button><div class="faq-answer">No. Everything runs in your browser. The PSK generator uses crypto.getRandomValues, and the PSK is deliberately excluded from the shareable URL, so copying the link never leaks the secret. Distribute the key to the peer administrator over a separate secure channel.</div></div>
+                <div class="faq-item"><button class="faq-question">Why does the VPN output include a blackhole route with distance 254?</button><div class="faq-answer">When the tunnel is down, its static route is withdrawn and traffic to the remote subnets would follow the default route out to the internet in clear text. A blackhole route for the same prefixes with distance 254 stays in the table as a last resort and drops that traffic instead. This is the pattern Fortinet uses in its site-to-site examples.</div></div>
+                <div class="faq-item"><button class="faq-question">Should I use one phase2 per subnet pair or a single 0.0.0.0/0 selector?</button><div class="faq-answer">Between two FortiGates on a route-based VPN, 0.0.0.0/0 selectors or address-group selectors keep the config short because routing and policy decide what enters the tunnel. Third-party peers, especially policy-based ones, usually expect explicit traffic selectors that match their crypto ACL exactly, so one phase2 per local/remote subnet pair is the most interoperable choice.</div></div>
+                <div class="faq-item"><button class="faq-question">How are address object names generated?</button><div class="faq-answer">Each object gets your prefix plus a type tag and the value: h- for a single host, n- for a subnet (slash replaced by underscore), r- for a range, and the hostname itself for an FQDN. Names are capped at the 79-character limit from the CLI reference, quotes are stripped from comments, and duplicates are skipped with a warning.</div></div>
+            </div>
+        </section>
+
+        <section class="related-tools">
+            <h2>Related Tools</h2>
+            <div class="related-grid">
+                <a href="/tools/cidr-aggregator.html" class="related-card"><h3>CIDR Aggregator</h3><p>Collapse IP lists into a minimal CIDR set.</p></a>
+                <a href="/tools/subnet-calculator.html" class="related-card"><h3>Subnet Calculator</h3><p>Plan subnets with VLSM and CIDR.</p></a>
+                <a href="/tools/password-generator.html" class="related-card"><h3>Password Generator</h3><p>Strong random passwords and keys.</p></a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section"><h3>Network Tools</h3><a href="/tools/subnet-calculator.html">Subnet Calculator</a><a href="/tools/cidr-aggregator.html">CIDR Aggregator</a><a href="/tools/fortigate-cli-builder.html">FortiGate CLI Builder</a></div>
+            <div class="footer-section"><h3>Security Tools</h3><a href="/tools/password-generator.html">Password Generator</a><a href="/tools/hash-generator.html">Hash Generator</a><a href="/tools/jwt-decoder.html">JWT Decoder</a></div>
+            <div class="footer-section"><h3>Developer Tools</h3><a href="/tools/json-formatter.html">JSON Formatter</a><a href="/tools/regex-tester.html">Regex Tester</a><a href="/tools/cron-explainer.html">Cron Explainer</a></div>
+        </div>
+        <div class="footer-bottom"><p>&copy; 2026 OPS-BOX.net — Free IT utilities for professionals. | <a href="/about.html" style="color:inherit;text-decoration:underline;">About</a> · <a href="/contact.html" style="color:inherit;text-decoration:underline;">Contact</a> · <a href="/terms-of-service.html" style="color:inherit;text-decoration:underline;">Terms</a> · <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p></div>
+    </footer>
+
+    <div class="toast" id="toast">Copied to clipboard!</div>
+
+    <script src="../js/common.js?v=20261122"></script>
+    <script>
+// CORE-START (pure logic, no DOM; tested with node)
+var FG = (function () {
+    'use strict';
+    var NAME_MAX = 79;           // firewall address / addrgrp name max (CLI reference)
+    var TUN_MAX = 15;            // phase1-interface name max
+    var IFACE_MAX = 35;
+
+    function ipToInt(ip) {
+        var parts = String(ip).trim().split('.');
+        if (parts.length !== 4) throw new Error('invalid IPv4 address: ' + ip);
+        var n = 0;
+        for (var i = 0; i < 4; i++) {
+            var p = parts[i];
+            if (!/^(0|[1-9]\d{0,2})$/.test(p)) throw new Error('invalid IPv4 address: ' + ip);
+            var o = Number(p);
+            if (o > 255) throw new Error('invalid IPv4 address: ' + ip);
+            n = n * 256 + o;
+        }
+        return n;
+    }
+    function intToIp(n) { n = n >>> 0; return [(n >>> 24) & 255, (n >>> 16) & 255, (n >>> 8) & 255, n & 255].join('.'); }
+    function prefixToMaskInt(p) { return p === 0 ? 0 : ((0xFFFFFFFF << (32 - p)) >>> 0); }
+    function maskToPrefix(maskStr) {
+        var m = ipToInt(maskStr);
+        var inv = (~m) >>> 0;
+        if (((inv + 1) & inv) !== 0) throw new Error('non-contiguous netmask: ' + maskStr);
+        var p = 0; while (p < 32 && ((m >>> (31 - p)) & 1)) p++;
+        return p;
+    }
+
+    // Parse "a.b.c.d", "a.b.c.d/nn", "a.b.c.d/255.255.0.0" or "a.b.c.d 255.255.0.0"
+    function parseCidr(s) {
+        s = String(s).trim().replace(/\s+/g, ' ');
+        var ip, pfx;
+        var m = s.match(/^([0-9.]+)\s*\/\s*([0-9.]+)$/) || s.match(/^([0-9.]+) ([0-9.]+)$/);
+        if (m) {
+            ip = m[1];
+            if (/^\d{1,2}$/.test(m[2])) { pfx = Number(m[2]); if (pfx > 32) throw new Error('prefix length out of range: ' + s); }
+            else if (m[2].indexOf('.') >= 0) pfx = maskToPrefix(m[2]);
+            else throw new Error('invalid prefix: ' + s);
+        } else if (/^[0-9.]+$/.test(s)) { ip = s; pfx = 32; }
+        else throw new Error('not an IPv4 address/subnet: ' + s);
+        var base = ipToInt(ip);
+        var mask = prefixToMaskInt(pfx);
+        var net = (base & mask) >>> 0;
+        if (net !== base) throw new Error('host bits set in ' + s + ' (did you mean ' + intToIp(net) + '/' + pfx + '?)');
+        var size = Math.pow(2, 32 - pfx);
+        return { net: net, prefix: pfx, start: net, end: net + size - 1, ip: intToIp(net), mask: intToIp(mask) };
+    }
+
+    function isFqdn(s) {
+        if (s.length > 253) return false;
+        var labels = s.split('.');
+        if (labels.length < 2) return false;
+        for (var i = 0; i < labels.length; i++) {
+            var l = labels[i];
+            if (i === 0 && l === '*') continue;               // leading wildcard label
+            if (!/^[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?$/.test(l)) return false;
+        }
+        if (/^\d+$/.test(labels[labels.length - 1])) return false; // numeric TLD = mistyped IP
+        return true;
+    }
+
+    // CLI-safe free text: strip quotes, backslashes, '?', control chars.
+    function cleanText(s, max) {
+        s = String(s).replace(/[\u0000-\u001f\u007f"'\\?]/g, '').replace(/\s+/g, ' ').trim();
+        return max ? s.slice(0, max) : s;
+    }
+    function cleanName(s) { return String(s).replace(/[\u0000-\u001f\u007f"'\\?<>()#]/g, '').trim(); }
+
+    function parseAddrLine(raw) {
+        var line = String(raw);
+        var hash = line.indexOf('#');
+        var comment = hash >= 0 ? cleanText(line.slice(hash + 1), 255) : '';
+        var v = (hash >= 0 ? line.slice(0, hash) : line).trim();
+        if (!v) return null;
+        // range a-b
+        var rm = v.match(/^([0-9.]+)\s*-\s*([0-9.]+)$/);
+        if (rm) {
+            var s = ipToInt(rm[1]), e = ipToInt(rm[2]);
+            if (s > e) throw new Error('range start > end: ' + v);
+            return { kind: 'range', start: s, end: e, startIp: intToIp(s), endIp: intToIp(e), comment: comment, src: v };
+        }
+        if (/^[0-9.\/ ]+$/.test(v)) {
+            var c = parseCidr(v);
+            return { kind: 'subnet', start: c.start, end: c.end, ip: c.ip, mask: c.mask, prefix: c.prefix, comment: comment, src: v };
+        }
+        var f = v.toLowerCase().replace(/\.$/, '');
+        if (isFqdn(f)) return { kind: 'fqdn', fqdn: f, comment: comment, src: v };
+        throw new Error('unrecognised entry: ' + v);
+    }
+
+    function addrName(prefix, e) {
+        var body;
+        if (e.kind === 'subnet') body = e.prefix === 32 ? 'h-' + e.ip : 'n-' + e.ip + '_' + e.prefix;
+        else if (e.kind === 'range') body = 'r-' + e.startIp + '-' + e.endIp;
+        else body = e.fqdn.replace(/^\*\./, 'wildcard.');
+        return cleanName(prefix) + body;
+    }
+
+    function q(s) { return '"' + s + '"'; }
+
+    // Simple CLI writer with indentation
+    function Writer() { this.lines = []; this.lvl = 0; }
+    Writer.prototype.o = function (s) { this.lines.push('    '.repeat(this.lvl) + s); return this; };
+    Writer.prototype.open = function (s) { this.o(s); this.lvl++; return this; };
+    Writer.prototype.close = function (s) { this.lvl--; this.o(s); return this; };
+    Writer.prototype.text = function () { return this.lines.join('\n'); };
+
+    function vdomOpen(w, vdom) { if (vdom) { w.open('config vdom'); w.open('edit ' + vdom); } }
+    function vdomClose(w, vdom) { if (vdom) { w.close('next'); w.close('end'); } }
+
+    function validVdom(v) { return /^[A-Za-z0-9_.-]{1,31}$/.test(v); }
+
+    function overlaps(list) {
+        var ip = list.filter(function (e) { return e.kind !== 'fqdn'; }).slice().sort(function (a, b) { return a.start - b.start || b.end - a.end; });
+        var out = [];
+        for (var i = 0; i < ip.length; i++) {
+            for (var j = i + 1; j < ip.length && ip[j].start <= ip[i].end; j++) {
+                var inside = ip[j].end <= ip[i].end;
+                out.push(ip[j].name + (inside ? ' is inside ' : ' overlaps ') + ip[i].name);
+            }
+        }
+        return out;
+    }
+
+    function buildAddresses(text, opt) {
+        opt = opt || {};
+        var errors = [], warnings = [], objs = [], seen = {};
+        var prefix = opt.prefix || '';
+        var color = opt.color === undefined || opt.color === '' ? 0 : Number(opt.color);
+        if (!Number.isInteger(color) || color < 0 || color > 32) { errors.push('color must be an integer 0-32'); color = 0; }
+        var vdom = (opt.vdom || '').trim();
+        if (vdom && !validVdom(vdom)) { errors.push('invalid VDOM name: ' + vdom); vdom = ''; }
+        var lines = String(text || '').split(/\r?\n/);
+        if (lines.length > 5000) { errors.push('more than 5000 lines; split the list'); lines = lines.slice(0, 5000); }
+        lines.forEach(function (ln, idx) {
+            try {
+                var e = parseAddrLine(ln);
+                if (!e) return;
+                e.name = addrName(prefix, e);
+                if (e.name.length > NAME_MAX) { warnings.push('line ' + (idx + 1) + ': name truncated to ' + NAME_MAX + ' chars'); e.name = e.name.slice(0, NAME_MAX); }
+                if (seen[e.name]) { warnings.push('line ' + (idx + 1) + ': duplicate of ' + e.name + ', skipped'); return; }
+                seen[e.name] = true;
+                objs.push(e);
+            } catch (err) { errors.push('line ' + (idx + 1) + ': ' + err.message); }
+        });
+        var group = cleanName(opt.group || '');
+        if (group.length > NAME_MAX) { errors.push('group name longer than ' + NAME_MAX + ' chars'); group = group.slice(0, NAME_MAX); }
+        if (group && seen[group]) errors.push('group name collides with an address name: ' + group);
+        var ov = overlaps(objs);
+        if (!objs.length) return { cli: '', objects: objs, errors: errors, warnings: warnings, overlaps: ov };
+        var w = new Writer();
+        vdomOpen(w, vdom);
+        w.open('config firewall address');
+        objs.forEach(function (e) {
+            w.open('edit ' + q(e.name));
+            if (e.kind === 'subnet') { w.o('set type ipmask'); w.o('set subnet ' + e.ip + ' ' + e.mask); }
+            else if (e.kind === 'range') { w.o('set type iprange'); w.o('set start-ip ' + e.startIp); w.o('set end-ip ' + e.endIp); }
+            else { w.o('set type fqdn'); w.o('set fqdn ' + q(e.fqdn)); }
+            if (opt.allowRouting) w.o('set allow-routing enable');
+            if (color) w.o('set color ' + color);
+            if (e.comment) w.o('set comment ' + q(e.comment));
+            w.close('next');
+        });
+        w.close('end');
+        if (group) {
+            w.open('config firewall addrgrp');
+            w.open('edit ' + q(group));
+            w.o('set member ' + objs.map(function (e) { return q(e.name); }).join(' '));
+            if (opt.allowRouting) w.o('set allow-routing enable');
+            if (color) w.o('set color ' + color);
+            w.close('next');
+            w.close('end');
+        }
+        vdomClose(w, vdom);
+        return { cli: w.text(), objects: objs, errors: errors, warnings: warnings, overlaps: ov };
+    }
+
+    // ---------------- VPN ----------------
+    var P1_PROPOSALS = ['aes256gcm-prfsha384', 'aes128gcm-prfsha256', 'chacha20poly1305-prfsha256', 'aes256-sha256', 'aes256-sha384', 'aes256-sha512', 'aes128-sha256'];
+    var P2_PROPOSALS = ['aes256gcm', 'aes128gcm', 'chacha20poly1305', 'aes256-sha256', 'aes256-sha384', 'aes256-sha512', 'aes128-sha256'];
+    var DH_GROUPS = ['21', '20', '19', '32', '31', '16', '15', '14'];
+    function isAead(p) { return /gcm|chacha/.test(p); }
+
+    function parseSubnets(text, label, errors) {
+        var out = [];
+        String(text || '').split(/[\r\n,]+/).forEach(function (raw) {
+            var v = raw.split('#')[0].trim();
+            if (!v) return;
+            try {
+                var c = parseCidr(v);
+                if (c.prefix === 0) throw new Error('0.0.0.0/0 is not a protected subnet (use the 0.0.0.0/0 selector option)');
+                out.push(c);
+            } catch (e) { errors.push(label + ': ' + e.message); }
+        });
+        // duplicates / overlaps within the list
+        for (var i = 0; i < out.length; i++) for (var j = i + 1; j < out.length; j++)
+            if (out[i].start <= out[j].end && out[j].start <= out[i].end) errors.push(label + ': ' + out[i].ip + '/' + out[i].prefix + ' overlaps ' + out[j].ip + '/' + out[j].prefix);
+        return out;
+    }
+    function validIface(s) { return /^[A-Za-z0-9_.:\-]{1,35}$/.test(s); }
+    function validTun(s) { return /^[A-Za-z0-9_.\-]{1,15}$/.test(s); }
+    function checkPeerIp(s, label, errors) {
+        try {
+            var n = ipToInt(s);
+            if (n === 0 || n >= 0xE0000000 || (n >>> 24) === 127) errors.push(label + ': ' + s + ' is not a usable unicast address');
+            return intToIp(n);
+        } catch (e) { errors.push(label + ': ' + e.message); return null; }
+    }
+    function pskProblems(psk) {
+        var p = [];
+        if (!psk) p.push('PSK is empty');
+        else {
+            if (psk.length < 16) p.push('PSK shorter than 16 characters is weak; use Generate');
+            if (/[\s"'\\?]/.test(psk)) p.push('PSK contains whitespace, quotes, backslash or "?" which break CLI paste; use letters, digits and - _ . @ % + =');
+            if (/[^\x21-\x7e]/.test(psk)) p.push('PSK contains non-ASCII characters');
+        }
+        return p;
+    }
+
+    function buildSide(L, R, o) {
+        var w = new Writer(), tun = L.tun;
+        vdomOpen(w, o.vdom);
+        // address objects
+        w.open('config firewall address');
+        L.subs.forEach(function (s, i) { w.open('edit ' + q(tun + '_local_' + i)); w.o('set allow-routing enable'); w.o('set subnet ' + s.ip + ' ' + s.mask); w.close('next'); });
+        R.subs.forEach(function (s, i) { w.open('edit ' + q(tun + '_remote_' + i)); w.o('set allow-routing enable'); w.o('set subnet ' + s.ip + ' ' + s.mask); w.close('next'); });
+        w.close('end');
+        w.open('config firewall addrgrp');
+        w.open('edit ' + q(tun + '_local')); w.o('set allow-routing enable'); w.o('set member ' + L.subs.map(function (s, i) { return q(tun + '_local_' + i); }).join(' ')); w.close('next');
+        w.open('edit ' + q(tun + '_remote')); w.o('set allow-routing enable'); w.o('set member ' + R.subs.map(function (s, i) { return q(tun + '_remote_' + i); }).join(' ')); w.close('next');
+        w.close('end');
+        // phase1
+        w.open('config vpn ipsec phase1-interface');
+        w.open('edit ' + q(tun));
+        w.o('set interface ' + q(L.wan));
+        w.o('set ike-version ' + o.ike);
+        w.o('set peertype any');
+        w.o('set net-device disable');
+        w.o('set proposal ' + o.p1.join(' '));
+        w.o('set dhgrp ' + o.dh.join(' '));
+        w.o('set remote-gw ' + R.ip);
+        w.o('set psksecret ' + o.psk);
+        w.close('next');
+        w.close('end');
+        // phase2
+        w.open('config vpn ipsec phase2-interface');
+        function p2common() {
+            w.o('set phase1name ' + q(tun));
+            w.o('set proposal ' + o.p2.join(' '));
+            w.o('set dhgrp ' + o.dh.join(' '));
+            if (o.autoneg) w.o('set auto-negotiate enable');
+        }
+        if (o.sel === 'pairs') {
+            var n = 0;
+            L.subs.forEach(function (ls) {
+                R.subs.forEach(function (rs) {
+                    n++;
+                    w.open('edit ' + q(tun + '_' + n));
+                    p2common();
+                    w.o('set src-subnet ' + ls.ip + ' ' + ls.mask);
+                    w.o('set dst-subnet ' + rs.ip + ' ' + rs.mask);
+                    w.close('next');
+                });
+            });
+        } else {
+            w.open('edit ' + q(tun));
+            p2common();
+            if (o.sel === 'name') {
+                w.o('set src-addr-type name'); w.o('set dst-addr-type name');
+                w.o('set src-name ' + q(tun + '_local')); w.o('set dst-name ' + q(tun + '_remote'));
+            } else {
+                w.o('set src-subnet 0.0.0.0 0.0.0.0'); w.o('set dst-subnet 0.0.0.0 0.0.0.0');
+            }
+            w.close('next');
+        }
+        w.close('end');
+        // routes
+        w.open('config router static');
+        R.subs.forEach(function (rs) {
+            w.open('edit 0'); w.o('set dst ' + rs.ip + ' ' + rs.mask); w.o('set device ' + q(tun)); w.o('set comment ' + q('VPN ' + tun)); w.close('next');
+            w.open('edit 0'); w.o('set dst ' + rs.ip + ' ' + rs.mask); w.o('set blackhole enable'); w.o('set distance 254'); w.o('set comment ' + q('VPN ' + tun + ' blackhole')); w.close('next');
+        });
+        w.close('end');
+        // policies
+        w.open('config firewall policy');
+        [['out', L.lan, tun, tun + '_local', tun + '_remote'], ['in', tun, L.lan, tun + '_remote', tun + '_local']].forEach(function (p) {
+            w.open('edit 0');
+            w.o('set name ' + q(('vpn_' + tun + '_' + p[0]).slice(0, 35)));
+            w.o('set srcintf ' + q(p[1]));
+            w.o('set dstintf ' + q(p[2]));
+            w.o('set action accept');
+            w.o('set srcaddr ' + q(p[3]));
+            w.o('set dstaddr ' + q(p[4]));
+            w.o('set schedule "always"');
+            w.o('set service "ALL"');
+            if (o.logAll) w.o('set logtraffic all');
+            w.o('set nat disable');
+            w.close('next');
+        });
+        w.close('end');
+        vdomClose(w, o.vdom);
+        return w.text();
+    }
+
+    function buildVpn(i) {
+        var errors = [], warnings = [];
+        var A = { tun: String(i.tunA || '').trim(), wan: String(i.wanA || '').trim(), lan: String(i.lanA || '').trim() };
+        var B = { tun: String(i.tunB || '').trim(), wan: String(i.wanB || '').trim(), lan: String(i.lanB || '').trim() };
+        [['Site A', A], ['Site B', B]].forEach(function (x) {
+            var s = x[1], l = x[0];
+            if (!validTun(s.tun)) errors.push(l + ': tunnel name must be 1-' + TUN_MAX + ' chars [A-Za-z0-9_.-]');
+            if (!validIface(s.wan)) errors.push(l + ': invalid WAN interface name');
+            if (!validIface(s.lan)) errors.push(l + ': invalid LAN interface name');
+            if (s.wan && s.wan === s.lan) errors.push(l + ': WAN and LAN interface are the same');
+        });
+        A.ip = checkPeerIp(String(i.ipA || '').trim(), 'Site A WAN IP', errors);
+        B.ip = checkPeerIp(String(i.ipB || '').trim(), 'Site B WAN IP', errors);
+        if (A.ip && A.ip === B.ip) errors.push('Site A and Site B WAN IPs are identical');
+        A.subs = parseSubnets(i.subA, 'Site A subnets', errors);
+        B.subs = parseSubnets(i.subB, 'Site B subnets', errors);
+        if (!A.subs.length) errors.push('Site A: at least one protected subnet is required');
+        if (!B.subs.length) errors.push('Site B: at least one protected subnet is required');
+        A.subs.forEach(function (a) { B.subs.forEach(function (b) {
+            if (a.start <= b.end && b.start <= a.end) errors.push('local ' + a.ip + '/' + a.prefix + ' overlaps remote ' + b.ip + '/' + b.prefix + ' (needs NAT, cannot be routed as-is)');
+        }); });
+        var ike = String(i.ike) === '1' ? '1' : '2';
+        var p1 = (i.p1 || []).filter(function (p) { return P1_PROPOSALS.indexOf(p) >= 0; });
+        var p2 = (i.p2 || []).filter(function (p) { return P2_PROPOSALS.indexOf(p) >= 0; });
+        var dh = (i.dh || []).map(String).filter(function (d) { return DH_GROUPS.indexOf(d) >= 0; });
+        if (!p1.length) errors.push('select at least one phase1 proposal');
+        if (!p2.length) errors.push('select at least one phase2 proposal');
+        if (!dh.length) errors.push('select at least one DH group');
+        if (ike === '1' && p1.some(isAead)) errors.push('IKEv1 cannot use AES-GCM/ChaCha20 phase1 proposals: ' + p1.filter(isAead).join(' '));
+        if (ike === '1') warnings.push('IKEv1 selected: use only when the peer cannot do IKEv2');
+        var sel = ['pairs', 'name', 'any'].indexOf(i.sel) >= 0 ? i.sel : 'pairs';
+        if (sel === 'pairs' && A.subs.length * B.subs.length > 16) warnings.push(A.subs.length * B.subs.length + ' phase2 selectors will be created; consider address-group or 0.0.0.0/0 selectors between FortiGates');
+        var vdom = String(i.vdom || '').trim();
+        if (vdom && !validVdom(vdom)) { errors.push('invalid VDOM name'); vdom = ''; }
+        var psk = String(i.psk || '');
+        pskProblems(psk).forEach(function (p) { (/empty|break|non-ASCII/.test(p) ? errors : warnings).push(p); });
+        if (errors.length) return { a: '', b: '', errors: errors, warnings: warnings };
+        var o = { ike: ike, p1: p1, p2: p2, dh: dh, sel: sel, vdom: vdom, psk: psk, autoneg: !!i.autoneg, logAll: !!i.logAll };
+        return { a: buildSide(A, B, o), b: buildSide(B, A, o), errors: errors, warnings: warnings };
+    }
+
+    var PSK_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    // randBytes(n) must return n uniformly random bytes (crypto.getRandomValues in the browser)
+    function genPsk(len, randBytes) {
+        len = len || 40;
+        var out = '', lim = 256 - (256 % PSK_CHARS.length); // rejection sampling, no modulo bias
+        while (out.length < len) {
+            var b = randBytes(len * 2);
+            for (var k = 0; k < b.length && out.length < len; k++) if (b[k] < lim) out += PSK_CHARS[b[k] % PSK_CHARS.length];
+        }
+        return out;
+    }
+
+    return { ipToInt: ipToInt, intToIp: intToIp, parseCidr: parseCidr, maskToPrefix: maskToPrefix, isFqdn: isFqdn,
+        parseAddrLine: parseAddrLine, buildAddresses: buildAddresses, buildVpn: buildVpn, genPsk: genPsk, pskProblems: pskProblems,
+        P1_PROPOSALS: P1_PROPOSALS, P2_PROPOSALS: P2_PROPOSALS, DH_GROUPS: DH_GROUPS };
+})();
+if (typeof module !== 'undefined') module.exports = FG;
+// CORE-END
+    </script>
+    <script>
+        var DH_LABEL = { '14': '14 MODP-2048', '15': '15 MODP-3072', '16': '16 MODP-4096', '19': '19 ECP-256', '20': '20 ECP-384', '21': '21 ECP-521', '31': '31 Curve25519', '32': '32 Curve448' };
+        var DEF = {
+            m: 'addr',
+            al: '10.10.5.20            # Domain controller\n10.20.0.0/16          # Branch LAN\n10.20.30.0 255.255.255.0\n192.168.50.10-192.168.50.40   # DHCP pool printers\nupdates.example.com   # vendor update server\n*.example.net',
+            ap: 'ACME_', ag: 'GRP_ACME_Servers', ac: '0', av: '', ar: '0',
+            ta: 'to_branch', wa: 'wan1', ia: '203.0.113.10', la: 'internal', sa: '10.10.0.0/24\n10.10.10.0/24',
+            tb: 'to_hq', wb: 'wan1', ib: '198.51.100.20', lb: 'lan', sb: '10.20.0.0/16',
+            ike: '2', sel: 'pairs', p1: 'aes256gcm-prfsha384,aes256-sha256', p2: 'aes256gcm,aes256-sha256', dh: '20,14', an: '1', lg: '1', vv: ''
+        };
+        var MAP = { al: 'addrInput', ap: 'addrPrefix', ag: 'addrGroup', ac: 'addrColor', av: 'addrVdom',
+            ta: 'tunA', wa: 'wanA', ia: 'ipA', la: 'lanA', sa: 'subA', tb: 'tunB', wb: 'wanB', ib: 'ipB', lb: 'lanB', sb: 'subB',
+            ike: 'ikeVer', sel: 'selMode', vv: 'vpnVdom' };
+        var CHK = { ar: 'addrRouting', an: 'autoNeg', lg: 'logAll' };
+        var mode = 'addr';
+
+        function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+        function $(id) { return document.getElementById(id); }
+        function checks(boxId, list, selected, labels) {
+            $(boxId).innerHTML = list.map(function (v) {
+                return '<label><input type="checkbox" value="' + esc(v) + '"' + (selected.indexOf(v) >= 0 ? ' checked' : '') + '> ' + esc(labels ? labels[v] : v) + '</label>';
+            }).join('');
+        }
+        function checked(boxId) { return Array.prototype.map.call($(boxId).querySelectorAll('input:checked'), function (x) { return x.value; }); }
+        function msgs(id, errors, warnings, info) {
+            var h = '';
+            if (errors && errors.length) h += '<div class="msg-box msg-err">' + esc(errors.join('\n')) + '</div>';
+            if (warnings && warnings.length) h += '<div class="msg-box msg-warn">' + esc(warnings.join('\n')) + '</div>';
+            if (info && info.length) h += '<div class="msg-box msg-info">' + esc(info.join('\n')) + '</div>';
+            $(id).innerHTML = h;
+        }
+
+        function setMode(m) {
+            mode = m === 'vpn' ? 'vpn' : 'addr';
+            $('panelAddr').style.display = mode === 'addr' ? '' : 'none';
+            $('panelVpn').style.display = mode === 'vpn' ? '' : 'none';
+            $('tabAddr').classList.toggle('active', mode === 'addr');
+            $('tabVpn').classList.toggle('active', mode === 'vpn');
+            $('tabAddr').setAttribute('aria-selected', mode === 'addr');
+            $('tabVpn').setAttribute('aria-selected', mode === 'vpn');
+            update();
+        }
+
+        function saveState() {
+            var st = { m: mode };
+            Object.keys(MAP).forEach(function (k) { st[k] = $(MAP[k]).value; });
+            Object.keys(CHK).forEach(function (k) { st[k] = $(CHK[k]).checked ? '1' : '0'; });
+            st.p1 = checked('p1Box').join(','); st.p2 = checked('p2Box').join(','); st.dh = checked('dhBox').join(',');
+            // drop values equal to defaults to keep links short; PSK is never stored
+            Object.keys(st).forEach(function (k) { if (st[k] === DEF[k]) st[k] = ''; });
+            setToolParams(st);
+        }
+
+        function runAddr() {
+            var r = FG.buildAddresses($('addrInput').value, {
+                prefix: $('addrPrefix').value, group: $('addrGroup').value, color: $('addrColor').value,
+                vdom: $('addrVdom').value, allowRouting: $('addrRouting').checked
+            });
+            var info = [];
+            if (r.objects.length) {
+                var c = { subnet: 0, range: 0, fqdn: 0 }; r.objects.forEach(function (e) { c[e.kind]++; });
+                info.push(r.objects.length + ' objects: ' + c.subnet + ' ipmask, ' + c.range + ' iprange, ' + c.fqdn + ' fqdn');
+            }
+            if (r.overlaps.length) info.push('Overlaps (not an error, review before grouping):\n  ' + r.overlaps.slice(0, 20).join('\n  ') + (r.overlaps.length > 20 ? '\n  …' : ''));
+            msgs('addrMsgs', r.errors, r.warnings, info);
+            $('addrOut').textContent = r.cli || '(no valid entries)';
+        }
+
+        function runVpn() {
+            var r = FG.buildVpn({
+                tunA: $('tunA').value, wanA: $('wanA').value, ipA: $('ipA').value, lanA: $('lanA').value, subA: $('subA').value,
+                tunB: $('tunB').value, wanB: $('wanB').value, ipB: $('ipB').value, lanB: $('lanB').value, subB: $('subB').value,
+                ike: $('ikeVer').value, sel: $('selMode').value, p1: checked('p1Box'), p2: checked('p2Box'), dh: checked('dhBox'),
+                psk: $('psk').value, vdom: $('vpnVdom').value, autoneg: $('autoNeg').checked, logAll: $('logAll').checked
+            });
+            msgs('vpnMsgs', r.errors, r.warnings, r.errors.length ? [] : ['Paste each block on its own FortiGate, top to bottom. Both sides use the same PSK; send it to the peer admin out of band.']);
+            $('vpnOutA').textContent = r.a || '(fix the errors above)';
+            $('vpnOutB').textContent = r.b || '(fix the errors above)';
+        }
+
+        function update() { if (mode === 'addr') runAddr(); else runVpn(); saveState(); }
+        var updateLive = debounce(update, 200);
+
+        function rand(n) { var b = new Uint8Array(n); crypto.getRandomValues(b); return b; }
+        function newPsk() { $('psk').value = FG.genPsk(40, rand); update(); }
+        function togglePsk() { var p = $('psk'); var show = p.type === 'password'; p.type = show ? 'text' : 'password'; $('pskShow').textContent = show ? 'Hide' : 'Show'; }
+
+        (function init() {
+            var p = getToolParams();
+            var st = {};
+            Object.keys(DEF).forEach(function (k) { st[k] = (p[k] !== undefined && p[k] !== '') ? p[k] : DEF[k]; });
+            Object.keys(MAP).forEach(function (k) { $(MAP[k]).value = st[k]; });
+            Object.keys(CHK).forEach(function (k) { $(CHK[k]).checked = st[k] === '1'; });
+            checks('p1Box', FG.P1_PROPOSALS, st.p1.split(','));
+            checks('p2Box', FG.P2_PROPOSALS, st.p2.split(','));
+            checks('dhBox', FG.DH_GROUPS, st.dh.split(','), DH_LABEL);
+            $('psk').value = FG.genPsk(40, rand);
+            document.querySelectorAll('.tool-content input, .tool-content textarea, .tool-content select').forEach(function (el) {
+                el.addEventListener(el.type === 'checkbox' || el.tagName === 'SELECT' ? 'change' : 'input', updateLive);
+            });
+            setMode(st.m);
+        })();
+    </script>
+    <script>
+        document.querySelectorAll('.faq-question').forEach(function(btn) {
+            btn.addEventListener('click', function() { btn.parentElement.classList.toggle('open'); });
+        });
+    </script>
+    <script src="/js/nav.js?v=20261122" defer></script>
+</body>
+</html>

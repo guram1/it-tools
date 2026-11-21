@@ -71,7 +71,7 @@
             <div class="tool-content">
                 <div class="form-group">
                     <label class="form-label" for="bgpInput">AS number, IP address, or company name</label>
-                    <input type="text" id="bgpInput" class="form-input" value="AS15169" placeholder="AS15169  ·  8.8.8.8  ·  2606:4700::1111  ·  cloudflare" style="font-family:'JetBrains Mono',monospace;font-size:1.05rem;" onkeydown="if(event.key==='Enter')lookup()">
+                    <input type="text" id="bgpInput" class="form-input" value="AS13335" placeholder="AS15169  ·  8.8.8.8  ·  2606:4700::1111  ·  cloudflare" style="font-family:'JetBrains Mono',monospace;font-size:1.05rem;" onkeydown="if(event.key==='Enter')lookup()">
                     <div style="display:flex;flex-wrap:wrap;gap:0.4rem;margin-top:0.6rem;">
                         <button class="preset-btn" onclick="setVal('AS15169')">AS15169 Google</button>
                         <button class="preset-btn" onclick="setVal('AS13335')">AS13335 Cloudflare</button>
@@ -82,7 +82,7 @@
                         <button class="preset-btn" onclick="setVal('1.1.1.1')">1.1.1.1</button>
                     </div>
                 </div>
-                <div class="btn-group"><button class="btn btn-primary" onclick="lookup()">Look up</button></div>
+                <div class="btn-group"><button class="btn btn-primary" onclick="lookup()">Look up</button><button class="btn btn-secondary" id="bgpShareBtn" onclick="copyShareLink()" title="Copy a link to this lookup">🔗 Copy link</button></div>
 
                 <div id="bgpError" style="display:none;color:#ef4444;margin-top:1rem;padding:0.75rem 1rem;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:0.85rem;"></div>
 
@@ -151,7 +151,7 @@
         <div class="footer-content">
             <div class="footer-section"><h3>Network Tools</h3><a href="/tools/subnet-calculator.html">Subnet Calculator</a><a href="/tools/ipv6-subnet-calculator.html">IPv6 Subnet</a><a href="/tools/cidr-aggregator.html">CIDR Aggregator</a><a href="/tools/bgp-asn-lookup.html">BGP ASN Lookup</a></div>
             <div class="footer-section"><h3>Security Tools</h3><a href="/tools/password-generator.html">Password Generator</a><a href="/tools/bcrypt.html">Bcrypt</a><a href="/tools/totp-generator.html">TOTP Generator</a></div>
-            <div class="footer-section"><h3>Developer Tools</h3><a href="/tools/color-converter.html">Color Converter</a><a href="/tools/http-status-codes.html">HTTP Status Codes</a><a href="/tools/json-formatter.html">JSON Formatter</a></div>
+            <div class="footer-section"><h3>Developer Tools</h3><a href="/tools/mtu-mss-calculator.html">MTU &amp; MSS Calculator</a><a href="/tools/http-status-codes.html">HTTP Status Codes</a><a href="/tools/json-formatter.html">JSON Formatter</a></div>
         </div>
         <div class="footer-bottom"><p>&copy; 2026 OPS-BOX.net — Free IT utilities for professionals. | <a href="/about.html" style="color:inherit;text-decoration:underline;">About</a> · <a href="/contact.html" style="color:inherit;text-decoration:underline;">Contact</a> · <a href="/terms-of-service.html" style="color:inherit;text-decoration:underline;">Terms</a> · <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p></div>
     </footer>
@@ -181,7 +181,9 @@
             return j.data;
         }
 
-        async function searchByName(name) {
+        let lookupSeq = 0;
+
+        async function searchByName(name, seq) {
             const searchEl = document.getElementById('bgpSearchResults');
             const listEl = document.getElementById('bgpSearchList');
             const countEl = document.getElementById('bgpSearchCount');
@@ -189,6 +191,7 @@
             listEl.innerHTML = '<div class="loading">Searching RIPEstat…</div>';
             countEl.textContent = '';
             const data = await fetchJson(`${API}/searchcomplete/data.json?resource=${encodeURIComponent(name)}`);
+            if (seq !== lookupSeq) return;
             const cats = data.categories || [];
             const asns = (cats.find(c => c.category === 'ASNs')?.suggestions) || [];
             if (!asns.length) {
@@ -196,7 +199,7 @@
                 return;
             }
             countEl.textContent = `— ${asns.length}`;
-            listEl.innerHTML = asns.map(s => `<div style="cursor:pointer;" onclick="setVal('${s.value}')"><strong style="color:var(--accent);">${escHtml(s.value)}</strong> <span style="color:var(--text-secondary);">— ${escHtml(s.description || '')}</span></div>`).join('');
+            listEl.innerHTML = asns.map(s => `<div style="cursor:pointer;" data-v="${escHtml(s.value)}" onclick="setVal(this.dataset.v)"><strong style="color:var(--accent);">${escHtml(s.value)}</strong> <span style="color:var(--text-secondary);">— ${escHtml(s.description || '')}</span></div>`).join('');
         }
 
         async function lookup() {
@@ -207,14 +210,17 @@
             resEl.style.display = 'none';
             searchEl.style.display = 'none';
             const input = document.getElementById('bgpInput').value.trim();
+            const seq = ++lookupSeq;
+            setToolParams({ q: input });
             if (!input) return;
             const cls = classify(input);
 
             try {
-                if (cls.kind === 'name') { await searchByName(cls.value); return; }
+                if (cls.kind === 'name') { await searchByName(cls.value, seq); return; }
                 let asn;
                 if (cls.kind === 'ip') {
                     const ni = await fetchJson(`${API}/network-info/data.json?resource=${encodeURIComponent(cls.value)}`);
+                    if (seq !== lookupSeq) return;
                     if (!ni.asns || !ni.asns.length) throw new Error(`No ASN found for IP ${cls.value}. May be unannounced or in private space.`);
                     asn = 'AS' + ni.asns[0];
                     document.getElementById('bgpInput').value = asn;
@@ -232,6 +238,7 @@
                     fetchJson(`${API}/announced-prefixes/data.json?resource=${asn}`),
                     fetchJson(`${API}/asn-neighbours/data.json?resource=${asn}`),
                 ]);
+                if (seq !== lookupSeq) return; // superseded by a newer lookup
 
                 if (overview.status === 'fulfilled') {
                     const o = overview.value;
@@ -268,12 +275,17 @@
                     }
                 }
             } catch (e) {
+                if (seq !== lookupSeq) return;
                 errEl.textContent = e.message;
                 errEl.style.display = 'block';
                 resEl.style.display = 'none';
             }
         }
-        lookup();
+        (function initFromUrl() {
+            const q = getToolParams();
+            if (q.q && q.q.trim()) document.getElementById('bgpInput').value = q.q.trim();
+            lookup(); // single auto-run on load; afterwards only Enter / button / preset trigger requests
+        })();
     </script>
     <script>document.querySelectorAll('.faq-question').forEach(b=>b.addEventListener('click',()=>b.parentElement.classList.toggle('open')));</script>
     <script src="/js/nav.js?v=20261122" defer></script>

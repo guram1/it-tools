@@ -12,21 +12,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Subdomain Finder — DNS Recon Tool | OPS-BOX</title>
-    <meta name="description" content="Free DNS reconnaissance tool. Discover subdomains, DNS records, mail servers, and hosts for any domain using Certificate Transparency logs. Shows ASN, reverse DNS, hosting providers.">
-    <meta name="keywords" content="DNS dumpster, subdomain finder, subdomain enumeration, DNS recon, certificate transparency, subdomain discovery, ASN lookup, reverse DNS">
+    <meta name="description" content="Free subdomain finder: discover subdomains of any domain from Certificate Transparency logs, with IPs, ASNs, hosting providers and MX, NS and TXT records.">
+    <meta name="keywords" content="subdomain finder, find subdomains, subdomain enumeration, DNS recon, certificate transparency, subdomain discovery, ASN lookup, reverse DNS">
     <meta name="robots" content="index, follow">
-    <link rel="canonical" href="https://ops-box.net/tools/dns-dumpster">
+    <link rel="canonical" href="https://ops-box.net/tools/subdomain-finder">
     
-    <meta property="og:title" content="DNS Dumpster — Subdomain Finder & DNS Recon">
-    <meta property="og:description" content="Discover subdomains, ASN info, and DNS records for any domain.">
+    <meta property="og:title" content="Subdomain Finder — Find Subdomains & DNS Records">
+    <meta property="og:description" content="Find subdomains of any domain from Certificate Transparency logs, with IPs, ASN, hosting providers and DNS records.">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://ops-box.net/tools/dns-dumpster">
+    <meta property="og:url" content="https://ops-box.net/tools/subdomain-finder">
     <meta property="og:image" content="https://ops-box.net/og-image.png">
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="DNS Dumpster — Subdomain Finder & DNS Recon">
-    <meta name="twitter:description" content="Discover subdomains, ASN info, and DNS records for any domain.">
+    <meta name="twitter:title" content="Subdomain Finder — Find Subdomains & DNS Records">
+    <meta name="twitter:description" content="Find subdomains of any domain from Certificate Transparency logs, with IPs, ASN, hosting providers and DNS records.">
     <meta name="twitter:image" content="https://ops-box.net/og-image.png">
 
     <link rel="stylesheet" href="../css/style.css?v=20261122">
@@ -45,6 +45,8 @@
             padding: 1rem;
         }
         
+        .search-section .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        @media (max-width: 600px) { .search-section { flex-wrap: wrap; } .search-section .form-input { flex-basis: 100%; } }
         .results-container { display: none; }
         
         .stats-bar {
@@ -266,6 +268,7 @@
         .spinner-large { width: 60px; height: 60px; border: 4px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1.5rem; }
         @keyframes spin { to { transform: rotate(360deg); } }
         .loading-section .status { color: var(--text-muted); }
+        .loading-section .loading-explain { color: var(--text-muted); font-size: 0.8rem; max-width: 560px; margin: 1rem auto 0; line-height: 1.6; }
         .loading-section .status-detail { color: var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; margin-top: 0.5rem; }
         
         .error-box { display: none; padding: 1rem; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; color: #ef4444; margin-bottom: 1rem; }
@@ -280,6 +283,29 @@
     <script type="application/ld+json">
     {
         "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Subdomain Finder",
+        "url": "https://ops-box.net/tools/subdomain-finder",
+        "description": "Find subdomains of any domain from public Certificate Transparency logs (crt.sh) and RapidDNS, resolve them to IP addresses, ASNs and hosting providers, and view MX, NS and TXT records.",
+        "applicationCategory": "SecurityApplication",
+        "operatingSystem": "Any",
+        "browserRequirements": "Requires JavaScript",
+        "isAccessibleForFree": true,
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        },
+        "publisher": {
+            "@type": "Organization",
+            "name": "OPS-BOX",
+            "url": "https://ops-box.net/"
+        }
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
         "@type": "FAQPage",
         "mainEntity": [
                 {
@@ -287,7 +313,7 @@
                         "name": "Is DNS enumeration legal?",
                         "acceptedAnswer": {
                                 "@type": "Answer",
-                                "text": "Querying public DNS records is legal — DNS is a public system by design. However, using this information to attack systems without authorization is illegal under computer fraud laws in most jurisdictions (CFAA in the US, Computer Misuse Act in the UK, etc.). DNS Dumpster is a research and reconnaissance tool. Always ensure you have explicit authorization before conducting any security testing against systems you don't own."
+                                "text": "Querying public DNS records is legal — DNS is a public system by design. However, using this information to attack systems without authorization is illegal under computer fraud laws in most jurisdictions (CFAA in the US, Computer Misuse Act in the UK, etc.). This Subdomain Finder is a research and reconnaissance tool. Always ensure you have explicit authorization before conducting any security testing against systems you don't own."
                         }
                 },
                 {
@@ -333,7 +359,7 @@
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <link rel="preload" href="/fonts/Outfit-latin.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/css/base.css?v=20261122">
-    <script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://ops-box.net/"}, {"@type": "ListItem", "position": 2, "name": "DNS Dumpster", "item": "https://ops-box.net/tools/dns-dumpster"}]}</script>
+    <script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://ops-box.net/"}, {"@type": "ListItem", "position": 2, "name": "Subdomain Finder", "item": "https://ops-box.net/tools/subdomain-finder"}]}</script>
 </head>
 <body>
     <header>
@@ -353,21 +379,22 @@
 
     <main>
         <nav class="breadcrumb">
-            <a href="/">Home</a><span>›</span><span class="breadcrumb-current">DNS Dumpster</span>
+            <a href="/">Home</a><span>›</span><span class="breadcrumb-current">Subdomain Finder</span>
         </nav>
 
         <div class="tool-container">
             <div class="tool-header">
-                <h1 class="tool-title">DNS Dumpster</h1>
-                <p class="tool-description">Discover subdomains, DNS records, and hosts for any domain using Certificate Transparency logs and DNS enumeration.</p>
+                <h1 class="tool-title">Subdomain Finder</h1>
+                <p class="tool-description">Find subdomains of any domain from public Certificate Transparency logs and passive DNS data, then see which ones resolve, their IP addresses, ASN, hosting provider and country, plus the domain's MX, NS and TXT records.</p>
             </div>
             
             <div class="tool-content">
                 <div class="form-group">
                     <label class="form-label">Target Domain</label>
                     <div class="search-section">
-                        <input type="text" class="form-input" id="domainInput" placeholder="example.com">
-                        <button class="btn btn-primary" onclick="startDumpster()">🔍 Discover</button>
+                        <input type="text" class="form-input" id="domainInput" placeholder="example.com" autocomplete="off" spellcheck="false" aria-label="Target domain">
+                        <button class="btn btn-primary" id="runBtn" type="button" onclick="runLookup()">🔍 Find Subdomains</button>
+                        <button class="btn btn-secondary" id="shareBtn" type="button" onclick="copyShareLink()" title="Copy a link that re-runs this lookup">🔗 Copy link</button>
                     </div>
                 </div>
                 
@@ -375,8 +402,9 @@
                 
                 <div class="loading-section" id="loadingSection">
                     <div class="spinner-large"></div>
-                    <div class="status">Performing DNS reconnaissance...</div>
-                    <div class="status-detail" id="loadingDetail">Querying Certificate Transparency logs</div>
+                    <div class="status" role="status" aria-live="polite">Finding subdomains of <strong id="loadingDomain"></strong>… <span id="loadingElapsed">0</span> s</div>
+                    <div class="status-detail" id="loadingDetail">Querying crt.sh certificate transparency logs and RapidDNS</div>
+                    <p class="loading-explain">The server searches public TLS certificate logs (crt.sh) and RapidDNS for names under this domain, then resolves each one and looks up its ASN and hosting provider. A lookup usually takes about 15 seconds; it is cancelled after 45 seconds.</p>
                 </div>
                 
                 <div class="results-container" id="resultsContainer">
@@ -503,12 +531,16 @@
             <h3>How to Use This Tool</h3>
             <ol style="color:var(--text-secondary);margin-left:1.5rem;margin-bottom:1rem;line-height:1.8;">
                 <li>Enter a root domain (e.g., <code>example.com</code>) — no subdomain prefix.</li>
-                <li>Click <strong>Enumerate</strong> to start the discovery process.</li>
+                <li>Click <strong>Find Subdomains</strong>. The lookup usually takes about 15 seconds while the server queries certificate logs and resolves each name.</li>
                 <li>Results show discovered subdomains, their IP addresses, and associated services.</li>
-                <li>Use the results to map out the organization's public-facing infrastructure.</li>
+                <li>Use the results to map out the organization's public-facing infrastructure, export them as TXT, CSV or JSON, or click <strong>Copy link</strong> to share a URL that re-runs the same lookup.</li>
             </ol>
 
-            <h3>What DNS Dumpster Reveals</h3>
+            <h3>Where the Subdomains Come From</h3>
+            <p>Every publicly trusted TLS certificate is recorded in Certificate Transparency (CT) logs, and each certificate lists the hostnames it covers. This tool searches those logs through crt.sh and adds names from RapidDNS passive DNS data, then resolves every name it finds. Because CT logs keep historical certificates, the list can include hosts that no longer exist; only names that currently resolve appear under <em>A Records</em>. Wildcard certificates (<code>*.example.com</code>) hide the individual names behind them, so CT-based discovery never returns a complete list.</p>
+            <p>The page works as a free alternative to DNSDumpster, HackerTarget's DNS recon service: it shows ASN and hosting data for every resolving host and exports results in TXT, CSV or JSON.</p>
+
+            <h3>What a Subdomain Finder Reveals</h3>
             <ul>
                 <li><strong>Subdomains</strong> — dev, staging, api, mail, vpn, admin subdomains that might expose less-hardened infrastructure</li>
                 <li><strong>Mail infrastructure</strong> — MX records reveal the email provider and associated SPF/DKIM configuration</li>
@@ -530,7 +562,7 @@
                 <h3>Frequently Asked Questions</h3>
                 <div class="faq-item">
                     <button class="faq-question">Is DNS enumeration legal?</button>
-                    <div class="faq-answer">Querying public DNS records is legal — DNS is a public system by design. However, using this information to attack systems without authorization is illegal under computer fraud laws in most jurisdictions (CFAA in the US, Computer Misuse Act in the UK, etc.). DNS Dumpster is a research and reconnaissance tool. Always ensure you have explicit authorization before conducting any security testing against systems you don't own.</div>
+                    <div class="faq-answer">Querying public DNS records is legal — DNS is a public system by design. However, using this information to attack systems without authorization is illegal under computer fraud laws in most jurisdictions (CFAA in the US, Computer Misuse Act in the UK, etc.). This Subdomain Finder is a research and reconnaissance tool. Always ensure you have explicit authorization before conducting any security testing against systems you don't own.</div>
                 </div>
                 <div class="faq-item">
                     <button class="faq-question">How does subdomain enumeration work?</button>
@@ -576,7 +608,7 @@
                 <h3>Network Tools</h3>
                 <a href="/tools/subnet-calculator.html">Subnet Calculator</a>
                 <a href="/tools/dns-lookup.html">DNS Lookup</a>
-                <a href="/tools/dns-dumpster.html">DNS Dumpster</a>
+                <a href="/tools/subdomain-finder.html">Subdomain Finder</a>
                 <a href="/tools/ssl-checker.html">SSL Checker</a>
             </div>
             <div class="footer-section">
@@ -602,43 +634,95 @@
     <script src="../js/common.js?v=20261122"></script>
     <script>
         const API_URL = 'https://ssl-api.ops-box.net/dns-dumpster';
+        const TIMEOUT_MS = 45000;
         let currentResults = null;
         let currentDomain = '';
+        let running = false;
+        
+        // Backend data comes from public CT logs / passive DNS and is attacker-controllable: escape everything.
+        function esc(v) {
+            return String(v ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+        }
         
         function countryToFlag(code) {
-            if (!code || code.length !== 2) return '🌍';
+            if (typeof code !== 'string' || !/^[A-Za-z]{2}$/.test(code)) return '🌍';
             return String.fromCodePoint(...code.toUpperCase().split('').map(c => 127397 + c.charCodeAt(0)));
         }
         
         function cleanDomain(input) {
-            return input.trim().toLowerCase().replace(/^https?:\/\//, '').replace(/\/.*$/, '').replace(/^www\./, '');
+            return input.trim().toLowerCase().replace(/^https?:\/\//, '').replace(/[\/?#].*$/, '').replace(/:\d+$/, '').replace(/\.$/, '').replace(/^www\./, '');
         }
         
-        async function startDumpster() {
+        function isValidDomain(d) {
+            return d.length <= 253 && /^(?=.{1,253}$)(?!-)[a-z0-9-]{1,63}(?<!-)(\.(?!-)[a-z0-9-]{1,63}(?<!-))+$/.test(d);
+        }
+        
+        function showError(msg) {
+            const box = document.getElementById('errorBox');
+            box.textContent = msg;
+            box.style.display = 'block';
+        }
+        
+        async function runLookup() {
+            if (running) return;
             const input = document.getElementById('domainInput').value.trim();
-            if (!input) { alert('Please enter a domain name'); return; }
+            document.getElementById('errorBox').style.display = 'none';
+            if (!input) { showError('Please enter a domain name, e.g. example.com'); return; }
             
             const domain = cleanDomain(input);
+            if (!isValidDomain(domain)) { showError('"' + domain + '" is not a valid domain name. Enter a root domain such as example.com.'); return; }
             currentDomain = domain;
+            document.getElementById('domainInput').value = domain;
+            setToolParams({ domain });
             
+            const btn = document.getElementById('runBtn');
+            const btnLabel = btn.textContent;
+            running = true;
+            btn.disabled = true;
+            btn.textContent = 'Searching…';
+            
+            document.getElementById('loadingDomain').textContent = domain;
+            document.getElementById('loadingElapsed').textContent = '0';
             document.getElementById('loadingSection').classList.add('active');
             document.getElementById('resultsContainer').style.display = 'none';
-            document.getElementById('errorBox').style.display = 'none';
-            document.getElementById('loadingDetail').textContent = 'Querying Certificate Transparency logs...';
+            
+            const t0 = Date.now();
+            const detail = document.getElementById('loadingDetail');
+            detail.textContent = 'Querying crt.sh certificate transparency logs and RapidDNS';
+            const timer = setInterval(() => {
+                const sec = Math.floor((Date.now() - t0) / 1000);
+                document.getElementById('loadingElapsed').textContent = sec;
+                if (sec >= 20) detail.textContent = 'Still working: large domains have thousands of certificates to read';
+                else if (sec >= 8) detail.textContent = 'Resolving discovered names and looking up ASN / hosting data';
+            }, 250);
+            
+            const controller = new AbortController();
+            const abortTimer = setTimeout(() => controller.abort(), TIMEOUT_MS);
             
             try {
-                const response = await fetch(`${API_URL}?domain=${encodeURIComponent(domain)}`);
-                if (!response.ok) throw new Error('API request failed');
+                const response = await fetch(`${API_URL}?domain=${encodeURIComponent(domain)}`, { signal: controller.signal });
+                if (!response.ok) throw new Error(`The lookup service returned HTTP ${response.status}. Please try again in a minute.`);
                 
                 const data = await response.json();
-                if (data.error) throw new Error(data.error);
+                if (data.error) throw new Error(String(data.error));
                 
                 currentResults = data;
                 displayResults(data);
             } catch (error) {
                 document.getElementById('loadingSection').classList.remove('active');
-                document.getElementById('errorBox').textContent = 'Error: ' + error.message;
-                document.getElementById('errorBox').style.display = 'block';
+                if (error.name === 'AbortError') {
+                    showError(`The lookup for ${domain} took longer than ${TIMEOUT_MS / 1000} seconds and was cancelled. crt.sh is often slow or overloaded for large domains; please try again in a few minutes.`);
+                } else if (error instanceof TypeError) {
+                    showError('Could not reach the lookup service. Check your connection (or ad/script blockers) and try again.');
+                } else {
+                    showError('Error: ' + error.message);
+                }
+            } finally {
+                clearInterval(timer);
+                clearTimeout(abortTimer);
+                running = false;
+                btn.disabled = false;
+                btn.textContent = btnLabel;
             }
         }
         
@@ -687,7 +771,7 @@
             sorted.forEach(p => {
                 const tag = document.createElement('div');
                 tag.className = 'hosting-tag';
-                tag.innerHTML = `<span class="count">${p.count}</span> ${p.name}`;
+                tag.innerHTML = `<span class="count">${esc(p.count)}</span> ${esc(p.name)}`;
                 grid.appendChild(tag);
             });
             
@@ -705,18 +789,18 @@
             
             hosts.forEach(h => {
                 const row = document.createElement('tr');
-                row.dataset.subdomain = h.subdomain.toLowerCase();
+                row.dataset.subdomain = String(h.subdomain ?? '').toLowerCase();
                 row.innerHTML = `
-                    <td class="host-cell">${h.subdomain}</td>
-                    <td class="ip-cell">${h.ip}${h.ips && h.ips.length > 1 ? `<br><span style="color: var(--text-muted); font-size: 0.7rem;">(+${h.ips.length - 1} more)</span>` : ''}</td>
-                    <td class="reverse-cell">${h.reverse_dns || '—'}</td>
+                    <td class="host-cell">${esc(h.subdomain)}</td>
+                    <td class="ip-cell">${esc(h.ip)}${Array.isArray(h.ips) && h.ips.length > 1 ? `<br><span style="color: var(--text-muted); font-size: 0.7rem;">(+${h.ips.length - 1} more)</span>` : ''}</td>
+                    <td class="reverse-cell">${esc(h.reverse_dns || '—')}</td>
                     <td class="asn-cell">
-                        ${h.asn ? `<span class="asn-number">${h.asn}</span>` : ''}
-                        <span class="asn-name">${h.asn_name || h.org || '—'}</span>
+                        ${h.asn ? `<span class="asn-number">${esc(h.asn)}</span>` : ''}
+                        <span class="asn-name">${esc(h.asn_name || h.org || '—')}</span>
                     </td>
                     <td class="country-cell">
                         ${h.country_code ? `<span class="flag">${countryToFlag(h.country_code)}</span>` : ''}
-                        ${h.country || '—'}
+                        ${esc(h.country || '—')}
                     </td>
                 `;
                 tbody.appendChild(row);
@@ -740,7 +824,7 @@
                 const server = parts.slice(1).join(' ') || r.data;
                 
                 const row = document.createElement('tr');
-                row.innerHTML = `<td class="priority">${priority}</td><td>${server}</td>`;
+                row.innerHTML = `<td class="priority">${esc(priority)}</td><td>${esc(server)}</td>`;
                 tbody.appendChild(row);
             });
         }
@@ -756,7 +840,7 @@
             
             records.forEach(r => {
                 const row = document.createElement('tr');
-                row.innerHTML = `<td>${r.data || '—'}</td>`;
+                row.innerHTML = `<td>${esc(r.data || '—')}</td>`;
                 tbody.appendChild(row);
             });
         }
@@ -783,14 +867,15 @@
             const container = document.getElementById('subdomainsList');
             container.innerHTML = '';
             
-            const activeSet = new Set(hosts.map(h => h.subdomain.toLowerCase()));
+            const activeSet = new Set(hosts.map(h => String(h.subdomain ?? '').toLowerCase()));
             
-            subdomains.forEach(sub => {
+            subdomains.forEach(raw => {
+                const sub = String(raw ?? '');
                 const isActive = activeSet.has(sub.toLowerCase());
                 const item = document.createElement('div');
                 item.className = 'subdomain-item';
                 item.dataset.subdomain = sub.toLowerCase();
-                item.innerHTML = `<span class="status ${isActive ? 'active' : 'unknown'}"></span><span>${sub}</span>`;
+                item.innerHTML = `<span class="status ${isActive ? 'active' : 'unknown'}"></span><span>${esc(sub)}</span>`;
                 item.onclick = () => { navigator.clipboard.writeText(sub); showToast('Copied: ' + sub); };
                 container.appendChild(item);
             });
@@ -831,7 +916,7 @@
         
         function updateExportPreview() {
             if (!currentResults) return;
-            let text = `DNS Dumpster Results for ${currentDomain}\n`;
+            let text = `Subdomain Finder results for ${currentDomain}\n`;
             text += `Generated: ${currentResults.timestamp}\n`;
             text += '='.repeat(60) + '\n\n';
             
@@ -862,18 +947,20 @@
             
             if (format === 'txt') {
                 content = document.getElementById('exportPreview').value;
-                filename = `dns-dumpster-${currentDomain}.txt`;
+                filename = `subdomains-${currentDomain}.txt`;
                 type = 'text/plain';
             } else if (format === 'csv') {
+                // Quote-double and neutralise spreadsheet formulas (CSV injection) in attacker-controllable fields.
+                const cell = v => { let t = String(v ?? ''); if (/^[=+\-@\t\r]/.test(t)) t = "'" + t; return '"' + t.replace(/"/g, '""') + '"'; };
                 content = 'Host,IP,Reverse DNS,ASN,ASN Name,Country\n';
                 (currentResults.hosts || []).forEach(h => {
-                    content += `"${h.subdomain}","${h.ip}","${h.reverse_dns || ''}","${h.asn || ''}","${h.asn_name || ''}","${h.country || ''}"\n`;
+                    content += [h.subdomain, h.ip, h.reverse_dns, h.asn, h.asn_name, h.country].map(cell).join(',') + '\n';
                 });
-                filename = `dns-dumpster-${currentDomain}.csv`;
+                filename = `subdomains-${currentDomain}.csv`;
                 type = 'text/csv';
             } else {
                 content = JSON.stringify(currentResults, null, 2);
-                filename = `dns-dumpster-${currentDomain}.json`;
+                filename = `subdomains-${currentDomain}.json`;
                 type = 'application/json';
             }
             
@@ -885,11 +972,13 @@
             showToast(`Downloaded ${filename}`);
         }
         
-        document.getElementById('domainInput').addEventListener('keypress', e => { if (e.key === 'Enter') startDumpster(); });
+        document.getElementById('domainInput').addEventListener('keydown', e => { if (e.key === 'Enter') runLookup(); });
         
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('domain')) {
-            document.getElementById('domainInput').value = urlParams.get('domain');
+        // Shareable state: ?domain=example.com pre-fills the input and runs the lookup on load.
+        const initialParams = getToolParams();
+        if (initialParams.domain) {
+            document.getElementById('domainInput').value = initialParams.domain;
+            runLookup();
         }
     </script>
 

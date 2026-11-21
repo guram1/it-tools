@@ -11,22 +11,22 @@
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MAC Address Formatter — Convert Formats | OPS-BOX</title>
-    <meta name="description" content="Free online MAC address formatter. Convert MAC addresses between colon, hyphen, Cisco dot notation, and raw formats. Supports single and bulk conversion.">
-    <meta name="keywords" content="MAC address formatter, MAC address converter, convert MAC address, MAC format, Cisco MAC format, colon MAC, hyphen MAC">
+    <title>MAC Address Formatter — Single &amp; Bulk | OPS-BOX</title>
+    <meta name="description" content="Free MAC address formatter: convert one MAC or thousands at once between colon, hyphen, Cisco dot and raw formats. Live results, line-numbered errors, download.">
+    <meta name="keywords" content="MAC address formatter, bulk MAC formatter, MAC address converter, batch MAC converter, convert MAC address, Cisco MAC format, colon MAC, hyphen MAC, show mac address-table">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://ops-box.net/tools/mac-address-formatter">
     
-    <meta property="og:title" content="MAC Address Formatter — Convert MAC Formats">
-    <meta property="og:description" content="Convert MAC addresses between colon, hyphen, Cisco, and raw formats instantly.">
+    <meta property="og:title" content="MAC Address Formatter — Single &amp; Bulk">
+    <meta property="og:description" content="Convert one MAC address or thousands at once between colon, hyphen, Cisco dot and raw formats. Runs in your browser.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://ops-box.net/tools/mac-address-formatter">
     <meta property="og:image" content="https://ops-box.net/og-image.png">
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="MAC Address Formatter — Convert MAC Formats">
-    <meta name="twitter:description" content="Convert MAC addresses between colon, hyphen, Cisco, and raw formats instantly.">
+    <meta name="twitter:title" content="MAC Address Formatter — Single &amp; Bulk">
+    <meta name="twitter:description" content="Convert one MAC address or thousands at once between colon, hyphen, Cisco dot and raw formats. Runs in your browser.">
     <meta name="twitter:image" content="https://ops-box.net/og-image.png">
 
     <link rel="stylesheet" href="../css/style.css?v=20261122">
@@ -35,9 +35,9 @@
     {
         "@context": "https://schema.org",
         "@type": "WebApplication",
-        "name": "MAC Address Formatter",
+        "name": "MAC Address Formatter — Single & Bulk",
         "url": "https://ops-box.net/tools/mac-address-formatter",
-        "description": "Convert MAC addresses between different formats",
+        "description": "Convert a single MAC address or a bulk list of thousands of MAC addresses between colon, hyphen, Cisco dot and raw formats, with line-numbered error reporting.",
         "applicationCategory": "NetworkingApplication",
         "operatingSystem": "Any",
         "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}
@@ -48,48 +48,96 @@
         "@context": "https://schema.org",
         "@type": "FAQPage",
         "mainEntity": [
-                {
-                        "@type": "Question",
-                        "name": "Can I change my MAC address?",
-                        "acceptedAnswer": {
-                                "@type": "Answer",
-                                "text": "Yes. MAC addresses can be changed in software — this is called MAC spoofing. On Linux: ip link set dev eth0 address AA:BB:CC:DD:EE:FF. On macOS and Windows, you can change it via Network Adapter settings. The hardware-burned MAC (called the BIA, Burned-In Address) is permanent, but the active MAC can be overridden. Modern phones randomize their MAC for Wi-Fi scanning to protect privacy."
-                        }
-                },
-                {
-                        "@type": "Question",
-                        "name": "Are MAC addresses truly globally unique?",
-                        "acceptedAnswer": {
-                                "@type": "Answer",
-                                "text": "In theory yes, but in practice no. The IEEE assigns OUI prefixes to manufacturers who should ensure their devices have unique MACs, but counterfeiting and manufacturing errors occur. More importantly, MAC addresses are only locally significant — they don't route over the internet. Two devices with the same MAC on different networks causes no conflict, but two devices with the same MAC on the same Layer 2 segment will cause communication failures."
-                        }
-                },
-                {
-                        "@type": "Question",
-                        "name": "What is a broadcast MAC address?",
-                        "acceptedAnswer": {
-                                "@type": "Answer",
-                                "text": "FF:FF:FF:FF:FF:FF is the Layer 2 broadcast address. Frames sent to this address are delivered to every device on the local network segment. ARP requests use broadcast to ask \"who has IP x.x.x.x?\" before learning the target's MAC address."
-                        }
-                },
-                {
-                        "@type": "Question",
-                        "name": "Why does my VM have a different MAC than my physical NIC?",
-                        "acceptedAnswer": {
-                                "@type": "Answer",
-                                "text": "Hypervisors (VMware, VirtualBox, Hyper-V) generate virtual MAC addresses for VMs. VMware uses OUI prefix 00:50:56, VirtualBox uses 08:00:27, and QEMU/KVM uses 52:54:00. These are locally administered MACs assigned by the hypervisor, not IEEE-registered hardware MACs."
-                        }
-                },
-                {
-                        "@type": "Question",
-                        "name": "How is a MAC address different from an IP address?",
-                        "acceptedAnswer": {
-                                "@type": "Answer",
-                                "text": "MAC addresses operate at Layer 2 and identify hardware within a local network. They don't route across networks — a router replaces source and destination MACs at each hop. IP addresses operate at Layer 3 and provide global routing. ARP (Address Resolution Protocol) maps IP addresses to MAC addresses within a local subnet. Think of it this way: IP addresses are like postal addresses (for routing), MAC addresses are like names on a door (for local delivery)."
-                        }
+            {
+                "@type": "Question",
+                "name": "How do I convert a list of MAC addresses at once?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Open the Bulk tab, paste one MAC address per line (mixed formats are fine), and pick the output format. The output updates as you type; you can also click Format All. Use Copy All to copy the result or Download .txt to save it as a file."
                 }
+            },
+            {
+                "@type": "Question",
+                "name": "How many MAC addresses can I format at once?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "There is no hard limit. The tool runs entirely in your browser and converts thousands of lines in a single pass; a 5,000-line list is processed in a few milliseconds on a typical laptop. For millions of entries, a command-line tool such as awk or a Python script is the better choice."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "What happens if a line contains an invalid MAC?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Invalid lines are listed below the output with their line number and the reason, for example \"11 hex digits, need 12\" or \"invalid character G\". By default they also stay in the output as INVALID: original text, so the list keeps its order and line count. Untick Keep invalid lines in output to drop them. Blank lines are ignored and are not counted."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Can I paste directly from a Cisco show mac address-table output?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Yes. On each line the tool picks the first MAC-shaped token (colon, hyphen, Cisco dot or 12-digit raw hex) and ignores the VLAN number, type and port columns around it. Header and separator lines contain no MAC, so they are reported as invalid; tick Ignore lines without a MAC to skip them silently. The same works for show arp, DHCP lease files and CSV exports."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Can I share a conversion with a colleague?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Yes. In Single mode the address and the selected format are stored in the page URL (?mac=...&fmt=...). Click Copy link and send it; the page opens with the same result. Bulk lists are not put in the URL, because long lists would exceed URL length limits and could expose inventory data in browser history and logs."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Are my MAC addresses sent to a server?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "No. Parsing and formatting run in JavaScript in your browser. The MAC addresses you enter are not uploaded or stored by OPS-BOX."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Does the tool check that a MAC address is actually registered?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "No. It validates the format only: exactly 12 hexadecimal digits. It does not check whether the OUI (first 3 bytes) is assigned to a manufacturer. Use the MAC Vendor Lookup tool for that. Locally administered and multicast MACs pass format validation but will not return a vendor."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "What is the difference between globally and locally administered MAC addresses?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "The second-least-significant bit of the first octet (the U/L bit) is 0 for globally administered and 1 for locally administered addresses. Globally administered MACs start with an OUI that the IEEE assigned to a manufacturer. Locally administered MACs are set by an administrator or software, as in many VMs, containers and phones with MAC randomization. The Single mode result shows this bit for the address you enter."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "What is a broadcast MAC address?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "FF:FF:FF:FF:FF:FF is the Layer 2 broadcast address. Frames sent to it are delivered to every device in the broadcast domain (VLAN). ARP requests are broadcast to ask \"who has IP x.x.x.x?\" before the sender learns the target's MAC address."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Why does my VM have a different MAC than my physical NIC?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Hypervisors generate a virtual MAC for each VM network adapter. VMware uses its own OUIs 00:50:56 and 00:0C:29, Hyper-V uses Microsoft's 00:15:5D, and VirtualBox uses 08:00:27. QEMU/KVM defaults to 52:54:00, which is a locally administered prefix, not an IEEE-assigned OUI."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Can I change my MAC address?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Yes, the active MAC can be overridden in software; this is called MAC spoofing. On Linux: ip link set dev eth0 address AA:BB:CC:DD:EE:FF. On Windows and macOS it can be changed in the network adapter settings or with OS tools. The burned-in address (BIA) stored in the NIC stays the same. Modern phones and laptops randomize their Wi-Fi MAC to protect privacy."
+                }
+            }
         ]
-}
+    }
     </script>
     <!-- Google AdSense -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1924789684268835"
@@ -100,6 +148,25 @@
     <link rel="preload" href="/fonts/Outfit-latin.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/css/base.css?v=20261122">
     <script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://ops-box.net/"}, {"@type": "ListItem", "position": 2, "name": "MAC Address Formatter", "item": "https://ops-box.net/tools/mac-address-formatter"}]}</script>
+    <style>
+        .tool-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem; flex-wrap: wrap; }
+        .tool-tab { padding: 0.6rem 1rem; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 6px; color: var(--text-secondary); cursor: pointer; font-size: 0.85rem; font-weight: 500; transition: all 0.2s ease; }
+        .tool-tab:hover { background: var(--bg-card); color: var(--text-primary); }
+        .tool-tab.active { background: var(--accent); color: #000; border-color: var(--accent); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .mac-msg { margin-top: 0.5rem; font-size: 0.85rem; color: var(--danger); min-height: 1.2em; }
+        .mac-msg.ok { color: var(--text-muted); }
+        .format-btn .fmt-label { display: block; font-family: 'Outfit', sans-serif; font-size: 0.7rem; color: var(--text-muted); margin-bottom: 0.2rem; }
+        .format-btn.selected { border-color: var(--accent); color: var(--accent); }
+        .format-options.wide { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
+        .mac-info { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.5rem 1rem; font-size: 0.85rem; color: var(--text-secondary); }
+        .mac-info strong { display: block; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 500; }
+        .invalid-list { list-style: none; margin: 0; padding: 0; max-height: 220px; overflow-y: auto; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--text-secondary); }
+        .invalid-list li { padding: 0.2rem 0; border-bottom: 1px solid var(--border); word-break: break-all; }
+        .invalid-list .ln { color: var(--danger); margin-right: 0.5rem; }
+        .invalid-list .why { color: var(--text-muted); }
+    </style>
 </head>
 <body>
     <header>
@@ -124,73 +191,171 @@
 
         <div class="tool-container">
             <div class="tool-header">
-                <h1 class="tool-title">MAC Address Formatter</h1>
-                <p class="tool-description">Convert MAC addresses between colon, hyphen, Cisco dot notation, and raw formats. Click any format to copy.</p>
+                <h1 class="tool-title">MAC Address Formatter — Single &amp; Bulk</h1>
+                <p class="tool-description">Convert one MAC address or a whole list between colon, hyphen, Cisco dot notation and raw formats. Results update as you type; everything runs in your browser.</p>
             </div>
             <div class="tool-content">
-                <div class="form-group">
-                    <label class="form-label">MAC Address</label>
-                    <input type="text" class="form-input" id="macInput" placeholder="AA:BB:CC:DD:EE:FF or AABBCCDDEEFF or aabb.ccdd.eeff">
+                <div class="tool-tabs" role="tablist" aria-label="Mode">
+                    <button type="button" class="tool-tab active" role="tab" id="tab-single" aria-controls="panel-single" aria-selected="true" data-mode="single">Single MAC</button>
+                    <button type="button" class="tool-tab" role="tab" id="tab-bulk" aria-controls="panel-bulk" aria-selected="false" data-mode="bulk">Bulk (one per line)</button>
                 </div>
-                <div class="btn-group">
-                    <button class="btn btn-primary" onclick="formatMAC()">Format</button>
+
+                <!-- Single mode -->
+                <div class="tab-content active" id="panel-single" role="tabpanel" aria-labelledby="tab-single">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="macInput">MAC Address</label>
+                            <input type="text" class="form-input" id="macInput" value="00:50:56:C0:00:08" autocomplete="off" spellcheck="false" placeholder="AA:BB:CC:DD:EE:FF or AABBCCDDEEFF or aabb.ccdd.eeff">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="singleFormat">Preferred Format</label>
+                            <select class="form-select" id="singleFormat"></select>
+                        </div>
+                    </div>
+                    <div class="mac-msg" id="singleMsg" role="status" aria-live="polite"></div>
+                    <div class="output-box">
+                        <div class="output-label">Result</div>
+                        <div class="output-value" id="singleResult">—</div>
+                    </div>
+                    <div class="btn-group" style="margin-top: 1rem;">
+                        <button type="button" class="btn btn-primary" id="copySingleBtn">Copy Result</button>
+                        <button type="button" class="btn btn-secondary" onclick="copyShareLink()">Copy link</button>
+                    </div>
+                    <div class="form-group" style="margin-top: 1.5rem;">
+                        <label class="form-label">All Formats (click to copy)</label>
+                        <div class="format-options wide" id="macFormats"></div>
+                    </div>
+                    <div class="output-box">
+                        <div class="output-label">Address Details</div>
+                        <div class="mac-info" id="macInfo">—</div>
+                    </div>
                 </div>
-                <div class="form-group" style="margin-top: 1.5rem;">
-                    <label class="form-label">Output Formats (click to copy)</label>
-                    <div class="format-options" id="macFormats"></div>
+
+                <!-- Bulk mode -->
+                <div class="tab-content" id="panel-bulk" role="tabpanel" aria-labelledby="tab-bulk">
+                    <div class="form-group">
+                        <label class="form-label" for="bulkMacInput">MAC Addresses (one per line)</label>
+                        <textarea class="form-textarea" id="bulkMacInput" spellcheck="false" placeholder="AA:BB:CC:DD:EE:FF
+00-11-22-33-44-55
+aabb.ccdd.eeff
+001122334455
+  10    0050.56c0.0008    DYNAMIC     Gi1/0/1"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="bulkMacFormat">Output Format</label>
+                        <select class="form-select" id="bulkMacFormat"></select>
+                    </div>
+                    <div class="form-group">
+                        <div class="checkbox-group">
+                            <label class="checkbox-label"><input type="checkbox" id="optKeepInvalid" checked> Keep invalid lines in output (INVALID: …)</label>
+                            <label class="checkbox-label"><input type="checkbox" id="optSkipNoMac"> Ignore lines without a MAC (headers)</label>
+                            <label class="checkbox-label"><input type="checkbox" id="optDedupe"> Remove duplicates</label>
+                        </div>
+                    </div>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-primary" id="bulkFormatBtn">Format All</button>
+                        <button type="button" class="btn btn-secondary" id="bulkCopyBtn">Copy All</button>
+                        <button type="button" class="btn btn-secondary" id="bulkDownloadBtn">Download .txt</button>
+                        <button type="button" class="btn btn-secondary" id="bulkClearBtn">Clear</button>
+                    </div>
+                    <div class="mac-msg" id="bulkMsg" role="status" aria-live="polite"></div>
+                    <div class="bulk-output"><pre id="bulkMacResult">Formatted MAC addresses will appear here...</pre></div>
+                    <div class="output-box">
+                        <div class="output-label">Statistics</div>
+                        <div class="output-value text-white" id="bulkMacStats">—</div>
+                    </div>
+                    <div class="output-box" id="bulkInvalidBox" hidden>
+                        <div class="output-label">Invalid Lines</div>
+                        <ul class="invalid-list" id="bulkInvalid"></ul>
+                    </div>
                 </div>
             </div>
         </div>
 
         <section class="seo-content">
-            <h2>MAC Address Format Reference</h2>
-            <p>A MAC (Media Access Control) address is a 48-bit hardware identifier assigned to every network interface card (NIC). It is burned into the hardware by the manufacturer and is theoretically globally unique. MAC addresses operate at Layer 2 (Data Link layer) of the OSI model and are used for local network communication within a broadcast domain.</p>
-            <p>The same 48-bit MAC address is written differently depending on the operating system or vendor, which causes constant conversion headaches for network engineers working across different platforms and equipment vendors.</p>
+            <h2>MAC Address Formatter for Single Addresses and Bulk Lists</h2>
+            <p>A MAC (Media Access Control) address is a 48-bit identifier assigned to a network interface. It is used at Layer 2 (the Data Link layer) of the OSI model to deliver frames inside a broadcast domain. The same 48 bits are written differently by different operating systems and vendors, so engineers constantly convert between notations when they move data between switches, firewalls, NAC systems, DHCP servers and spreadsheets.</p>
+            <p>This page covers both cases. <strong>Single mode</strong> converts one address live as you type, shows every notation at once, explains the address bits, and gives you a shareable link. <strong>Bulk mode</strong> converts a whole list of thousands of addresses in one pass to a single target format and reports every invalid line with its line number, so you can fix the source data.</p>
 
             <h3>How to Use This Tool</h3>
             <ol style="color:var(--text-secondary);margin-left:1.5rem;margin-bottom:1rem;line-height:1.8;">
-                <li>Enter a MAC address in any format in the input field.</li>
-                <li>Click <strong>Format</strong> (or press Enter).</li>
-                <li>All output formats appear simultaneously — click any one to copy it.</li>
+                <li><strong>One address:</strong> stay on <strong>Single MAC</strong>, type or paste a MAC in any format. All formats appear instantly; click one to copy it, or pick a preferred format and click <strong>Copy Result</strong>. <strong>Copy link</strong> copies a URL that reopens the same conversion.</li>
+                <li><strong>Many addresses:</strong> switch to <strong>Bulk</strong>, paste one MAC per line (mixed formats and full CLI output lines are fine) and choose the output format. The output refreshes as you type, or click <strong>Format All</strong>.</li>
+                <li>Check the statistics and the <strong>Invalid Lines</strong> list, then click <strong>Copy All</strong> or <strong>Download .txt</strong>.</li>
             </ol>
 
-            <h3>MAC Address Formats by Platform</h3>
+            <h3>Output Formats</h3>
             <ul>
-                <li><strong>Linux / macOS</strong> — <code>aa:bb:cc:dd:ee:ff</code> (lowercase colon, shown in <code>ip link</code> and <code>ifconfig</code>)</li>
-                <li><strong>Windows</strong> — <code>AA-BB-CC-DD-EE-FF</code> (uppercase hyphen, shown in <code>ipconfig /all</code>)</li>
-                <li><strong>Cisco IOS</strong> — <code>aabb.ccdd.eeff</code> (lowercase dot notation, shown in <code>show mac address-table</code>)</li>
-                <li><strong>Raw / No separator</strong> — <code>AABBCCDDEEFF</code> (used in databases, some APIs, and RADIUS servers)</li>
+                <li><strong>Colon</strong> — <code>AA:BB:CC:DD:EE:FF</code> / <code>aa:bb:cc:dd:ee:ff</code>. Linux and macOS (<code>ip link</code>, <code>ifconfig</code>), most firewalls and RADIUS attributes.</li>
+                <li><strong>Hyphen</strong> — <code>AA-BB-CC-DD-EE-FF</code> / <code>aa-bb-cc-dd-ee-ff</code>. Windows (<code>ipconfig /all</code>, <code>getmac</code>) and the IEEE canonical form.</li>
+                <li><strong>Cisco dot notation</strong> — <code>aabb.ccdd.eeff</code>. Cisco IOS and IOS XE (<code>show mac address-table</code>, <code>show arp</code>).</li>
+                <li><strong>No separator</strong> — <code>AABBCCDDEEFF</code> / <code>aabbccddeeff</code>. Databases, APIs and MAC authentication bypass user names.</li>
+            </ul>
+
+            <h3>Supported Input (Auto-detected)</h3>
+            <p>Each input line is scanned for the first MAC-shaped token: six colon- or hyphen-separated byte pairs, three dot-separated groups of four hex digits, or 12 raw hex digits (an <code>0x</code> prefix is accepted). Upper and lower case are both accepted. Text around the token, such as VLAN IDs, IP addresses, interface names or CSV columns, is ignored. A line that consists only of hex digits and separators (for example <code>AA BB CC DD EE FF</code>) is accepted if it holds exactly 12 hex digits. Anything else, such as 11 or 13 digits or a letter outside A–F, is reported as invalid with the reason.</p>
+
+            <h3>Real-World Bulk Workflows</h3>
+            <ul>
+                <li><strong>Cisco switch MAC table</strong> — paste <code>show mac address-table</code> output directly and convert the Cisco dot-notation MACs to colon format for a firewall or NAC import.</li>
+                <li><strong>DHCP leases and logs</strong> — normalize MACs from lease files before importing them into a CMDB or an IPAM system.</li>
+                <li><strong>802.1X / MAB allow-lists</strong> — build MAC lists in the exact format your RADIUS or NAC server expects, often raw lowercase or hyphen uppercase.</li>
+                <li><strong>Wireless controller exports</strong> — unify client MAC lists from different AP vendors and remove duplicates.</li>
             </ul>
 
             <h3>Understanding the MAC Address Structure</h3>
             <ul>
-                <li><strong>OUI (bytes 1–3)</strong> — Organizationally Unique Identifier. Assigned by IEEE to manufacturers. Identifies the vendor (e.g., <code>00:50:56</code> = VMware).</li>
-                <li><strong>NIC-specific (bytes 4–6)</strong> — Assigned by the manufacturer to uniquely identify each device.</li>
-                <li><strong>Bit 1 of byte 1</strong> — If set (1), the MAC is a multicast address. Multicast MACs range from <code>01:00:00:00:00:00</code> to <code>FF:FF:FF:FF:FF:FF</code>.</li>
-                <li><strong>Bit 2 of byte 1</strong> — If set (1), the MAC is locally administered (not assigned by IEEE). Common in VMs, Docker containers, and devices with MAC randomization.</li>
+                <li><strong>OUI (bytes 1–3)</strong> — Organizationally Unique Identifier assigned by the IEEE to a manufacturer. It identifies the vendor (for example <code>00:50:56</code> = VMware).</li>
+                <li><strong>Device part (bytes 4–6)</strong> — assigned by the manufacturer to make each interface unique.</li>
+                <li><strong>I/G bit</strong> — the least-significant bit of the first byte. 0 = unicast, 1 = multicast (group). <code>FF:FF:FF:FF:FF:FF</code> is the broadcast address.</li>
+                <li><strong>U/L bit</strong> — the second-least-significant bit of the first byte. 0 = globally unique (IEEE OUI), 1 = locally administered, as used by many VMs, containers and randomized Wi-Fi MACs. A second hex digit of 2, 6, A or E indicates a locally administered unicast address.</li>
             </ul>
 
             <div class="faq">
                 <h3>Frequently Asked Questions</h3>
                 <div class="faq-item">
-                    <button class="faq-question">Can I change my MAC address?</button>
-                    <div class="faq-answer">Yes. MAC addresses can be changed in software — this is called MAC spoofing. On Linux: <code>ip link set dev eth0 address AA:BB:CC:DD:EE:FF</code>. On macOS and Windows, you can change it via Network Adapter settings. The hardware-burned MAC (called the BIA, Burned-In Address) is permanent, but the active MAC can be overridden. Modern phones randomize their MAC for Wi-Fi scanning to protect privacy.</div>
+                    <button class="faq-question">How do I convert a list of MAC addresses at once?</button>
+                    <div class="faq-answer">Open the <strong>Bulk</strong> tab, paste one MAC address per line (mixed formats are fine), and pick the output format. The output updates as you type; you can also click <strong>Format All</strong>. Use <strong>Copy All</strong> to copy the result or <strong>Download .txt</strong> to save it as a file.</div>
                 </div>
                 <div class="faq-item">
-                    <button class="faq-question">Are MAC addresses truly globally unique?</button>
-                    <div class="faq-answer">In theory yes, but in practice no. The IEEE assigns OUI prefixes to manufacturers who should ensure their devices have unique MACs, but counterfeiting and manufacturing errors occur. More importantly, MAC addresses are only locally significant — they don't route over the internet. Two devices with the same MAC on different networks causes no conflict, but two devices with the same MAC on the same Layer 2 segment will cause communication failures.</div>
+                    <button class="faq-question">How many MAC addresses can I format at once?</button>
+                    <div class="faq-answer">There is no hard limit. The tool runs entirely in your browser and converts thousands of lines in a single pass; a 5,000-line list is processed in a few milliseconds on a typical laptop. For millions of entries, a command-line tool such as <code>awk</code> or a Python script is the better choice.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">What happens if a line contains an invalid MAC?</button>
+                    <div class="faq-answer">Invalid lines are listed below the output with their line number and the reason, for example "11 hex digits, need 12" or "invalid character G". By default they also stay in the output as <code>INVALID: original text</code>, so the list keeps its order and line count. Untick <strong>Keep invalid lines in output</strong> to drop them. Blank lines are ignored and are not counted.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">Can I paste directly from a Cisco show mac address-table output?</button>
+                    <div class="faq-answer">Yes. On each line the tool picks the first MAC-shaped token (colon, hyphen, Cisco dot or 12-digit raw hex) and ignores the VLAN number, type and port columns around it. Header and separator lines contain no MAC, so they are reported as invalid; tick <strong>Ignore lines without a MAC</strong> to skip them silently. The same works for <code>show arp</code>, DHCP lease files and CSV exports.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">Can I share a conversion with a colleague?</button>
+                    <div class="faq-answer">Yes. In Single mode the address and the selected format are stored in the page URL (<code>?mac=...&amp;fmt=...</code>). Click <strong>Copy link</strong> and send it; the page opens with the same result. Bulk lists are not put in the URL, because long lists would exceed URL length limits and could expose inventory data in browser history and logs.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">Are my MAC addresses sent to a server?</button>
+                    <div class="faq-answer">No. Parsing and formatting run in JavaScript in your browser. The MAC addresses you enter are not uploaded or stored by OPS-BOX.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">Does the tool check that a MAC address is actually registered?</button>
+                    <div class="faq-answer">No. It validates the format only: exactly 12 hexadecimal digits. It does not check whether the OUI (first 3 bytes) is assigned to a manufacturer. Use the MAC Vendor Lookup tool for that. Locally administered and multicast MACs pass format validation but will not return a vendor.</div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question">What is the difference between globally and locally administered MAC addresses?</button>
+                    <div class="faq-answer">The second-least-significant bit of the first octet (the U/L bit) is 0 for globally administered and 1 for locally administered addresses. Globally administered MACs start with an OUI that the IEEE assigned to a manufacturer. Locally administered MACs are set by an administrator or software, as in many VMs, containers and phones with MAC randomization. The Single mode result shows this bit for the address you enter.</div>
                 </div>
                 <div class="faq-item">
                     <button class="faq-question">What is a broadcast MAC address?</button>
-                    <div class="faq-answer"><code>FF:FF:FF:FF:FF:FF</code> is the Layer 2 broadcast address. Frames sent to this address are delivered to every device on the local network segment. ARP requests use broadcast to ask "who has IP x.x.x.x?" before learning the target's MAC address.</div>
+                    <div class="faq-answer"><code>FF:FF:FF:FF:FF:FF</code> is the Layer 2 broadcast address. Frames sent to it are delivered to every device in the broadcast domain (VLAN). ARP requests are broadcast to ask "who has IP x.x.x.x?" before the sender learns the target's MAC address.</div>
                 </div>
                 <div class="faq-item">
                     <button class="faq-question">Why does my VM have a different MAC than my physical NIC?</button>
-                    <div class="faq-answer">Hypervisors (VMware, VirtualBox, Hyper-V) generate virtual MAC addresses for VMs. VMware uses OUI prefix <code>00:50:56</code>, VirtualBox uses <code>08:00:27</code>, and QEMU/KVM uses <code>52:54:00</code>. These are locally administered MACs assigned by the hypervisor, not IEEE-registered hardware MACs.</div>
+                    <div class="faq-answer">Hypervisors generate a virtual MAC for each VM network adapter. VMware uses its own OUIs <code>00:50:56</code> and <code>00:0C:29</code>, Hyper-V uses Microsoft's <code>00:15:5D</code>, and VirtualBox uses <code>08:00:27</code>. QEMU/KVM defaults to <code>52:54:00</code>, which is a locally administered prefix, not an IEEE-assigned OUI.</div>
                 </div>
                 <div class="faq-item">
-                    <button class="faq-question">How is a MAC address different from an IP address?</button>
-                    <div class="faq-answer">MAC addresses operate at Layer 2 and identify hardware within a local network. They don't route across networks — a router replaces source and destination MACs at each hop. IP addresses operate at Layer 3 and provide global routing. ARP (Address Resolution Protocol) maps IP addresses to MAC addresses within a local subnet. Think of it this way: IP addresses are like postal addresses (for routing), MAC addresses are like names on a door (for local delivery).</div>
+                    <button class="faq-question">Can I change my MAC address?</button>
+                    <div class="faq-answer">Yes, the active MAC can be overridden in software; this is called MAC spoofing. On Linux: <code>ip link set dev eth0 address AA:BB:CC:DD:EE:FF</code>. On Windows and macOS it can be changed in the network adapter settings or with OS tools. The burned-in address (BIA) stored in the NIC stays the same. Modern phones and laptops randomize their Wi-Fi MAC to protect privacy.</div>
                 </div>
             </div>
         </section>
@@ -198,10 +363,6 @@
         <section class="related-tools">
             <h2>Related Tools</h2>
             <div class="related-grid">
-                <a href="/tools/bulk-mac-formatter.html" class="related-card">
-                    <h3>Bulk MAC Formatter</h3>
-                    <p>Convert multiple MAC addresses at once.</p>
-                </a>
                 <a href="/tools/mac-vendor-lookup.html" class="related-card">
                     <h3>MAC Vendor Lookup</h3>
                     <p>Identify device manufacturers from MAC addresses.</p>
@@ -209,6 +370,10 @@
                 <a href="/tools/subnet-calculator.html" class="related-card">
                     <h3>Subnet Calculator</h3>
                     <p>Calculate IP network ranges and subnets.</p>
+                </a>
+                <a href="/tools/cidr-aggregator.html" class="related-card">
+                    <h3>CIDR Aggregator</h3>
+                    <p>Merge and summarize lists of IP ranges.</p>
                 </a>
             </div>
         </section>
@@ -221,7 +386,6 @@
                 <a href="/tools/subnet-calculator.html">Subnet Calculator</a>
                 <a href="/tools/mac-vendor-lookup.html">MAC Vendor Lookup</a>
                 <a href="/tools/mac-address-formatter.html">MAC Formatter</a>
-                <a href="/tools/bulk-mac-formatter.html">Bulk MAC Formatter</a>
             </div>
             <div class="footer-section">
                 <h3>Security Tools</h3>
@@ -244,35 +408,258 @@
 
     <script src="../js/common.js?v=20261122"></script>
     <script>
-        function formatMAC() {
-            const cleaned = document.getElementById('macInput').value.replace(/[^a-fA-F0-9]/g, '');
-            if (cleaned.length !== 12) { 
-                alert('Invalid MAC address. Please enter 12 hex characters.'); 
-                return; 
+        /* MAC-CORE-START: pure conversion logic (no DOM) */
+        var MAC_FORMATS = {
+            'colon-upper':  { label: 'Colon Uppercase',  example: 'AA:BB:CC:DD:EE:FF', fn: function (h) { return h.match(/.{2}/g).join(':').toUpperCase(); } },
+            'colon-lower':  { label: 'Colon Lowercase',  example: 'aa:bb:cc:dd:ee:ff', fn: function (h) { return h.match(/.{2}/g).join(':').toLowerCase(); } },
+            'hyphen-upper': { label: 'Hyphen Uppercase', example: 'AA-BB-CC-DD-EE-FF', fn: function (h) { return h.match(/.{2}/g).join('-').toUpperCase(); } },
+            'hyphen-lower': { label: 'Hyphen Lowercase', example: 'aa-bb-cc-dd-ee-ff', fn: function (h) { return h.match(/.{2}/g).join('-').toLowerCase(); } },
+            'cisco':        { label: 'Cisco',            example: 'aabb.ccdd.eeff',    fn: function (h) { return h.match(/.{4}/g).join('.').toLowerCase(); } },
+            'none-upper':   { label: 'No Separator Uppercase', example: 'AABBCCDDEEFF', fn: function (h) { return h.toUpperCase(); } },
+            'none-lower':   { label: 'No Separator Lowercase', example: 'aabbccddeeff', fn: function (h) { return h.toLowerCase(); } }
+        };
+        var MAC_DEFAULT_FORMAT = 'colon-upper';
+        // First MAC-shaped token on a line: AA:BB:.. / AA-BB-.. (one consistent separator), aabb.ccdd.eeff, or 12 raw hex.
+        // Must not be glued to more hex or to another separator+hex (rejects 13-digit runs and 8-byte EUI-64 strings).
+        var MAC_TOKEN_RE = /(?:^|[^0-9A-Fa-f:.\-])((?:[0-9A-Fa-f]{2}([:\-])(?:[0-9A-Fa-f]{2}\2){4}[0-9A-Fa-f]{2})|(?:[0-9A-Fa-f]{4}\.[0-9A-Fa-f]{4}\.[0-9A-Fa-f]{4})|(?:[0-9A-Fa-f]{12}))(?![0-9A-Fa-f]|[:.\-][0-9A-Fa-f])/;
+        var MAC_HEX_ONLY_RE = /^(?:0x)?[0-9A-Fa-f\s:.\-_]+$/i;
+
+        function normalizeFormat(f) { return Object.prototype.hasOwnProperty.call(MAC_FORMATS, f) ? f : MAC_DEFAULT_FORMAT; }
+
+        // Returns {ok:true, hex:'AABBCCDDEEFF'} or {ok:false, kind:'empty'|'bad'|'nomac', reason:'...'}
+        function parseMac(line) {
+            var s = String(line == null ? '' : line).trim();
+            if (!s) return { ok: false, kind: 'empty', reason: 'empty line' };
+            var m = MAC_TOKEN_RE.exec(s);
+            if (m) return { ok: true, hex: m[1].replace(/[^0-9A-Fa-f]/g, '').toUpperCase() };
+            var body = s.replace(/^0x/i, '');
+            if (MAC_HEX_ONLY_RE.test(s)) {
+                var hex = body.replace(/[^0-9A-Fa-f]/g, '');
+                if (hex.length === 12) return { ok: true, hex: hex.toUpperCase() };
+                if (!hex.length) return { ok: false, kind: 'nomac', reason: 'no MAC address found' };
+                return { ok: false, kind: 'bad', reason: hex.length + ' hex digit' + (hex.length === 1 ? '' : 's') + ', need 12' };
             }
-            
-            const formats = {
-                'Colon Upper': cleaned.match(/.{2}/g).join(':').toUpperCase(),
-                'Colon Lower': cleaned.match(/.{2}/g).join(':').toLowerCase(),
-                'Hyphen Upper': cleaned.match(/.{2}/g).join('-').toUpperCase(),
-                'Hyphen Lower': cleaned.match(/.{2}/g).join('-').toLowerCase(),
-                'Cisco': cleaned.match(/.{4}/g).join('.').toLowerCase(),
-                'Raw Upper': cleaned.toUpperCase(),
-                'Raw Lower': cleaned.toLowerCase()
-            };
-            
-            const container = document.getElementById('macFormats');
-            container.innerHTML = '';
-            
-            for (const [label, value] of Object.entries(formats)) {
-                const btn = document.createElement('button');
-                btn.className = 'format-btn';
-                btn.textContent = value;
-                btn.title = label;
-                btn.onclick = () => navigator.clipboard.writeText(value).then(() => showToast('Copied: ' + value));
-                container.appendChild(btn);
-            }
+            var badChars = [];
+            body.replace(/[^0-9A-Fa-f\s:.\-_]/g, function (c) { if (badChars.indexOf(c) === -1 && badChars.length < 5) badChars.push(c); return c; });
+            if (/\s/.test(s)) return { ok: false, kind: 'nomac', reason: 'no MAC address found' };
+            return { ok: false, kind: 'bad', reason: 'invalid character' + (badChars.length > 1 ? 's ' : ' ') + badChars.join(' ') + ' (only 0-9, A-F and : - . separators)' };
         }
+
+        function formatMac(hex, fmt) { return MAC_FORMATS[normalizeFormat(fmt)].fn(hex); }
+
+        function macInfo(hex) {
+            var b0 = parseInt(hex.slice(0, 2), 16);
+            var broadcast = hex.toUpperCase() === 'FFFFFFFFFFFF';
+            return {
+                oui: hex.slice(0, 6).match(/.{2}/g).join(':').toUpperCase(),
+                cast: broadcast ? 'Broadcast' : ((b0 & 1) ? 'Multicast (I/G bit = 1)' : 'Unicast (I/G bit = 0)'),
+                admin: (b0 & 2) ? 'Locally administered (U/L bit = 1)' : 'Globally unique / IEEE OUI (U/L bit = 0)'
+            };
+        }
+
+        // opts: {fmt, keepInvalid, skipNoMac, dedupe}. Blank lines are ignored and not counted.
+        function convertBulk(text, opts) {
+            opts = opts || {};
+            var fmt = normalizeFormat(opts.fmt);
+            var lines = String(text == null ? '' : text).split(/\r\n|\r|\n/);
+            var out = [], invalid = [], seen = Object.create(null);
+            var total = 0, valid = 0, dupes = 0, skipped = 0;
+            for (var i = 0; i < lines.length; i++) {
+                var raw = lines[i];
+                if (!raw.trim()) continue;
+                var r = parseMac(raw);
+                if (!r.ok && r.kind === 'nomac' && opts.skipNoMac) { skipped++; continue; }
+                total++;
+                if (!r.ok) {
+                    invalid.push({ line: i + 1, text: raw.trim(), reason: r.reason });
+                    if (opts.keepInvalid !== false) out.push('INVALID: ' + raw.trim());
+                    continue;
+                }
+                valid++;
+                if (opts.dedupe) {
+                    if (seen[r.hex]) { dupes++; continue; }
+                    seen[r.hex] = true;
+                }
+                out.push(formatMac(r.hex, fmt));
+            }
+            return { out: out, invalid: invalid, total: total, valid: valid, invalidCount: invalid.length, dupes: dupes, skipped: skipped };
+        }
+
+        function escapeHtml(s) {
+            return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; });
+        }
+        /* MAC-CORE-END */
+        if (typeof module !== 'undefined' && module.exports) {
+            module.exports = { MAC_FORMATS: MAC_FORMATS, parseMac: parseMac, formatMac: formatMac, macInfo: macInfo, convertBulk: convertBulk, escapeHtml: escapeHtml, normalizeFormat: normalizeFormat };
+        }
+    </script>
+    <script>
+        (function () {
+            var $ = function (id) { return document.getElementById(id); };
+            var BULK_PLACEHOLDER = 'Formatted MAC addresses will appear here...';
+            var MAX_INVALID_SHOWN = 500;
+
+            function copyText(value, msg) {
+                if (!value) { showToast('Nothing to copy'); return; }
+                if (!navigator.clipboard) { showToast('Clipboard not available'); return; }
+                navigator.clipboard.writeText(value).then(function () { showToast(msg || 'Copied to clipboard!'); }, function () { showToast('Copy failed'); });
+            }
+
+            // Fill both format selects
+            ['singleFormat', 'bulkMacFormat'].forEach(function (id) {
+                var sel = $(id);
+                Object.keys(MAC_FORMATS).forEach(function (k) {
+                    var o = document.createElement('option');
+                    o.value = k;
+                    o.textContent = MAC_FORMATS[k].label + ' (' + MAC_FORMATS[k].example + ')';
+                    sel.appendChild(o);
+                });
+            });
+
+            /* ---------- mode tabs ---------- */
+            var mode = 'single';
+            function setMode(m, updateUrl) {
+                mode = m === 'bulk' ? 'bulk' : 'single';
+                document.querySelectorAll('.tool-tab').forEach(function (t) {
+                    var on = t.dataset.mode === mode;
+                    t.classList.toggle('active', on);
+                    t.setAttribute('aria-selected', on ? 'true' : 'false');
+                });
+                $('panel-single').classList.toggle('active', mode === 'single');
+                $('panel-bulk').classList.toggle('active', mode === 'bulk');
+                if (updateUrl) setToolParams({ mode: mode === 'bulk' ? 'bulk' : '' });
+            }
+            document.querySelectorAll('.tool-tab').forEach(function (t) {
+                t.addEventListener('click', function () { setMode(t.dataset.mode, true); });
+            });
+
+            /* ---------- single mode ---------- */
+            var singleValue = '';
+            var saveSingleUrl = debounce(function () {
+                setToolParams({ mac: $('macInput').value.trim(), fmt: $('singleFormat').value });
+            }, 300);
+
+            function renderSingle() {
+                var input = $('macInput').value;
+                var fmt = normalizeFormat($('singleFormat').value);
+                var msg = $('singleMsg'), grid = $('macFormats'), info = $('macInfo');
+                grid.innerHTML = '';
+                singleValue = '';
+                if (!input.trim()) {
+                    msg.className = 'mac-msg ok';
+                    msg.textContent = 'Enter a MAC address in any format.';
+                    $('singleResult').textContent = '—';
+                    info.textContent = '—';
+                    return;
+                }
+                var r = parseMac(input);
+                if (!r.ok) {
+                    msg.className = 'mac-msg';
+                    msg.textContent = 'Invalid MAC address: ' + r.reason + '.';
+                    $('singleResult').textContent = '—';
+                    info.textContent = '—';
+                    return;
+                }
+                msg.className = 'mac-msg ok';
+                msg.textContent = '';
+                singleValue = formatMac(r.hex, fmt);
+                $('singleResult').textContent = singleValue;
+                Object.keys(MAC_FORMATS).forEach(function (k) {
+                    var v = formatMac(r.hex, k);
+                    var btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'format-btn' + (k === fmt ? ' selected' : '');
+                    btn.title = 'Copy ' + MAC_FORMATS[k].label;
+                    btn.innerHTML = '<span class="fmt-label">' + escapeHtml(MAC_FORMATS[k].label) + '</span>' + escapeHtml(v);
+                    btn.addEventListener('click', function () { copyText(v, 'Copied: ' + v); });
+                    grid.appendChild(btn);
+                });
+                var mi = macInfo(r.hex);
+                info.innerHTML = '<div><strong>OUI (vendor prefix)</strong>' + escapeHtml(mi.oui) +
+                    ' · <a href="/tools/mac-vendor-lookup.html" style="color:var(--accent);">look up</a></div>' +
+                    '<div><strong>Type</strong>' + escapeHtml(mi.cast) + '</div>' +
+                    '<div><strong>Administration</strong>' + escapeHtml(mi.admin) + '</div>';
+            }
+            $('macInput').addEventListener('input', function () { renderSingle(); saveSingleUrl(); });
+            $('macInput').addEventListener('keydown', function (e) { if (e.key === 'Enter') { renderSingle(); } });
+            $('singleFormat').addEventListener('change', function () {
+                $('bulkMacFormat').value = $('singleFormat').value;
+                renderSingle(); saveSingleUrl(); formatBulkMAC(true);
+            });
+            $('copySingleBtn').addEventListener('click', function () { copyText(singleValue, singleValue ? 'Copied: ' + singleValue : ''); });
+
+            /* ---------- bulk mode ---------- */
+            var lastBulk = null;
+            window.formatBulkMAC = function (quiet) {
+                var text = $('bulkMacInput').value;
+                var msg = $('bulkMsg');
+                if (!text.trim()) {
+                    lastBulk = null;
+                    $('bulkMacResult').textContent = BULK_PLACEHOLDER;
+                    $('bulkMacStats').textContent = '—';
+                    $('bulkInvalidBox').hidden = true;
+                    msg.className = 'mac-msg' + (quiet ? ' ok' : '');
+                    msg.textContent = quiet ? '' : 'Paste at least one MAC address (one per line).';
+                    return;
+                }
+                var res = convertBulk(text, {
+                    fmt: $('bulkMacFormat').value,
+                    keepInvalid: $('optKeepInvalid').checked,
+                    skipNoMac: $('optSkipNoMac').checked,
+                    dedupe: $('optDedupe').checked
+                });
+                lastBulk = res;
+                msg.className = 'mac-msg ok';
+                msg.textContent = '';
+                $('bulkMacResult').textContent = res.out.length ? res.out.join('\n') : '(no output)';
+                var stats = 'Total: ' + res.total + ' | Valid: ' + res.valid + ' | Invalid: ' + res.invalidCount;
+                if ($('optDedupe').checked) stats += ' | Duplicates removed: ' + res.dupes;
+                if ($('optSkipNoMac').checked) stats += ' | Lines ignored: ' + res.skipped;
+                $('bulkMacStats').textContent = stats;
+                var box = $('bulkInvalidBox'), list = $('bulkInvalid');
+                if (!res.invalid.length) { box.hidden = true; list.innerHTML = ''; return; }
+                var html = res.invalid.slice(0, MAX_INVALID_SHOWN).map(function (e) {
+                    return '<li><span class="ln">Line ' + e.line + '</span>' + escapeHtml(e.text) + ' <span class="why">— ' + escapeHtml(e.reason) + '</span></li>';
+                }).join('');
+                if (res.invalid.length > MAX_INVALID_SHOWN) html += '<li class="why">… and ' + (res.invalid.length - MAX_INVALID_SHOWN) + ' more</li>';
+                list.innerHTML = html;
+                box.hidden = false;
+            };
+            var liveBulk = debounce(function () { formatBulkMAC(true); }, 250);
+            $('bulkMacInput').addEventListener('input', liveBulk);
+            $('bulkMacFormat').addEventListener('change', function () {
+                $('singleFormat').value = $('bulkMacFormat').value;
+                formatBulkMAC(true); renderSingle(); saveSingleUrl();
+            });
+            ['optKeepInvalid', 'optSkipNoMac', 'optDedupe'].forEach(function (id) {
+                $(id).addEventListener('change', function () { formatBulkMAC(true); });
+            });
+            $('bulkFormatBtn').addEventListener('click', function () { formatBulkMAC(false); });
+            $('bulkCopyBtn').addEventListener('click', function () {
+                if (!lastBulk || !lastBulk.out.length) { showToast('Nothing to copy'); return; }
+                copyToClipboard('bulkMacResult');
+            });
+            $('bulkDownloadBtn').addEventListener('click', function () {
+                if (!lastBulk || !lastBulk.out.length) { showToast('Nothing to download'); return; }
+                var blob = new Blob([lastBulk.out.join('\n') + '\n'], { type: 'text/plain;charset=utf-8' });
+                var a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = 'mac-addresses-' + normalizeFormat($('bulkMacFormat').value) + '.txt';
+                document.body.appendChild(a); a.click(); a.remove();
+                setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+            });
+            $('bulkClearBtn').addEventListener('click', function () { $('bulkMacInput').value = ''; formatBulkMAC(true); $('bulkMacInput').focus(); });
+
+            /* ---------- initial state from URL ---------- */
+            var p = getToolParams();
+            if (typeof p.mac === 'string' && p.mac.length) $('macInput').value = p.mac.slice(0, 200);
+            var f = normalizeFormat(p.fmt);
+            $('singleFormat').value = f;
+            $('bulkMacFormat').value = f;
+            setMode(p.mode, false);
+            renderSingle();
+            formatBulkMAC(true);
+        })();
     </script>
 
     <script>

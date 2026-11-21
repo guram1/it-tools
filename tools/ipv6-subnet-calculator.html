@@ -116,6 +116,9 @@
                 <div id="v6Error" style="display:none;color:#ef4444;margin:0.5rem 0;padding:0.6rem 0.9rem;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:0.85rem;"></div>
 
                 <div id="v6Results" class="result-grid" style="display:none;margin-top:1rem;"></div>
+                <div class="btn-group" style="margin-top:0.75rem;">
+                    <button class="btn btn-secondary" onclick="copyShareLink()" title="Copy a link that reopens this calculation">🔗 Copy link</button>
+                </div>
 
                 <div class="form-group" style="margin-top:2rem;">
                     <label class="form-label" for="v6Split">Split into smaller subnets — new prefix length</label>
@@ -164,7 +167,7 @@
                 <div class="faq-item"><button class="faq-question">What's the standard IPv6 allocation size?</button><div class="faq-answer">ISPs typically assign /48 to organizations and /56 or /64 to end users. A single LAN segment should always be a /64 — SLAAC and many protocols depend on it. /127 is used for point-to-point links.</div></div>
                 <div class="faq-item"><button class="faq-question">Why is the address space so much larger than IPv4?</button><div class="faq-answer">IPv6 uses 128 bits per address, vs 32 for IPv4. That's 2^128 addresses, roughly 3.4 × 10^38 — enough to give every grain of sand on Earth its own internet. The huge space is intentional: it makes large hierarchical allocations and SLAAC (stateless autoconfiguration) practical without conservation worries.</div></div>
                 <div class="faq-item"><button class="faq-question">What does <code>::</code> mean in an IPv6 address?</button><div class="faq-answer"><code>::</code> is shorthand for one or more consecutive groups of all-zero hexadectets. <code>2001:db8::1</code> expands to <code>2001:0db8:0000:0000:0000:0000:0000:0001</code>. You can only use <code>::</code> once per address; otherwise the position is ambiguous.</div></div>
-                <div class="faq-item"><button class="faq-question">Are there "first usable" and "broadcast" addresses like in IPv4?</button><div class="faq-answer">IPv6 has no broadcast address — multicast is used instead. On a /64 LAN, every address in the prefix is technically usable, though convention reserves the all-zeros address (subnet router anycast) and the anycast addresses in the top 128. For point-to-point /127 links, both addresses are used as endpoints.</div></div>
+                <div class="faq-item"><button class="faq-question">Are there 'first usable' and 'broadcast' addresses like in IPv4?</button><div class="faq-answer">IPv6 has no broadcast address — multicast is used instead. On a /64 LAN, every address in the prefix is technically usable, though convention reserves the all-zeros address (subnet router anycast) and the anycast addresses in the top 128. For point-to-point /127 links, both addresses are used as endpoints.</div></div>
                 <div class="faq-item"><button class="faq-question">How accurate is the math?</button><div class="faq-answer">Exact. The calculator uses JavaScript <code>BigInt</code> for full 128-bit arithmetic, so there is no rounding or precision loss even for /0 prefix sizes (which contain 2^128 ≈ 340 undecillion addresses).</div></div>
             </div>
         </section>
@@ -237,7 +240,14 @@
 
         function setV6(s) { document.getElementById('v6Input').value = s; run(); }
 
+        // Shareable state: ?prefix=<ipv6/len>&split=<new prefix length>
+        const syncURL = debounce(() => setToolParams({
+            prefix: document.getElementById('v6Input').value.trim(),
+            split: document.getElementById('v6Split').value.trim()
+        }));
+
         function run() {
+            syncURL();
             const raw = document.getElementById('v6Input').value.trim();
             const errEl = document.getElementById('v6Error');
             const resEl = document.getElementById('v6Results');
@@ -269,7 +279,7 @@
                 ['Last address', compress(broadcast)],
                 ['Last (expanded)', expand(broadcast)],
                 ['Prefix length', '/' + prefix],
-                ['Total addresses', count.toString() + (count > 1000000n ? '  (≈ ' + count.toExponential(3) + ')' : '')],
+                ['Total addresses', count.toString() + (count > 1000000n ? '  (≈ ' + Number(count).toExponential(3) + ')' : '')],
                 ['Equivalent /64s', prefix <= 64 ? (1n << BigInt(64 - prefix)).toString() : 'less than one /64'],
             ];
             if (hasHostBits) rows.unshift(['⚠ host bits set', 'Input has bits below /' + prefix + '. Network address would be ' + compress(network) + '/' + prefix]);
@@ -298,6 +308,11 @@
             splitWrap.style.display = 'block';
         }
         function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+        (function initFromURL() {
+            const p = getToolParams();
+            if (p.prefix !== undefined) document.getElementById('v6Input').value = p.prefix.slice(0, 200);
+            if (p.split !== undefined) document.getElementById('v6Split').value = p.split.replace(/[^0-9]/g, '').slice(0, 3);
+        })();
         run();
     </script>
     <script>
