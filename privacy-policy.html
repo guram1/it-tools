@@ -19,10 +19,7 @@
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://ops-box.net/privacy-policy">
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/style.css?v=20261122">
 
     <style>
         .policy-container {
@@ -65,20 +62,24 @@
             text-decoration: underline;
         }
     </style>
+    <link rel="icon" href="/favicon.ico" sizes="48x48">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="preload" href="/fonts/Outfit-latin.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/css/base.css?v=20261122">
 </head>
 <body>
     <header>
         <div class="header-content">
-            <a href="/" class="logo">
-                <div class="logo-icon">⚡</div>
-                <div class="logo-text">OPS<span>-BOX</span></div>
-            </a>
-            <nav class="header-nav">
-                <a href="/tools/subnet-calculator.html">Subnet</a>
-                <a href="/tools/dns-dumpster.html">DNS Dumpster</a>
-                <a href="/tools/ssl-checker.html">SSL Check</a>
-                <a href="/tools/password-generator.html">Passwords</a>
-                <a href="/tools/json-formatter.html">JSON</a>
+            <a href="/" class="logo" aria-label="OPS-BOX home"><span class="logo-icon">⚡</span><span class="logo-text">OPS<span>-BOX</span></span></a>
+            <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Open menu">☰</button>
+            <nav class="header-nav" id="site-nav" aria-label="Main">
+                <a href="/#network">Network</a>
+                <a href="/#security">Security</a>
+                <a href="/#developer">Developer</a>
+                <a href="/tools/subnet-calculator.html">Subnet Calculator</a>
+                <a href="/tools/mac-vendor-lookup.html">MAC Lookup</a>
+                <a href="/about.html">About</a>
             </nav>
         </div>
     </header>
@@ -166,8 +167,9 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals. | <a href="/about.html" style="color:inherit;text-decoration:underline;">About</a> · <a href="/contact.html" style="color:inherit;text-decoration:underline;">Contact</a> · <a href="/terms-of-service.html" style="color:inherit;text-decoration:underline;">Terms</a> · <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p>
+            <p>&copy; 2026 OPS-BOX.net — Free IT utilities for professionals. | <a href="/about.html" style="color:inherit;text-decoration:underline;">About</a> · <a href="/contact.html" style="color:inherit;text-decoration:underline;">Contact</a> · <a href="/terms-of-service.html" style="color:inherit;text-decoration:underline;">Terms</a> · <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p>
         </div>
     </footer>
+    <script src="/js/nav.js?v=20261122" defer></script>
 </body>
 </html>

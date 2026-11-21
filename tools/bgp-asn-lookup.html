@@ -5,16 +5,14 @@
     <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-FH74PGMNYD');</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BGP ASN Lookup — Autonomous System Info, Prefixes, Peers | OPS-BOX</title>
+    <title>BGP ASN Lookup — AS Number, Prefixes, Peers | OPS-BOX</title>
     <meta name="description" content="Free BGP ASN lookup. Look up any AS number or IP — see the holder, country, announced IPv4/IPv6 prefixes, and BGP peer neighbors. Powered by RIPEstat.">
     <meta name="keywords" content="BGP ASN lookup, AS number lookup, ASN to prefixes, BGP peers, RIPEstat, ip to asn">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://ops-box.net/tools/bgp-asn-lookup">
     <meta property="og:title" content="BGP ASN Lookup — Prefixes &amp; Peers"><meta property="og:description" content="Look up any AS number or IP and see prefixes, peers, and holder info."><meta property="og:type" content="website"><meta property="og:url" content="https://ops-box.net/tools/bgp-asn-lookup"><meta property="og:image" content="https://ops-box.net/og-image.png">
     <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="BGP ASN Lookup"><meta name="twitter:description" content="Look up AS numbers and BGP routing info."><meta name="twitter:image" content="https://ops-box.net/og-image.png">
-    <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/style.css?v=20261122">
     <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"BGP ASN Lookup","url":"https://ops-box.net/tools/bgp-asn-lookup","description":"Look up BGP autonomous system information, announced prefixes, and peers","applicationCategory":"NetworkingApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
     <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
         {"@type":"Question","name":"What is an ASN?","acceptedAnswer":{"@type":"Answer","text":"An Autonomous System Number (ASN) is a globally unique 16- or 32-bit integer assigned to an organization that operates one or more IP networks under a single, clearly defined external routing policy. ASNs are assigned by the Regional Internet Registries (ARIN, RIPE, APNIC, LACNIC, AFRINIC) and used by BGP — the protocol that exchanges routes between networks on the public internet."}},
@@ -39,9 +37,28 @@
         .preset-btn:hover { background:var(--bg-hover); color:var(--text-primary); }
         .loading { color:var(--text-muted); padding:1rem; text-align:center; font-style:italic; }
     </style>
+    <link rel="icon" href="/favicon.ico" sizes="48x48">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="preload" href="/fonts/Outfit-latin.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/css/base.css?v=20261122">
+    <script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://ops-box.net/"}, {"@type": "ListItem", "position": 2, "name": "BGP ASN Lookup", "item": "https://ops-box.net/tools/bgp-asn-lookup"}]}</script>
 </head>
 <body>
-    <header><div class="header-content"><a href="/" class="logo"><div class="logo-icon">⚡</div><div class="logo-text">OPS<span>-BOX</span></div></a><nav class="header-nav"><a href="/tools/ip-location.html">IP Location</a><a href="/tools/cidr-aggregator.html">CIDR</a><a href="/tools/dns-lookup.html">DNS</a><a href="/tools/ssl-checker.html">SSL</a></nav></div></header>
+    <header>
+        <div class="header-content">
+            <a href="/" class="logo" aria-label="OPS-BOX home"><span class="logo-icon">⚡</span><span class="logo-text">OPS<span>-BOX</span></span></a>
+            <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Open menu">☰</button>
+            <nav class="header-nav" id="site-nav" aria-label="Main">
+                <a href="/#network">Network</a>
+                <a href="/#security">Security</a>
+                <a href="/#developer">Developer</a>
+                <a href="/tools/subnet-calculator.html">Subnet Calculator</a>
+                <a href="/tools/mac-vendor-lookup.html">MAC Lookup</a>
+                <a href="/about.html">About</a>
+            </nav>
+        </div>
+    </header>
 
     <main>
         <nav class="breadcrumb"><a href="/">Home</a><span>›</span><span class="breadcrumb-current">BGP ASN Lookup</span></nav>
@@ -136,12 +153,12 @@
             <div class="footer-section"><h3>Security Tools</h3><a href="/tools/password-generator.html">Password Generator</a><a href="/tools/bcrypt.html">Bcrypt</a><a href="/tools/totp-generator.html">TOTP Generator</a></div>
             <div class="footer-section"><h3>Developer Tools</h3><a href="/tools/color-converter.html">Color Converter</a><a href="/tools/http-status-codes.html">HTTP Status Codes</a><a href="/tools/json-formatter.html">JSON Formatter</a></div>
         </div>
-        <div class="footer-bottom"><p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals. | <a href="/about.html" style="color:inherit;text-decoration:underline;">About</a> · <a href="/contact.html" style="color:inherit;text-decoration:underline;">Contact</a> · <a href="/terms-of-service.html" style="color:inherit;text-decoration:underline;">Terms</a> · <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p></div>
+        <div class="footer-bottom"><p>&copy; 2026 OPS-BOX.net — Free IT utilities for professionals. | <a href="/about.html" style="color:inherit;text-decoration:underline;">About</a> · <a href="/contact.html" style="color:inherit;text-decoration:underline;">Contact</a> · <a href="/terms-of-service.html" style="color:inherit;text-decoration:underline;">Terms</a> · <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p></div>
     </footer>
 
     <div class="toast" id="toast">Copied to clipboard!</div>
 
-    <script src="../js/common.js"></script>
+    <script src="../js/common.js?v=20261122"></script>
     <script>
         const API = 'https://stat.ripe.net/data';
         function setVal(s) { document.getElementById('bgpInput').value = s; lookup(); }
@@ -259,5 +276,6 @@
         lookup();
     </script>
     <script>document.querySelectorAll('.faq-question').forEach(b=>b.addEventListener('click',()=>b.parentElement.classList.toggle('open')));</script>
+    <script src="/js/nav.js?v=20261122" defer></script>
 </body>
 </html>

@@ -11,7 +11,7 @@
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MAC Address Vendor Lookup — Find Device Manufacturer from MAC | OPS-BOX</title>
+    <title>MAC Address Vendor Lookup (OUI Search) | OPS-BOX</title>
     <meta name="description" content="Free MAC address vendor lookup tool. Identify device manufacturers from MAC addresses using the IEEE OUI database. Supports bulk lookup with CSV export for network audits.">
     <meta name="keywords" content="MAC address lookup, MAC vendor lookup, OUI lookup, MAC address manufacturer, find device by MAC, network device identification, IEEE OUI database">
     <meta name="robots" content="index, follow">
@@ -31,11 +31,8 @@
     <meta name="twitter:image" content="https://ops-box.net/og-image.png">
 
     <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/style.css?v=20261122">
     
     <!-- Structured Data -->
     <script type="application/ld+json">
@@ -122,19 +119,24 @@
     <!-- Google AdSense -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1924789684268835"
          crossorigin="anonymous"></script>
+    <link rel="icon" href="/favicon.ico" sizes="48x48">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="preload" href="/fonts/Outfit-latin.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/css/base.css?v=20261122">
 </head>
 <body>
     <header>
         <div class="header-content">
-            <a href="/" class="logo">
-                <div class="logo-icon">⚡</div>
-                <div class="logo-text">OPS<span>-BOX</span></div>
-            </a>
-            <nav class="header-nav">
-                <a href="/tools/password-generator.html">Password</a>
-                <a href="/tools/subnet-calculator.html">Subnet</a>
+            <a href="/" class="logo" aria-label="OPS-BOX home"><span class="logo-icon">⚡</span><span class="logo-text">OPS<span>-BOX</span></span></a>
+            <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Open menu">☰</button>
+            <nav class="header-nav" id="site-nav" aria-label="Main">
+                <a href="/#network">Network</a>
+                <a href="/#security">Security</a>
+                <a href="/#developer">Developer</a>
+                <a href="/tools/subnet-calculator.html">Subnet Calculator</a>
                 <a href="/tools/mac-vendor-lookup.html">MAC Lookup</a>
-                <a href="/tools/hash-generator.html">Hash</a>
+                <a href="/about.html">About</a>
             </nav>
         </div>
     </header>
@@ -260,13 +262,13 @@ aabb.ccdd.eeff
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals. | <a href="/about.html" style="color:inherit;text-decoration:underline;">About</a> · <a href="/contact.html" style="color:inherit;text-decoration:underline;">Contact</a> · <a href="/terms-of-service.html" style="color:inherit;text-decoration:underline;">Terms</a> · <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p>
+            <p>&copy; 2026 OPS-BOX.net — Free IT utilities for professionals. | <a href="/about.html" style="color:inherit;text-decoration:underline;">About</a> · <a href="/contact.html" style="color:inherit;text-decoration:underline;">Contact</a> · <a href="/terms-of-service.html" style="color:inherit;text-decoration:underline;">Terms</a> · <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p>
         </div>
     </footer>
 
     <div class="toast" id="toast">Copied to clipboard!</div>
 
-    <script src="../js/common.js"></script>
+    <script src="../js/common.js?v=20261122"></script>
     <script>
         // MAC Vendor Lookup with sharded database (same as your production code)
         const loadedShards = {};
@@ -357,5 +359,6 @@ aabb.ccdd.eeff
         });
     });
     </script>
+    <script src="/js/nav.js?v=20261122" defer></script>
 </body>
 </html>

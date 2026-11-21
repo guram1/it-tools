@@ -5,16 +5,14 @@
     <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-FH74PGMNYD');</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TOTP Generator — RFC 6238 2FA Code (Google Authenticator) | OPS-BOX</title>
+    <title>TOTP Generator — RFC 6238 2FA Codes | OPS-BOX</title>
     <meta name="description" content="Free TOTP generator. Compute 2FA codes from a base32 secret in real time (RFC 6238). Compatible with Google Authenticator, Authy, 1Password. 100% client-side.">
     <meta name="keywords" content="TOTP generator, 2FA code, Google Authenticator online, RFC 6238, base32 secret, time-based OTP">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://ops-box.net/tools/totp-generator">
     <meta property="og:title" content="TOTP Generator — RFC 6238"><meta property="og:description" content="Compute 2FA codes from a base32 secret in your browser."><meta property="og:type" content="website"><meta property="og:url" content="https://ops-box.net/tools/totp-generator"><meta property="og:image" content="https://ops-box.net/og-image.png">
     <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="TOTP Generator"><meta name="twitter:description" content="Compute 2FA codes from a base32 secret."><meta name="twitter:image" content="https://ops-box.net/og-image.png">
-    <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/style.css?v=20261122">
     <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"TOTP Generator","url":"https://ops-box.net/tools/totp-generator","description":"Generate time-based OTP codes from a base32 secret","applicationCategory":"SecurityApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
     <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
         {"@type":"Question","name":"Is it safe to enter my TOTP secret here?","acceptedAnswer":{"@type":"Answer","text":"All HMAC and base32 decoding happens in your browser via the Web Crypto API. The secret is never transmitted. That said, your TOTP secret is the same kind of credential as a password — only paste it into tools and devices you trust. For production 2FA, store the secret in a dedicated authenticator app or hardware token, not a web tool."}},
@@ -35,9 +33,28 @@
         .otp-side-label { color:var(--text-muted); font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; }
         .otp-side-code { font-family:'JetBrains Mono',monospace; color:var(--text-secondary); font-size:1.2rem; font-weight:600; margin-top:0.2rem; letter-spacing:0.1em; }
     </style>
+    <link rel="icon" href="/favicon.ico" sizes="48x48">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="preload" href="/fonts/Outfit-latin.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/css/base.css?v=20261122">
+    <script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://ops-box.net/"}, {"@type": "ListItem", "position": 2, "name": "TOTP Generator", "item": "https://ops-box.net/tools/totp-generator"}]}</script>
 </head>
 <body>
-    <header><div class="header-content"><a href="/" class="logo"><div class="logo-icon">⚡</div><div class="logo-text">OPS<span>-BOX</span></div></a><nav class="header-nav"><a href="/tools/password-generator.html">Password</a><a href="/tools/bcrypt.html">Bcrypt</a><a href="/tools/jwt-decoder.html">JWT</a><a href="/tools/hash-generator.html">Hash</a></nav></div></header>
+    <header>
+        <div class="header-content">
+            <a href="/" class="logo" aria-label="OPS-BOX home"><span class="logo-icon">⚡</span><span class="logo-text">OPS<span>-BOX</span></span></a>
+            <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Open menu">☰</button>
+            <nav class="header-nav" id="site-nav" aria-label="Main">
+                <a href="/#network">Network</a>
+                <a href="/#security">Security</a>
+                <a href="/#developer">Developer</a>
+                <a href="/tools/subnet-calculator.html">Subnet Calculator</a>
+                <a href="/tools/mac-vendor-lookup.html">MAC Lookup</a>
+                <a href="/about.html">About</a>
+            </nav>
+        </div>
+    </header>
 
     <main>
         <nav class="breadcrumb"><a href="/">Home</a><span>›</span><span class="breadcrumb-current">TOTP Generator</span></nav>
@@ -133,12 +150,12 @@
             <div class="footer-section"><h3>Security Tools</h3><a href="/tools/password-generator.html">Password Generator</a><a href="/tools/bcrypt.html">Bcrypt</a><a href="/tools/totp-generator.html">TOTP Generator</a><a href="/tools/jwt-decoder.html">JWT Decoder</a></div>
             <div class="footer-section"><h3>Developer Tools</h3><a href="/tools/color-converter.html">Color Converter</a><a href="/tools/http-status-codes.html">HTTP Status Codes</a><a href="/tools/json-formatter.html">JSON Formatter</a></div>
         </div>
-        <div class="footer-bottom"><p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals. | <a href="/about.html" style="color:inherit;text-decoration:underline;">About</a> · <a href="/contact.html" style="color:inherit;text-decoration:underline;">Contact</a> · <a href="/terms-of-service.html" style="color:inherit;text-decoration:underline;">Terms</a> · <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p></div>
+        <div class="footer-bottom"><p>&copy; 2026 OPS-BOX.net — Free IT utilities for professionals. | <a href="/about.html" style="color:inherit;text-decoration:underline;">About</a> · <a href="/contact.html" style="color:inherit;text-decoration:underline;">Contact</a> · <a href="/terms-of-service.html" style="color:inherit;text-decoration:underline;">Terms</a> · <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p></div>
     </footer>
 
     <div class="toast" id="toast">Copied to clipboard!</div>
 
-    <script src="../js/common.js"></script>
+    <script src="../js/common.js?v=20261122"></script>
     <script>
         const B32 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
         function base32Decode(s) {
@@ -224,5 +241,6 @@
         setInterval(tick, 1000);
     </script>
     <script>document.querySelectorAll('.faq-question').forEach(b=>b.addEventListener('click',()=>b.parentElement.classList.toggle('open')));</script>
+    <script src="/js/nav.js?v=20261122" defer></script>
 </body>
 </html>

@@ -5,16 +5,14 @@
     <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-FH74PGMNYD');</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Color Converter &amp; WCAG Contrast Checker — Hex / RGB / HSL / OKLCH | OPS-BOX</title>
+    <title>Color Converter & Contrast Checker | OPS-BOX</title>
     <meta name="description" content="Free color converter and WCAG contrast checker. Convert between hex, rgb, hsl, hsv, and oklch. Test foreground/background pairs against WCAG 2.1 AA and AAA contrast thresholds.">
     <meta name="keywords" content="color converter, hex to rgb, rgb to hsl, oklch converter, WCAG contrast checker, accessibility color">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://ops-box.net/tools/color-converter">
     <meta property="og:title" content="Color Converter &amp; Contrast Checker"><meta property="og:description" content="Convert hex/rgb/hsl/oklch and check WCAG contrast ratios."><meta property="og:type" content="website"><meta property="og:url" content="https://ops-box.net/tools/color-converter"><meta property="og:image" content="https://ops-box.net/og-image.png">
     <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Color Converter"><meta name="twitter:description" content="Convert hex/rgb/hsl/oklch and check WCAG contrast."><meta name="twitter:image" content="https://ops-box.net/og-image.png">
-    <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/style.css?v=20261122">
     <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Color Converter","url":"https://ops-box.net/tools/color-converter","description":"Convert between color formats and check WCAG contrast","applicationCategory":"DeveloperApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
     <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
         {"@type":"Question","name":"What contrast ratio is needed for accessibility?","acceptedAnswer":{"@type":"Answer","text":"WCAG 2.1 requires 4.5:1 for normal body text (AA) and 7:1 for AAA. Large text (18 pt or 14 pt bold) needs 3:1 for AA and 4.5:1 for AAA. UI components and graphical objects need 3:1 against adjacent colors."}},
@@ -39,9 +37,28 @@
         .wcag-pass { color: #22c55e; }
         .wcag-fail { color: #ef4444; }
     </style>
+    <link rel="icon" href="/favicon.ico" sizes="48x48">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="preload" href="/fonts/Outfit-latin.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/css/base.css?v=20261122">
+    <script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://ops-box.net/"}, {"@type": "ListItem", "position": 2, "name": "Color Converter & Contrast Checker", "item": "https://ops-box.net/tools/color-converter"}]}</script>
 </head>
 <body>
-    <header><div class="header-content"><a href="/" class="logo"><div class="logo-icon">⚡</div><div class="logo-text">OPS<span>-BOX</span></div></a><nav class="header-nav"><a href="/tools/json-formatter.html">JSON</a><a href="/tools/regex-tester.html">Regex</a><a href="/tools/url-encoder.html">URL</a><a href="/tools/uuid-generator.html">UUID</a></nav></div></header>
+    <header>
+        <div class="header-content">
+            <a href="/" class="logo" aria-label="OPS-BOX home"><span class="logo-icon">⚡</span><span class="logo-text">OPS<span>-BOX</span></span></a>
+            <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Open menu">☰</button>
+            <nav class="header-nav" id="site-nav" aria-label="Main">
+                <a href="/#network">Network</a>
+                <a href="/#security">Security</a>
+                <a href="/#developer">Developer</a>
+                <a href="/tools/subnet-calculator.html">Subnet Calculator</a>
+                <a href="/tools/mac-vendor-lookup.html">MAC Lookup</a>
+                <a href="/about.html">About</a>
+            </nav>
+        </div>
+    </header>
 
     <main>
         <nav class="breadcrumb"><a href="/">Home</a><span>›</span><span class="breadcrumb-current">Color Converter</span></nav>
@@ -128,12 +145,12 @@
             <div class="footer-section"><h3>Security Tools</h3><a href="/tools/password-generator.html">Password Generator</a><a href="/tools/bcrypt.html">Bcrypt</a><a href="/tools/totp-generator.html">TOTP Generator</a></div>
             <div class="footer-section"><h3>Developer Tools</h3><a href="/tools/color-converter.html">Color Converter</a><a href="/tools/http-status-codes.html">HTTP Status Codes</a><a href="/tools/json-formatter.html">JSON Formatter</a></div>
         </div>
-        <div class="footer-bottom"><p>&copy; 2025 OPS-BOX.net — Free IT utilities for professionals. | <a href="/about.html" style="color:inherit;text-decoration:underline;">About</a> · <a href="/contact.html" style="color:inherit;text-decoration:underline;">Contact</a> · <a href="/terms-of-service.html" style="color:inherit;text-decoration:underline;">Terms</a> · <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p></div>
+        <div class="footer-bottom"><p>&copy; 2026 OPS-BOX.net — Free IT utilities for professionals. | <a href="/about.html" style="color:inherit;text-decoration:underline;">About</a> · <a href="/contact.html" style="color:inherit;text-decoration:underline;">Contact</a> · <a href="/terms-of-service.html" style="color:inherit;text-decoration:underline;">Terms</a> · <a href="/privacy-policy.html" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p></div>
     </footer>
 
     <div class="toast" id="toast">Copied to clipboard!</div>
 
-    <script src="../js/common.js"></script>
+    <script src="../js/common.js?v=20261122"></script>
     <script>
         // Parse any CSS color → {r,g,b,a} in 0..255 / 0..1
         function parseColor(s) {
@@ -266,5 +283,6 @@
         update();
     </script>
     <script>document.querySelectorAll('.faq-question').forEach(b=>b.addEventListener('click',()=>b.parentElement.classList.toggle('open')));</script>
+    <script src="/js/nav.js?v=20261122" defer></script>
 </body>
 </html>
